@@ -182,6 +182,16 @@ nav ul a.active {
   box-shadow: 0 10px 35px rgba(236, 72, 153, 0.6);
 }
 
+.hero-credit {
+  margin-top: 2.5rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.95rem;
+}
+
+.hero-credit p + p {
+  margin-top: 0.25rem;
+}
+
 .section {
   padding: 5rem 2rem;
   max-width: 1200px;
@@ -297,14 +307,6 @@ article h3 {
   font-size: 1.3rem;
   font-weight: 600;
   color: #fff;
-}
-
-footer {
-  background: #0a0a0a;
-  text-align: center;
-  padding: 2.5rem;
-  border-top: 1px solid #2a2a2a;
-  color: #666;
 }
 
 @media (max-width: 768px) {
