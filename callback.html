@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connecting Discord | JBA</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="page-start">
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Connecting Discord</h1>
+      <p id="status">Finishing login…</p>
+    </div>
+  </section>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const code = params.get("code");
+    const err = params.get("error");
+    const status = document.getElementById("status");
+    if (err || !code) {
+      status.textContent = "Discord login was cancelled.";
+    } else {
+      fetch("/api/discord?code=" + encodeURIComponent(code))
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok) throw new Error(result.data.error || "Discord login failed");
+          localStorage.setItem("jba-discord", JSON.stringify(result.data));
+          location.replace("index.html");
+        })
+        .catch(function () {
+          status.textContent = "Discord login could not be completed. Check the app credentials on Vercel.";
+        });
+    }
+  </script>
+</body>
+</html>

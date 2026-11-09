@@ -7,13 +7,16 @@
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="page-start">
   <section id="home" class="hero">
     <div class="hero-content">
       <img src="logo.png" alt="JBA" class="hero-logo">
       <h1>Junior Basketball Association</h1>
-      <p>The ultimate Practical Basketball league and database in the entire game.</p>
-      <a href="home.html" class="cta-btn">View League</a>
+      <div class="hero-actions">
+        <button type="button" class="cta-btn" id="login-btn">Login</button>
+        <a href="home.html" class="cta-btn">View League</a>
+      </div>
+      <p class="login-note" id="login-note" hidden></p>
     </div>
     <div class="hero-credit">
       <p>&copy; 2026 Junior Basketball Association.</p>
@@ -21,6 +24,7 @@
     </div>
   </section>
 
+  <script src="discord-config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
