@@ -184,6 +184,12 @@ nav ul a.active {
   color: #d1d5db;
 }
 
+.login-note {
+  margin-top: 1rem;
+  color: #d1d5db;
+  font-size: 0.9rem;
+}
+
 .hero-actions {
   display: flex;
   justify-content: center;
