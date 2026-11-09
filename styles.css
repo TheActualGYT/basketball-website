@@ -105,7 +105,8 @@ nav ul a.active {
 }
 
 .hero {
-  min-height: 90vh;
+  min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(145deg, #0a0a0a 0%, #1a0a1a 40%, #0d0d0d 100%);
   display: flex;
   align-items: center;
@@ -183,13 +184,20 @@ nav ul a.active {
 }
 
 .hero-credit {
-  margin-top: 2.5rem;
-  color: rgba(255, 255, 255, 0.72);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.1rem;
+  z-index: 1;
+  text-align: center;
+  color: #fff;
+  opacity: 0.5;
   font-size: 0.95rem;
+  line-height: 1.05;
 }
 
 .hero-credit p + p {
-  margin-top: 0.25rem;
+  margin-top: 0;
 }
 
 .section {
