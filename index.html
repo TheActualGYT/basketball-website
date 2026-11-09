@@ -3,18 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hoops Central | Basketball Hub</title>
+  <title>JBA | Custom Basketball League</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
   <header>
     <nav>
-      <div class="logo">HOOPS CENTRAL</div>
+      <div class="logo">
+        <img src="logo.png" alt="JBA Logo">
+        <span>JBA</span>
+      </div>
       <ul>
         <li><a href="#home">Home</a></li>
         <li><a href="#teams">Teams</a></li>
         <li><a href="#players">Players</a></li>
+        <li><a href="#standings">Standings</a></li>
         <li><a href="#news">News</a></li>
       </ul>
     </nav>
@@ -22,85 +26,96 @@
 
   <section id="home" class="hero">
     <div class="hero-content">
-      <h1>Welcome to the Court</h1>
-      <p>Your ultimate destination for NBA action, teams, players, and highlights from the 2026-27 season.</p>
-      <a href="#teams" class="cta-btn">Explore Teams</a>
+      <img src="logo.png" alt="JBA" class="hero-logo">
+      <h1>JBA</h1>
+      <p>The premier custom basketball league. Elite competition, modern style, and pure hoops.</p>
+      <a href="#teams" class="cta-btn">View League</a>
     </div>
   </section>
 
   <section id="teams" class="section">
-    <h2>Featured Teams</h2>
+    <h2>League Teams</h2>
     <div class="teams-grid">
       <div class="team-card">
-        <div class="team-logo lakers">LAL</div>
-        <h3>Los Angeles Lakers</h3>
-        <p>9-2 | Western Conference leaders</p>
+        <h3>Team Alpha</h3>
+        <p>Record: 0-0</p>
       </div>
       <div class="team-card">
-        <div class="team-logo sixers">PHI</div>
-        <h3>Philadelphia 76ers</h3>
-        <p>9-2 | Eastern Conference leaders</p>
+        <h3>Team Beta</h3>
+        <p>Record: 0-0</p>
       </div>
       <div class="team-card">
-        <div class="team-logo spurs">SAS</div>
-        <h3>San Antonio Spurs</h3>
-        <p>8-2 | Hot streak</p>
+        <h3>Team Gamma</h3>
+        <p>Record: 0-0</p>
       </div>
       <div class="team-card">
-        <div class="team-logo thunder">OKC</div>
-        <h3>Oklahoma City Thunder</h3>
-        <p>8-2 | Championship contenders</p>
+        <h3>Team Delta</h3>
+        <p>Record: 0-0</p>
       </div>
     </div>
+    <p class="note">Custom teams coming soon. Add your squads!</p>
   </section>
 
   <section id="players" class="section dark">
-    <h2>Star Players</h2>
+    <h2>Featured Players</h2>
     <div class="players-grid">
       <div class="player-card">
-        <h3>Luka Dončić</h3>
-        <p>Los Angeles Lakers</p>
-        <span>Point Guard</span>
+        <h3>Player One</h3>
+        <p>Team Alpha</p>
+        <span>Guard</span>
       </div>
       <div class="player-card">
-        <h3>Jalen Brunson</h3>
-        <p>New York Knicks</p>
-        <span>Point Guard</span>
+        <h3>Player Two</h3>
+        <p>Team Beta</p>
+        <span>Forward</span>
       </div>
       <div class="player-card">
-        <h3>Victor Wembanyama</h3>
-        <p>San Antonio Spurs</p>
+        <h3>Player Three</h3>
+        <p>Team Gamma</p>
         <span>Center</span>
       </div>
       <div class="player-card">
-        <h3>Shai Gilgeous-Alexander</h3>
-        <p>Oklahoma City Thunder</p>
-        <span>Shooting Guard</span>
+        <h3>Player Four</h3>
+        <p>Team Delta</p>
+        <span>Guard</span>
       </div>
     </div>
   </section>
 
-  <section id="news" class="section">
-    <h2>Latest News</h2>
+  <section id="standings" class="section">
+    <h2>Standings</h2>
+    <div class="standings">
+      <table>
+        <thead>
+          <tr><th>Rank</th><th>Team</th><th>W</th><th>L</th><th>PCT</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Team Alpha</td><td>0</td><td>0</td><td>.000</td></tr>
+          <tr><td>2</td><td>Team Beta</td><td>0</td><td>0</td><td>.000</td></tr>
+          <tr><td>3</td><td>Team Gamma</td><td>0</td><td>0</td><td>.000</td></tr>
+          <tr><td>4</td><td>Team Delta</td><td>0</td><td>0</td><td>.000</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="news" class="section dark">
+    <h2>League News</h2>
     <div class="news-list">
       <article>
-        <h3>Sixers and Lakers flying high in early 2026-27 rankings</h3>
-        <p>Philadelphia and LA lead their conferences after strong starts. Spurs and Thunder gaining momentum.</p>
+        <h3>JBA Season Kicks Off</h3>
+        <p>The custom league is ready for action. Stay tuned for matchups and results.</p>
       </article>
       <article>
-        <h3>New York Knicks defending champions open season strong</h3>
-        <p>Jalen Brunson and company look to repeat after capturing the title.</p>
-      </article>
-      <article>
-        <h3>Injuries shaping early season storylines</h3>
-        <p>Several contenders dealing with key absences as the season unfolds.</p>
+        <h3>New Teams Forming</h3>
+        <p>Join the JBA and compete in this modern basketball league.</p>
       </article>
     </div>
   </section>
 
   <footer>
-    <p>&copy; 2026 Hoops Central. Built with passion for the game.</p>
-    <p>Deployed on Vercel from GitHub.</p>
+    <p>&copy; 2026 JBA Custom Basketball League.</p>
+    <p>Built for the game.</p>
   </footer>
 
   <script src="script.js"></script>
