@@ -36,11 +36,11 @@ nav {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-family: 'Oswald', sans-serif;
-  font-size: 1.35rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #fff;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .logo img {
@@ -109,15 +109,16 @@ nav a:hover {
 }
 
 .hero-content h1 {
-  font-family: 'Oswald', sans-serif;
-  font-size: 3.8rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 3.2rem;
+  font-weight: 700;
   margin-bottom: 1rem;
   background: linear-gradient(135deg, #c026d3 0%, #ec4899 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  letter-spacing: 2px;
-  line-height: 1.1;
+  letter-spacing: 0.5px;
+  line-height: 1.15;
 }
 
 .hero-content p {
@@ -162,8 +163,9 @@ nav a:hover {
 }
 
 h2 {
-  font-family: 'Oswald', sans-serif;
-  font-size: 2.8rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 2.4rem;
+  font-weight: 700;
   text-align: center;
   margin-bottom: 3rem;
   background: linear-gradient(135deg, #c026d3, #ec4899);
@@ -194,8 +196,9 @@ h2 {
 }
 
 .player-card h3, .team-card h3 {
-  font-family: 'Oswald', sans-serif;
-  font-size: 1.6rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 600;
   margin-bottom: 0.5rem;
   color: #fff;
 }
@@ -255,6 +258,7 @@ article {
 article h3 {
   margin-bottom: 0.5rem;
   font-size: 1.3rem;
+  font-weight: 600;
   color: #fff;
 }
 
@@ -268,7 +272,7 @@ footer {
 
 @media (max-width: 768px) {
   .hero-content h1 {
-    font-size: 2.4rem;
+    font-size: 2.1rem;
   }
   .hero-logo {
     height: 110px;
@@ -279,7 +283,7 @@ footer {
     font-size: 0.9rem;
   }
   .logo {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
   .logo img {
     height: 42px;
