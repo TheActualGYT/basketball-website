@@ -1062,6 +1062,34 @@ article h3 {
 
 
 
+
+.reg-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.reg-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("logo-strip.png");
+  background-repeat: repeat;
+  background-size: 1840px 184px;
+  animation: logoDrift 42s linear infinite;
+  pointer-events: none;
+}
+
+.reg-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes logoDrift {
+  from { background-position: 0 0; }
+  to { background-position: -1840px 0; }
+}
+
+
 .reg-copy {
   text-align: center;
   color: #ededed;
