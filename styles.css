@@ -891,8 +891,8 @@ article h3 {
 }
 
 .conf-board h3 img {
-  height: 22px;
-  width: auto;
+  width: 26px;
+  height: 26px;
   object-fit: contain;
   flex: 0 0 auto;
 }
@@ -955,13 +955,21 @@ article h3 {
   white-space: nowrap;
 }
 
-.mark {
+.mark,
+.team-logo {
   flex: 0 0 auto;
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
+}
+
+.mark {
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.22);
   background: rgba(0, 0, 0, 0.25);
+}
+
+.team-logo {
+  object-fit: contain;
 }
 
 .score-game {
