@@ -6,6 +6,26 @@
   <title>Junior Basketball Association | JBA</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      function signedIn(user) {
+        return !!(user && user.serverChecked && (user.username || user.name));
+      }
+      try {
+        var saved = JSON.parse(localStorage.getItem("jba-discord") || "null");
+        if (signedIn(saved)) {
+          location.replace("home.html");
+          return;
+        }
+      } catch (err) {}
+      var match = document.cookie.match(/(?:^|; )jba_user=([^;]+)/);
+      if (!match) return;
+      try {
+        var user = JSON.parse(atob(decodeURIComponent(match[1])));
+        if (signedIn(user)) location.replace("home.html");
+      } catch (err) {}
+    })();
+  </script>
 </head>
 <body class="page-start">
   <section id="home" class="hero">

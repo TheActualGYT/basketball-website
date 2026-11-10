@@ -138,6 +138,7 @@ if (loginBtn) {
       location.href = url.toString();
       return;
     }
+    const started = Date.now();
     const watch = setInterval(function () {
       const cookieUser = userFromCookie();
       if (verifiedUser(cookieUser)) {
