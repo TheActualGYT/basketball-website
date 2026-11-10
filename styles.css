@@ -42,6 +42,7 @@ body::after {
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: contain;
+  opacity: 0.55;
 }
 
 body::before {
@@ -869,10 +870,21 @@ article h3 {
   margin-top: 0.2rem;
 }
 
-.team-tag img {
+.team-tag img,
+.abbr-logo {
   width: 13px;
   height: 13px;
   object-fit: contain;
+}
+
+.abbr-logo {
+  display: inline-block;
+}
+
+.leader-feature .empty,
+.leader-rest .empty {
+  color: #6f6f6f;
+  font-weight: 600;
 }
 
 .score-game .final {
