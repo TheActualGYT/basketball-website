@@ -616,11 +616,15 @@ article h3 {
 
 .score-game .final {
   grid-column: 1 / -1;
-  color: #8d8d8d;
+  color: #d7d7d7;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.03em;
   margin-bottom: 0.1rem;
+}
+
+.final-meta {
+  opacity: 0.5;
 }
 
 .standings-mini {
@@ -1027,7 +1031,7 @@ article h3 {
 .team-logo,
 .team-tag img {
   object-fit: contain;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 2px rgba(0, 0, 0, 0.65));
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 1px rgba(0, 0, 0, 0.32));
 }
 
 .score-game {
@@ -1055,13 +1059,17 @@ article h3 {
 }
 
 .reg-link {
-  display: flex;
-  width: 10.6rem;
+  display: block;
+  width: fit-content;
+  max-width: 16rem;
   min-width: 0;
-  height: 2.7rem;
-  margin: 0.2rem auto 0;
-  padding: 0 0.7rem;
+  height: auto;
+  margin: 0.45rem auto 0;
+  padding: 0.7rem 1.15rem;
   font-size: 0.86rem;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
 }
 
 
