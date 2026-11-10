@@ -286,7 +286,32 @@ function refreshDiscordAvatars() {
     .catch(function () {});
 }
 
+function markNav() {
+  const file = (location.pathname.split("/").pop() || "home.html").toLowerCase();
+  const groups = {
+    "home.html": ["home"],
+    "rules.html": ["league", "rules"],
+    "teams.html": ["league", "teams"],
+    "players.html": ["league", "players"],
+    "staff.html": ["league", "staff"],
+    "standings.html": ["standings", "divisional"],
+    "power-rankings.html": ["standings", "power"],
+    "playoff.html": ["standings", "playoff"],
+    "team-stats.html": ["statistics", "team-stats"],
+    "player-stats.html": ["statistics", "player-stats"],
+    "records.html": ["statistics", "records"],
+    "mvp.html": ["awards", "mvp"],
+    "all-stars.html": ["awards", "all-stars"],
+    "hall-of-fame.html": ["awards", "hall"]
+  };
+  const keys = groups[file] || (file === "news.html" ? ["news"] : []);
+  document.querySelectorAll("[data-nav]").forEach(function (link) {
+    if (keys.indexOf(link.getAttribute("data-nav")) !== -1) link.classList.add("active");
+  });
+}
+
 showNavUser();
 fillMoistbagleAvatar();
 refreshDiscordAvatars();
+markNav();
 
