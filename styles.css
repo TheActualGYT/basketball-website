@@ -33,7 +33,7 @@ body::before,
 body::after {
   content: "";
   position: fixed;
-  bottom: 0;
+  bottom: -42px;
   width: min(280px, 34vw);
   height: min(460px, 62vh);
   pointer-events: none;
@@ -45,13 +45,13 @@ body::after {
 }
 
 body::before {
-  left: 0;
+  left: 36px;
   transform: scaleX(-1);
   transform-origin: bottom center;
 }
 
 body::after {
-  right: 0;
+  right: 36px;
 }
 
 header,
