@@ -15,7 +15,6 @@ body {
   min-height: 100vh;
   background-color: #1c1c1c;
   background-image:
-    url("palms.svg"),
     radial-gradient(circle at 30% 40%, rgba(192, 38, 211, 0.2), transparent 46%),
     radial-gradient(circle at 70% 60%, rgba(236, 72, 153, 0.16), transparent 46%),
     linear-gradient(145deg, #242424 0%, #342838 42%, #202020 100%);
@@ -28,6 +27,28 @@ body.page-start {
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 230px;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("palm.png");
+  background-repeat: repeat-x;
+  background-position: center bottom;
+  background-size: 210px auto;
+}
+
+header,
+main,
+.hero {
+  position: relative;
+  z-index: 1;
 }
 
 header {
@@ -403,17 +424,17 @@ article h3 {
 .home-board {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 1.1rem 2rem 2.6rem;
+  padding: 1.35rem 2rem 8rem;
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.8fr);
-  gap: 0.85rem 1rem;
+  gap: 2.1rem 1.8rem;
   align-items: start;
 }
 
 .home-main {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 2.1rem;
   min-width: 0;
 }
 
@@ -435,7 +456,7 @@ article h3 {
 .home-side {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 2.1rem;
   min-width: 0;
 }
 
@@ -802,7 +823,7 @@ article h3 {
 
 
 .home-side {
-  gap: 0.85rem;
+  gap: 2.1rem;
 }
 
 .conf-board {
