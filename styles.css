@@ -544,6 +544,141 @@ article h3 {
   color: #fff;
 }
 
+.directory {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2.6rem 2rem 4.5rem;
+}
+
+.directory > h2 {
+  margin: 0 0 1.25rem;
+  text-align: center;
+  font-size: 1.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: none;
+  -webkit-text-fill-color: #fff;
+  animation: titlePulse 3.6s ease-in-out infinite;
+}
+
+.dir-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.dir-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 228px;
+  padding: 0.85rem 0.9rem 0.7rem;
+  text-align: left;
+  border-image: none;
+}
+
+.dir-card:hover {
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.55), 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.dir-top {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.7rem;
+}
+
+.dir-top img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
+}
+
+.dir-top h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.02rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.15;
+}
+
+.dir-top sup {
+  margin-left: 0.15rem;
+  font-size: 0.62rem;
+  color: #cfcfcf;
+}
+
+.dir-top span {
+  display: block;
+  margin-top: 0.12rem;
+  color: #9a9a9a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.dir-card p {
+  margin: 0;
+  color: #d7d7d7;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.dir-city {
+  margin-bottom: 0.35rem !important;
+}
+
+.dir-colors {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.28rem;
+  margin-top: auto;
+  padding-top: 0.7rem;
+}
+
+.dir-colors i {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.dir-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 0.45rem;
+}
+
+.dir-foot a {
+  color: #eee;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.dir-foot a:hover {
+  color: #fff;
+}
+
+.dir-foot button {
+  border: 0;
+  background: none;
+  color: #f0a0c8;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 0.15rem;
+}
+
+.dir-delete {
+  color: #ff5d7a !important;
+}
+
 
 .home-board {
   max-width: 1400px;
@@ -1256,10 +1391,7 @@ article h3 {
     height: 42px;
     width: 42px;
   }
-  .home-board,
-  .score-list,
-  .news-secondary,
-  .conf-board {
+  .dir-grid {
     grid-template-columns: 1fr;
   }
   .conf-board {
