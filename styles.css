@@ -1391,6 +1391,10 @@ article h3 {
     height: 42px;
     width: 42px;
   }
+  .home-board,
+  .score-list,
+  .news-secondary,
+  .conf-board,
   .dir-grid {
     grid-template-columns: 1fr;
   }
