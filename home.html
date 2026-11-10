@@ -32,21 +32,21 @@
       <section class="home-block">
         <h2>News</h2>
         <div class="panel" aria-label="News">
-          <div class="news-list-home">
-            <article class="news-item">
-              <time>Nov 9, 2026</time>
-              <h3>Junior Basketball Association season is underway</h3>
-              <p>Opening week is in the books. Check the latest finals and the first league-leader board.</p>
-            </article>
-            <article class="news-item">
+          <article class="news-feature">
+            <div class="news-meta"><span>League</span><time>Nov 9, 2026</time></div>
+            <h3>Junior Basketball Association season is underway</h3>
+            <p>Opening week is in the books. The first finals, standings, and league leaders are up.</p>
+          </article>
+          <div class="news-secondary">
+            <article>
               <time>Nov 7, 2026</time>
               <h3>Alpha holds off Beta in a tight finish</h3>
-              <p>Team Alpha closed the fourth on a 12-4 run to take the league's latest one-possession game.</p>
+              <p>A 12-4 close in the fourth decided the latest one-possession game.</p>
             </article>
-            <article class="news-item">
+            <article>
               <time>Nov 5, 2026</time>
               <h3>New teams can still enter the league</h3>
-              <p>Squads are forming now. Rosters and full stats will live on the team and player pages.</p>
+              <p>Rosters and full stats will live on the team and player pages.</p>
             </article>
           </div>
           <a class="panel-more" href="news.html">All news</a>
@@ -72,6 +72,11 @@
               <span class="win">Team Beta</span><strong class="win">81</strong>
               <span>Team Gamma</span><strong>77</strong>
             </article>
+            <article class="score-game">
+              <span class="final">FINAL</span>
+              <span class="win">Team Alpha</span><strong class="win">88</strong>
+              <span>Team Delta</span><strong>80</strong>
+            </article>
           </div>
         </div>
       </section>
@@ -83,13 +88,13 @@
         <div class="panel" aria-label="Standings">
           <table class="standings-mini">
             <thead>
-              <tr><th></th><th>Team</th><th>W</th><th>L</th><th>PCT</th></tr>
+              <tr><th></th><th>Team</th><th>W</th><th>L</th><th>PCT</th><th>GB</th></tr>
             </thead>
             <tbody>
-              <tr><td>1</td><td>Team Alpha</td><td>4</td><td>1</td><td>.800</td></tr>
-              <tr><td>2</td><td>Team Beta</td><td>3</td><td>2</td><td>.600</td></tr>
-              <tr><td>3</td><td>Team Gamma</td><td>2</td><td>3</td><td>.400</td></tr>
-              <tr><td>4</td><td>Team Delta</td><td>1</td><td>4</td><td>.200</td></tr>
+              <tr><td>1</td><td>Team Alpha</td><td>4</td><td>1</td><td>.800</td><td>-</td></tr>
+              <tr><td>2</td><td>Team Beta</td><td>3</td><td>2</td><td>.600</td><td>1.0</td></tr>
+              <tr><td>3</td><td>Team Gamma</td><td>2</td><td>3</td><td>.400</td><td>2.0</td></tr>
+              <tr><td>4</td><td>Team Delta</td><td>1</td><td>4</td><td>.200</td><td>3.0</td></tr>
             </tbody>
           </table>
           <a class="panel-more" href="standings.html">Full table</a>
@@ -99,9 +104,8 @@
       <section class="home-block">
         <h2>League Leaders</h2>
         <div class="leader-stack">
-          <section class="home-block">
-            <h2>Points Per Game</h2>
-            <div class="panel">
+          <div class="panel leader-card">
+            <h3>Points Per Game</h3>
               <div class="leader-feature">
                 <div class="team-logo-slot" aria-hidden="true"></div>
                 <div class="leader-feature-name"><b>Jordan<br>Hale</b><small>ALP</small></div>
@@ -113,11 +117,9 @@
                 <li><span>4</span><span>Evan Brooks</span><span class="abbr">ALP</span><span>16.2</span></li>
                 <li><span>5</span><span>Malik Reed</span><span class="abbr">GAM</span><span>14.7</span></li>
               </ol>
-            </div>
-          </section>
-          <section class="home-block">
-            <h2>Rebounds Per Game</h2>
-            <div class="panel">
+          </div>
+          <div class="panel leader-card">
+            <h3>Rebounds Per Game</h3>
               <div class="leader-feature">
                 <div class="team-logo-slot" aria-hidden="true"></div>
                 <div class="leader-feature-name"><b>Chris<br>Nguyen</b><small>DEL</small></div>
@@ -129,11 +131,9 @@
                 <li><span>4</span><span>Miles Grant</span><span class="abbr">BET</span><span>6.4</span></li>
                 <li><span>5</span><span>-</span><span class="abbr"></span><span>-</span></li>
               </ol>
-            </div>
-          </section>
-          <section class="home-block">
-            <h2>Assists Per Game</h2>
-            <div class="panel">
+          </div>
+          <div class="panel leader-card">
+            <h3>Assists Per Game</h3>
               <div class="leader-feature">
                 <div class="team-logo-slot" aria-hidden="true"></div>
                 <div class="leader-feature-name"><b>Evan<br>Brooks</b><small>ALP</small></div>
@@ -145,11 +145,9 @@
                 <li><span>4</span><span>Jordan Hale</span><span class="abbr">ALP</span><span>4.8</span></li>
                 <li><span>5</span><span>Chris Nguyen</span><span class="abbr">DEL</span><span>3.2</span></li>
               </ol>
-            </div>
-          </section>
-          <section class="home-block">
-            <h2>GmSc</h2>
-            <div class="panel">
+          </div>
+          <div class="panel leader-card">
+            <h3>GmSc</h3>
               <div class="leader-feature">
                 <div class="team-logo-slot" aria-hidden="true"></div>
                 <div class="leader-feature-name"><b>Jordan<br>Hale</b><small>ALP</small></div>
@@ -161,8 +159,7 @@
                 <li><span>4</span><span>Andre Cole</span><span class="abbr">GAM</span><span>15.2</span></li>
                 <li><span>5</span><span>Evan Brooks</span><span class="abbr">ALP</span><span>13.8</span></li>
               </ol>
-            </div>
-          </section>
+          </div>
         </div>
       </section>
     </div>

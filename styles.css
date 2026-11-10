@@ -473,52 +473,79 @@ article h3 {
   color: #fff;
 }
 
-.news-list-home {
-  display: flex;
-  flex-direction: column;
-}
-
-.news-item {
-  padding: 0.85rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.news-item:first-child {
-  padding-top: 0.15rem;
-}
-
-.news-item:last-child {
-  border-bottom: 0;
-  padding-bottom: 0.15rem;
-}
-
-.news-item h3 {
+.news-feature h3,
+.news-secondary h3 {
   color: #fff;
-  font-size: 1.02rem;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  margin-bottom: 0.28rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-.news-item p {
-  color: #bdbdbd;
-  font-size: 0.92rem;
+.news-feature {
+  padding-bottom: 1.05rem;
+  margin-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.news-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.55rem;
+}
+
+.news-meta span {
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  padding: 0.22rem 0.55rem;
+}
+
+.news-meta time,
+.news-secondary time {
+  color: #9a9a9a;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.news-feature h3 {
+  font-size: 1.45rem;
+  line-height: 1.2;
+  margin-bottom: 0.45rem;
+}
+
+.news-feature p,
+.news-secondary p {
+  color: #c4c4c4;
+  font-size: 0.95rem;
   line-height: 1.45;
 }
 
-.news-item time {
-  display: block;
-  color: #9a9a9a;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 0.35rem;
+.news-secondary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+  padding-top: 0.85rem;
+}
+
+.news-secondary article {
+  min-width: 0;
+}
+
+.news-secondary h3 {
+  font-size: 1.02rem;
+  line-height: 1.3;
+  margin: 0.3rem 0 0.35rem;
 }
 
 .score-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
 }
 
@@ -760,6 +787,18 @@ article h3 {
 }
 
 
+
+.leader-card > h3 {
+  margin: 0 0 0.85rem;
+  text-align: center;
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  animation: none;
+  text-shadow: none;
+}
+
 @media (max-width: 768px) {
   .hero-content h1 {
     font-size: 2.1rem;
@@ -788,7 +827,9 @@ article h3 {
     height: 42px;
     width: 42px;
   }
-  .home-board {
+  .home-board,
+  .score-list,
+  .news-secondary {
     grid-template-columns: 1fr;
   }
 }
