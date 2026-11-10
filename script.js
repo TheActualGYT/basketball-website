@@ -25,34 +25,36 @@ function userFromCookie() {
   const match = document.cookie.match(/(?:^|; )jba_user=([^;]+)/);
   if (!match || !match[1]) return null;
   try {
-    return JSON.parse(atob(decodeURIComponent(match[1])));
+    const user = JSON.parse(atob(decodeURIComponent(match[1])));
+    if (!user || !user.serverChecked) return null;
+    return user;
   } catch (err) {
     return null;
   }
 }
 
+function verifiedUser(user) {
+  return !!(user && user.serverChecked && (user.username || user.name));
+}
+
 const loginBtn = document.getElementById("login-btn");
 const loginNote = document.getElementById("login-note");
 if (loginBtn) {
-  const saved = localStorage.getItem("jba-discord");
   const cookieUser = userFromCookie();
-  if (cookieUser && cookieUser.username) {
-    localStorage.setItem("jba-discord", JSON.stringify(cookieUser));
-    loginBtn.textContent = cookieUser.username;
-  } else if (saved) {
-    try {
-      const user = JSON.parse(saved);
-      loginBtn.textContent = user.username || user.name || "Discord connected";
-    } catch (err) {
-      localStorage.removeItem("jba-discord");
-    }
+  let savedUser = null;
+  try { savedUser = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
+  if (!verifiedUser(savedUser)) localStorage.removeItem("jba-discord");
+  const existing = verifiedUser(cookieUser) ? cookieUser : (verifiedUser(savedUser) ? savedUser : null);
+  if (existing) {
+    localStorage.setItem("jba-discord", JSON.stringify(existing));
+    loginBtn.textContent = existing.username || existing.name;
   }
 
   function applyDiscordUser(user) {
-    if (!user || user.needsJoin) return;
+    if (!verifiedUser(user)) return;
     localStorage.setItem("jba-discord", JSON.stringify(user));
     localStorage.removeItem("jba-discord-status");
-    loginBtn.textContent = user.username || user.name || "Discord connected";
+    loginBtn.textContent = user.username || user.name;
     if (loginNote) loginNote.hidden = true;
     if (typeof showNavUser === "function") showNavUser();
   }
@@ -139,14 +141,15 @@ if (loginBtn) {
     const started = Date.now();
     const watch = setInterval(function () {
       const cookieUser = userFromCookie();
-      if (cookieUser && cookieUser.username) {
+      if (cookieUser && cookieUser.checkedAt >= started) {
         applyDiscordUser(cookieUser);
         clearInterval(watch);
         return;
       }
-      const saved = localStorage.getItem("jba-discord");
-      if (saved) {
-        try { applyDiscordUser(JSON.parse(saved)); } catch (err) {}
+      let savedUser = null;
+      try { savedUser = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
+      if (verifiedUser(savedUser) && savedUser.checkedAt >= started) {
+        applyDiscordUser(savedUser);
         clearInterval(watch);
         return;
       }
@@ -169,7 +172,7 @@ function showNavUser() {
   const el = document.getElementById("nav-user");
   if (!el) return;
   const user = readDiscordUser();
-  const label = user && (user.username || user.name);
+  const label = user && user.serverChecked && (user.username || user.name);
   if (!label) {
     el.hidden = true;
     el.textContent = "";

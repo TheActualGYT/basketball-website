@@ -6,7 +6,9 @@ function userCookie(user) {
   const payload = Buffer.from(JSON.stringify({
     id: user.id,
     username: user.username,
-    name: user.global_name || user.username
+    name: user.global_name || user.username,
+    serverChecked: true,
+    checkedAt: Date.now()
   })).toString("base64");
   return "jba_user=" + payload + "; Path=/; Max-Age=2592000; SameSite=Lax; Secure";
 }
@@ -101,7 +103,9 @@ export default async function handler(req, res) {
     id: user.id,
     username: user.username,
     name: user.global_name || user.username,
-    avatar: user.avatar
+    avatar: user.avatar,
+    serverChecked: true,
+    checkedAt: Date.now()
   };
   res.setHeader("Set-Cookie", userCookie(user));
   res.status(200).json(profile);
