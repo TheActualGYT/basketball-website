@@ -47,7 +47,8 @@ if (loginBtn) {
   const existing = verifiedUser(cookieUser) ? cookieUser : (verifiedUser(savedUser) ? savedUser : null);
   if (existing) {
     localStorage.setItem("jba-discord", JSON.stringify(existing));
-    loginBtn.textContent = existing.username || existing.name;
+    location.replace("home.html");
+    return;
   }
 
   function applyDiscordUser(user) {
@@ -56,7 +57,7 @@ if (loginBtn) {
     localStorage.removeItem("jba-discord-status");
     loginBtn.textContent = user.username || user.name;
     if (loginNote) loginNote.hidden = true;
-    if (typeof showNavUser === "function") showNavUser();
+    location.replace("home.html");
   }
 
   function showLoginStatus(info) {
