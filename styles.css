@@ -795,6 +795,8 @@ article h3 {
   border-radius: 50%;
   background: #2a2a2a center/cover no-repeat;
   border: 1px solid rgba(255, 255, 255, 0.2);
+  object-fit: cover;
+  display: block;
 }
 
 .leader-rest .discord-pfp {
