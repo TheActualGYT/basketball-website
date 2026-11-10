@@ -30,26 +30,15 @@
   <main class="home-board">
     <div class="home-main">
       <section class="home-block">
-        <h2>News</h2>
-        <div class="panel" aria-label="News">
-          <article class="news-feature">
-            <div class="news-meta"><span>League</span><time>Nov 9, 2026</time></div>
-            <h3>Junior Basketball Association season is underway</h3>
-            <p>Opening week is in the books. The first finals, standings, and league leaders are up.</p>
-          </article>
-          <div class="news-secondary">
-            <article>
-              <time>Nov 7, 2026</time>
-              <h3>Alpha holds off Beta in a tight finish</h3>
-              <p>A 12-4 close in the fourth decided the latest one-possession game.</p>
-            </article>
-            <article>
-              <time>Nov 5, 2026</time>
-              <h3>New teams can still enter the league</h3>
-              <p>Rosters and full stats will live on the team and player pages.</p>
-            </article>
-          </div>
-          <a class="panel-more" href="news.html">All news</a>
+        <h2>Registration</h2>
+        <div class="panel" aria-label="Registration">
+          <p class="reg-copy">Teams are eligible for registration. Submit an application form.</p>
+          <form class="reg-form" id="reg-form">
+            <label>Team name<input type="text" name="team" required></label>
+            <label>Discord<input type="text" name="discord" required></label>
+            <button class="cta-btn" type="submit">Submit application</button>
+            <p class="reg-note" id="reg-note" hidden>Application submitted.</p>
+          </form>
         </div>
       </section>
 
@@ -57,10 +46,10 @@
         <h2>Standings</h2>
         <div class="panel" aria-label="Standings">
           <div class="conf-board">
-            <section><h3>ACC</h3><table class="conf-table"><thead><tr><th>RK</th><th>TEAM</th><th>REC</th><th>W%</th><th>GB</th></tr></thead><tbody><tr><td>1</td><td><div class="conf-team"><i class="mark"></i><span>Duke Blue Devils</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>2</td><td><div class="conf-team"><i class="mark"></i><span>Florida State Seminoles</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>3</td><td><div class="conf-team"><i class="mark"></i><span>Miami Hurricanes</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>4</td><td><div class="conf-team"><i class="mark"></i><span>North Carolina Tar Heels</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>5</td><td><div class="conf-team"><i class="mark"></i><span>Virginia Cavaliers</span></div></td><td>0-0</td><td>-</td><td>-</td></tr></tbody></table></section>
-            <section><h3>BIG-10</h3><table class="conf-table"><thead><tr><th>RK</th><th>TEAM</th><th>REC</th><th>W%</th><th>GB</th></tr></thead><tbody><tr><td>1</td><td><div class="conf-team"><i class="mark"></i><span>Michigan Wolverines</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>2</td><td><div class="conf-team"><i class="mark"></i><span>Ohio State Buckeyes</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>3</td><td><div class="conf-team"><i class="mark"></i><span>Oregon Ducks</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>4</td><td><div class="conf-team"><i class="mark"></i><span>Purdue Boilermakers</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>5</td><td><div class="conf-team"><i class="mark"></i><span>UCLA Bruins</span></div></td><td>0-0</td><td>-</td><td>-</td></tr></tbody></table></section>
-            <section><h3>BIG-12</h3><table class="conf-table"><thead><tr><th>RK</th><th>TEAM</th><th>REC</th><th>W%</th><th>GB</th></tr></thead><tbody><tr><td>1</td><td><div class="conf-team"><i class="mark"></i><span>Arizona Wildcats</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>2</td><td><div class="conf-team"><i class="mark"></i><span>Baylor Bears</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>3</td><td><div class="conf-team"><i class="mark"></i><span>Houston Cougars</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>4</td><td><div class="conf-team"><i class="mark"></i><span>Kansas Jayhawks</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>5</td><td><div class="conf-team"><i class="mark"></i><span>Texas Tech Red Raiders</span></div></td><td>0-0</td><td>-</td><td>-</td></tr></tbody></table></section>
-            <section><h3>SEC</h3><table class="conf-table"><thead><tr><th>RK</th><th>TEAM</th><th>REC</th><th>W%</th><th>GB</th></tr></thead><tbody><tr><td>1</td><td><div class="conf-team"><i class="mark"></i><span>Florida Gators</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>2</td><td><div class="conf-team"><i class="mark"></i><span>Georgia Bulldogs</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>3</td><td><div class="conf-team"><i class="mark"></i><span>Kentucky Wildcats</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>4</td><td><div class="conf-team"><i class="mark"></i><span>LSU Tigers</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>5</td><td><div class="conf-team"><i class="mark"></i><span>Tennessee Volunteers</span></div></td><td>0-0</td><td>-</td><td>-</td></tr></tbody></table></section>
+            <section><h3>ACC</h3><table class="conf-table"><thead><tr><th>RK</th><th>TEAM</th><th>REC</th><th>W%</th><th>GB</th></tr></thead><tbody><tr><td>1</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>2</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>3</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>4</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>5</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr></tbody></table></section>
+            <section><h3>BIG-10</h3><table class="conf-table"><thead><tr><th>RK</th><th>TEAM</th><th>REC</th><th>W%</th><th>GB</th></tr></thead><tbody><tr><td>1</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>2</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>3</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>4</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>5</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr></tbody></table></section>
+            <section><h3>BIG-12</h3><table class="conf-table"><thead><tr><th>RK</th><th>TEAM</th><th>REC</th><th>W%</th><th>GB</th></tr></thead><tbody><tr><td>1</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>2</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>3</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>4</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>5</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr></tbody></table></section>
+            <section><h3>SEC</h3><table class="conf-table"><thead><tr><th>RK</th><th>TEAM</th><th>REC</th><th>W%</th><th>GB</th></tr></thead><tbody><tr><td>1</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>2</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>3</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>4</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr><tr><td>5</td><td><div class="conf-team"><i class="mark"></i><span>N/A</span></div></td><td>0-0</td><td>-</td><td>-</td></tr></tbody></table></section>
           </div>
         </div>
       </section>
@@ -71,23 +60,23 @@
           <div class="score-list">
             <article class="score-game">
               <span class="final">FINAL</span>
-              <span class="win">Team Alpha</span><strong class="win">78</strong>
-              <span>Team Beta</span><strong>71</strong>
+              <span>N/A</span><strong>N/A</strong>
+              <span>N/A</span><strong>N/A</strong>
             </article>
             <article class="score-game">
               <span class="final">FINAL</span>
-              <span class="win">Team Delta</span><strong class="win">70</strong>
-              <span>Team Gamma</span><strong>64</strong>
+              <span>N/A</span><strong>N/A</strong>
+              <span>N/A</span><strong>N/A</strong>
             </article>
             <article class="score-game">
               <span class="final">FINAL</span>
-              <span class="win">Team Beta</span><strong class="win">81</strong>
-              <span>Team Gamma</span><strong>77</strong>
+              <span>N/A</span><strong>N/A</strong>
+              <span>N/A</span><strong>N/A</strong>
             </article>
             <article class="score-game">
               <span class="final">FINAL</span>
-              <span class="win">Team Alpha</span><strong class="win">88</strong>
-              <span>Team Delta</span><strong>80</strong>
+              <span>N/A</span><strong>N/A</strong>
+              <span>N/A</span><strong>N/A</strong>
             </article>
           </div>
         </div>
