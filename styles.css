@@ -29,19 +29,29 @@ body.page-start {
   overflow: hidden;
 }
 
+body::before,
 body::after {
   content: "";
   position: fixed;
-  left: 0;
-  right: 0;
   bottom: 0;
-  height: 230px;
+  width: min(280px, 34vw);
+  height: min(460px, 62vh);
   pointer-events: none;
   z-index: 0;
   background-image: url("palm.png");
-  background-repeat: repeat-x;
+  background-repeat: no-repeat;
   background-position: center bottom;
-  background-size: 210px auto;
+  background-size: 100% 100%;
+}
+
+body::before {
+  left: 0;
+  transform: scaleX(-1);
+  transform-origin: bottom center;
+}
+
+body::after {
+  right: 0;
 }
 
 header,
