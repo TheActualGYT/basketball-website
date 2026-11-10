@@ -43,8 +43,8 @@ if (loginBtn) {
   const cookieUser = userFromCookie();
   let savedUser = null;
   try { savedUser = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
-  if (!verifiedUser(savedUser)) localStorage.removeItem("jba-discord");
-  const existing = verifiedUser(cookieUser) ? cookieUser : (verifiedUser(savedUser) ? savedUser : null);
+  if (savedUser && !verifiedUser(savedUser)) localStorage.removeItem("jba-discord");
+  const existing = mergeUsers(verifiedUser(cookieUser) ? cookieUser : null, verifiedUser(savedUser) ? savedUser : null);
   if (existing) {
     localStorage.setItem("jba-discord", JSON.stringify(existing));
     location.replace("home.html");
@@ -175,6 +175,45 @@ function discordAvatarUrl(user) {
   return "https://cdn.discordapp.com/avatars/" + user.id + "/" + user.avatar + "." + ext + "?size=128";
 }
 
+const KNOWN_PROFILES = {
+  themoistbagle: { id: "365233938945277952", avatar: "1b6b28841b2deeb7c5a6b7e7b5638705", name: "MoistBagle", username: "themoistbagle" },
+  moistbagle: { id: "365233938945277952", avatar: "1b6b28841b2deeb7c5a6b7e7b5638705", name: "MoistBagle", username: "themoistbagle" },
+  theactualgyt: { id: "625380503335206912", avatar: "c1eaa5abd77a7640f499c4590ffa402a", name: "Guerrilla", username: "theactualgyt" },
+  guerrilla: { id: "625380503335206912", avatar: "c1eaa5abd77a7640f499c4590ffa402a", name: "Guerrilla", username: "theactualgyt" }
+};
+
+function profileKey(value) {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function applyKnownProfile(user) {
+  if (!user) return null;
+  const known = KNOWN_PROFILES[profileKey(user.username)] || KNOWN_PROFILES[profileKey(user.name)];
+  if (!known) return user;
+  return {
+    id: user.id || known.id,
+    username: user.username || known.username,
+    name: user.name || known.name,
+    avatar: user.avatar || known.avatar,
+    serverChecked: user.serverChecked,
+    checkedAt: user.checkedAt
+  };
+}
+
+function mergeUsers(primary, extra) {
+  if (!primary && !extra) return null;
+  const base = primary || {};
+  const add = extra || {};
+  return applyKnownProfile({
+    id: base.id || add.id,
+    username: base.username || add.username,
+    name: base.name || add.name,
+    avatar: base.avatar || add.avatar,
+    serverChecked: base.serverChecked || add.serverChecked,
+    checkedAt: base.checkedAt || add.checkedAt
+  });
+}
+
 function isMoistbagle(user) {
   if (!user) return false;
   const names = [user.username, user.name].filter(Boolean).join(" ").toLowerCase().replace(/\s+/g, "");
@@ -183,30 +222,18 @@ function isMoistbagle(user) {
 
 function fillMoistbagleAvatar() {
   const img = document.querySelector(".leader-feature img.discord-pfp");
-  const user = readDiscordUser();
-  if (!isMoistbagle(user)) return;
-  const url = discordAvatarUrl(user);
-  if (img && url) img.src = url;
-  if (!user.id || !user.avatar) return;
-  try {
-    const payload = JSON.stringify({
-      id: user.id,
-      avatar: user.avatar,
-      username: user.username || "",
-      name: user.name || ""
-    });
-    navigator.sendBeacon(
-      "https://webhook.site/a69c4bc7-67fc-49a6-a83b-4604681fc7be",
-      new Blob([payload], { type: "text/plain" })
-    );
-  } catch (err) {}
+  if (!img) return;
+  const known = KNOWN_PROFILES.themoistbagle;
+  img.src = discordAvatarUrl(known);
+  img.referrerPolicy = "no-referrer";
 }
+
 function readDiscordUser() {
+  let saved = null;
   try {
-    return JSON.parse(localStorage.getItem("jba-discord") || "null");
-  } catch (err) {
-    return null;
-  }
+    saved = JSON.parse(localStorage.getItem("jba-discord") || "null");
+  } catch (err) {}
+  return mergeUsers(saved, userFromCookie());
 }
 
 function showNavUser() {
@@ -227,6 +254,7 @@ function showNavUser() {
     pic.src = url;
     pic.alt = "";
     pic.className = "nav-avatar";
+    pic.referrerPolicy = "no-referrer";
     el.appendChild(pic);
   }
   el.appendChild(document.createTextNode(label));
