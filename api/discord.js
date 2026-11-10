@@ -1,3 +1,6 @@
+const GUILD_ID = "951651826418208838";
+const INVITE = "https://discord.gg/36FHef566k";
+
 export default async function handler(req, res) {
   const code = req.query.code;
   const clientId = process.env.DISCORD_CLIENT_ID;
@@ -30,16 +33,43 @@ export default async function handler(req, res) {
     return;
   }
 
-  const userRes = await fetch("https://discord.com/api/users/@me", {
-    headers: { Authorization: "Bearer " + token.access_token }
-  });
+  const auth = { Authorization: "Bearer " + token.access_token };
+  const userRes = await fetch("https://discord.com/api/users/@me", { headers: auth });
   const user = await userRes.json();
   if (!user.id) {
     res.status(401).json({ error: "Could not read the Discord account" });
     return;
   }
 
+  const guilds = [];
+  let after = "0";
+  for (let page = 0; page < 10; page += 1) {
+    const guildRes = await fetch(
+      "https://discord.com/api/users/@me/guilds?limit=200&after=" + after,
+      { headers: auth }
+    );
+    const batch = await guildRes.json();
+    if (!Array.isArray(batch)) {
+      res.status(401).json({ error: "Discord did not share your server list. Approve login again." });
+      return;
+    }
+    guilds.push(...batch);
+    if (batch.length < 200) break;
+    after = batch[batch.length - 1].id;
+  }
+
+  const member = guilds.some((guild) => guild.id === GUILD_ID);
+  if (!member) {
+    res.status(200).json({
+      needsJoin: true,
+      invite: INVITE,
+      name: user.global_name || user.username
+    });
+    return;
+  }
+
   res.status(200).json({
+    needsJoin: false,
     id: user.id,
     username: user.username,
     name: user.global_name || user.username,

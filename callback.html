@@ -10,27 +10,71 @@
 <body class="page-start">
   <section class="hero">
     <div class="hero-content">
-      <h1>Connecting Discord</h1>
+      <h1 id="title">Connecting Discord</h1>
       <p id="status">Finishing login…</p>
+      <div class="hero-actions" id="actions" hidden>
+        <a class="cta-btn" id="join-link" href="https://discord.gg/36FHef566k" target="_blank" rel="noopener">Join Server</a>
+        <button type="button" class="cta-btn" id="retry-btn">Try Again</button>
+      </div>
     </div>
   </section>
+  <script src="discord-config.js"></script>
   <script>
     const params = new URLSearchParams(location.search);
     const code = params.get("code");
     const err = params.get("error");
+    const title = document.getElementById("title");
     const status = document.getElementById("status");
+    const actions = document.getElementById("actions");
+
+    function finish(user) {
+      localStorage.setItem("jba-discord", JSON.stringify(user));
+      if (window.opener) {
+        window.opener.postMessage({ type: "jba-discord", user: user }, location.origin);
+        window.close();
+        return;
+      }
+      location.replace("index.html");
+    }
+
+    function requireJoin(invite) {
+      title.textContent = "Join the server";
+      status.textContent = "You have to join the JBA Discord before login can finish.";
+      document.getElementById("join-link").href = invite || "https://discord.gg/36FHef566k";
+      actions.hidden = false;
+    }
+
+    document.getElementById("retry-btn").addEventListener("click", function () {
+      const cfg = window.JBA_DISCORD || {};
+      if (!cfg.clientId) return;
+      const url = new URL("https://discord.com/oauth2/authorize");
+      url.searchParams.set("client_id", cfg.clientId);
+      url.searchParams.set("response_type", "code");
+      url.searchParams.set("scope", "identify guilds");
+      url.searchParams.set("redirect_uri", cfg.redirectUri);
+      url.searchParams.set("prompt", "consent");
+      location.href = url.toString();
+    });
+
     if (err || !code) {
+      title.textContent = "Login cancelled";
       status.textContent = "Discord login was cancelled.";
     } else {
       fetch("/api/discord?code=" + encodeURIComponent(code))
-        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (res) {
+          return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+        })
         .then(function (result) {
           if (!result.ok) throw new Error(result.data.error || "Discord login failed");
-          localStorage.setItem("jba-discord", JSON.stringify(result.data));
-          location.replace("index.html");
+          if (result.data.needsJoin) {
+            requireJoin(result.data.invite);
+            return;
+          }
+          finish(result.data);
         })
-        .catch(function () {
-          status.textContent = "Discord login could not be completed. Check the app credentials on Vercel.";
+        .catch(function (error) {
+          title.textContent = "Login failed";
+          status.textContent = error.message || "Discord login could not be completed.";
         });
     }
   </script>
