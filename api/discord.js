@@ -7,6 +7,7 @@ function userCookie(user) {
     id: user.id,
     username: user.username,
     name: user.global_name || user.username,
+    avatar: user.avatar || "",
     serverChecked: true,
     checkedAt: Date.now()
   })).toString("base64");

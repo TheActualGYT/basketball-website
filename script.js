@@ -161,6 +161,34 @@ if (loginBtn) {
 
 }
 
+function discordAvatarUrl(user) {
+  if (!user || !user.id) return "";
+  if (!user.avatar) {
+    try {
+      const index = Number((BigInt(user.id) >> 22n) % 6n);
+      return "https://cdn.discordapp.com/embed/avatars/" + index + ".png";
+    } catch (err) {
+      return "https://cdn.discordapp.com/embed/avatars/0.png";
+    }
+  }
+  const ext = String(user.avatar).indexOf("a_") === 0 ? "gif" : "png";
+  return "https://cdn.discordapp.com/avatars/" + user.id + "/" + user.avatar + "." + ext + "?size=128";
+}
+
+function isMoistbagle(user) {
+  if (!user) return false;
+  const names = [user.username, user.name].filter(Boolean).join(" ").toLowerCase().replace(/\s+/g, "");
+  return names.indexOf("moistbagle") !== -1;
+}
+
+function fillMoistbagleAvatar() {
+  const img = document.querySelector(".leader-feature img.discord-pfp");
+  if (!img) return;
+  const user = readDiscordUser();
+  if (!isMoistbagle(user)) return;
+  const url = discordAvatarUrl(user);
+  if (url) img.src = url;
+}
 function readDiscordUser() {
   try {
     return JSON.parse(localStorage.getItem("jba-discord") || "null");
@@ -180,8 +208,18 @@ function showNavUser() {
     return;
   }
   el.hidden = false;
-  el.textContent = label;
+  el.textContent = "";
+  const url = discordAvatarUrl(user);
+  if (url) {
+    const pic = document.createElement("img");
+    pic.src = url;
+    pic.alt = "";
+    pic.className = "nav-avatar";
+    el.appendChild(pic);
+  }
+  el.appendChild(document.createTextNode(label));
 }
 
 showNavUser();
+fillMoistbagleAvatar();
 
