@@ -94,3 +94,27 @@ if (loginBtn) {
     }, 400);
   });
 }
+
+function readDiscordUser() {
+  try {
+    return JSON.parse(localStorage.getItem("jba-discord") || "null");
+  } catch (err) {
+    return null;
+  }
+}
+
+function showNavUser() {
+  const el = document.getElementById("nav-user");
+  if (!el) return;
+  const user = readDiscordUser();
+  const label = user && (user.username || user.name);
+  if (!label) {
+    el.hidden = true;
+    el.textContent = "";
+    return;
+  }
+  el.hidden = false;
+  el.textContent = label;
+}
+
+showNavUser();
