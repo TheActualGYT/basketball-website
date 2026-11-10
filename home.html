@@ -29,102 +29,140 @@
 
   <main class="home-board">
     <div class="home-main">
-      <section class="panel" aria-label="News">
-        <div class="panel-head">
-          <h2>News</h2>
-          <a href="news.html">All news</a>
-        </div>
-        <div class="news-list-home">
-          <article class="news-item">
-            <time>Nov 9, 2026</time>
-            <h3>Junior Basketball Association season is underway</h3>
-            <p>Opening week is in the books. Check the latest finals and the first league-leader board.</p>
-          </article>
-          <article class="news-item">
-            <time>Nov 7, 2026</time>
-            <h3>Alpha holds off Beta in a tight finish</h3>
-            <p>Team Alpha closed the fourth on a 12-4 run to take the league's latest one-possession game.</p>
-          </article>
-          <article class="news-item">
-            <time>Nov 5, 2026</time>
-            <h3>New teams can still enter the league</h3>
-            <p>Squads are forming now. Rosters and full stats will live on the team and player pages.</p>
-          </article>
+      <section class="home-block">
+        <h2>News</h2>
+        <div class="panel" aria-label="News">
+          <div class="news-list-home">
+            <article class="news-item">
+              <time>Nov 9, 2026</time>
+              <h3>Junior Basketball Association season is underway</h3>
+              <p>Opening week is in the books. Check the latest finals and the first league-leader board.</p>
+            </article>
+            <article class="news-item">
+              <time>Nov 7, 2026</time>
+              <h3>Alpha holds off Beta in a tight finish</h3>
+              <p>Team Alpha closed the fourth on a 12-4 run to take the league's latest one-possession game.</p>
+            </article>
+            <article class="news-item">
+              <time>Nov 5, 2026</time>
+              <h3>New teams can still enter the league</h3>
+              <p>Squads are forming now. Rosters and full stats will live on the team and player pages.</p>
+            </article>
+          </div>
+          <a class="panel-more" href="news.html">All news</a>
         </div>
       </section>
 
-      <section class="panel" aria-label="Final scores">
-        <div class="panel-head">
-          <h2>Final Scores</h2>
-        </div>
-        <div class="score-list">
-          <article class="score-game">
-            <span class="final">FINAL</span>
-            <span class="win">Team Alpha</span><strong class="win">78</strong>
-            <span>Team Beta</span><strong>71</strong>
-          </article>
-          <article class="score-game">
-            <span class="final">FINAL</span>
-            <span class="win">Team Delta</span><strong class="win">70</strong>
-            <span>Team Gamma</span><strong>64</strong>
-          </article>
-          <article class="score-game">
-            <span class="final">FINAL</span>
-            <span class="win">Team Beta</span><strong class="win">81</strong>
-            <span>Team Gamma</span><strong>77</strong>
-          </article>
+      <section class="home-block">
+        <h2>Final Scores</h2>
+        <div class="panel" aria-label="Final scores">
+          <div class="score-list">
+            <article class="score-game">
+              <span class="final">FINAL</span>
+              <span class="win">Team Alpha</span><strong class="win">78</strong>
+              <span>Team Beta</span><strong>71</strong>
+            </article>
+            <article class="score-game">
+              <span class="final">FINAL</span>
+              <span class="win">Team Delta</span><strong class="win">70</strong>
+              <span>Team Gamma</span><strong>64</strong>
+            </article>
+            <article class="score-game">
+              <span class="final">FINAL</span>
+              <span class="win">Team Beta</span><strong class="win">81</strong>
+              <span>Team Gamma</span><strong>77</strong>
+            </article>
+          </div>
         </div>
       </section>
     </div>
 
     <div class="home-side">
-      <section class="panel" aria-label="Standings">
-        <div class="panel-head">
-          <h2>Standings</h2>
-          <a href="standings.html">Full table</a>
+      <section class="home-block">
+        <h2>Standings</h2>
+        <div class="panel" aria-label="Standings">
+          <table class="standings-mini">
+            <thead>
+              <tr><th></th><th>Team</th><th>W</th><th>L</th><th>PCT</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>Team Alpha</td><td>4</td><td>1</td><td>.800</td></tr>
+              <tr><td>2</td><td>Team Beta</td><td>3</td><td>2</td><td>.600</td></tr>
+              <tr><td>3</td><td>Team Gamma</td><td>2</td><td>3</td><td>.400</td></tr>
+              <tr><td>4</td><td>Team Delta</td><td>1</td><td>4</td><td>.200</td></tr>
+            </tbody>
+          </table>
+          <a class="panel-more" href="standings.html">Full table</a>
         </div>
-        <table class="standings-mini">
-          <thead>
-            <tr><th></th><th>Team</th><th>W</th><th>L</th><th>PCT</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>1</td><td>Team Alpha</td><td>4</td><td>1</td><td>.800</td></tr>
-            <tr><td>2</td><td>Team Beta</td><td>3</td><td>2</td><td>.600</td></tr>
-            <tr><td>3</td><td>Team Gamma</td><td>2</td><td>3</td><td>.400</td></tr>
-            <tr><td>4</td><td>Team Delta</td><td>1</td><td>4</td><td>.200</td></tr>
-          </tbody>
-        </table>
       </section>
 
-      <section class="panel" aria-label="League leaders">
-        <div class="panel-head">
-          <h2>League Leaders</h2>
-        </div>
-        <div class="leader-groups">
-          <div class="leader-group">
-            <h3>PTS</h3>
-            <div class="leader-row"><span class="leader-rank">1</span><span class="leader-who"><b>Jordan Hale</b><small>Team Alpha</small></span><span class="leader-stat">24.6</span></div>
-            <div class="leader-row"><span class="leader-rank">2</span><span class="leader-who"><b>Miles Grant</b><small>Team Beta</small></span><span class="leader-stat">21.8</span></div>
-            <div class="leader-row"><span class="leader-rank">3</span><span class="leader-who"><b>Andre Cole</b><small>Team Gamma</small></span><span class="leader-stat">19.4</span></div>
-          </div>
-          <div class="leader-group">
-            <h3>REB</h3>
-            <div class="leader-row"><span class="leader-rank">1</span><span class="leader-who"><b>Chris Nguyen</b><small>Team Delta</small></span><span class="leader-stat">11.2</span></div>
-            <div class="leader-row"><span class="leader-rank">2</span><span class="leader-who"><b>Andre Cole</b><small>Team Gamma</small></span><span class="leader-stat">9.6</span></div>
-            <div class="leader-row"><span class="leader-rank">3</span><span class="leader-who"><b>Jordan Hale</b><small>Team Alpha</small></span><span class="leader-stat">8.1</span></div>
-          </div>
-          <div class="leader-group">
-            <h3>AST</h3>
-            <div class="leader-row"><span class="leader-rank">1</span><span class="leader-who"><b>Evan Brooks</b><small>Team Alpha</small></span><span class="leader-stat">7.8</span></div>
-            <div class="leader-row"><span class="leader-rank">2</span><span class="leader-who"><b>Miles Grant</b><small>Team Beta</small></span><span class="leader-stat">6.4</span></div>
-            <div class="leader-row"><span class="leader-rank">3</span><span class="leader-who"><b>Malik Reed</b><small>Team Gamma</small></span><span class="leader-stat">5.9</span></div>
-          </div>
-          <div class="leader-group">
-            <h3>GmSc</h3>
-            <div class="leader-row"><span class="leader-rank">1</span><span class="leader-who"><b>Jordan Hale</b><small>Team Alpha</small></span><span class="leader-stat">22.4</span></div>
-            <div class="leader-row"><span class="leader-rank">2</span><span class="leader-who"><b>Miles Grant</b><small>Team Beta</small></span><span class="leader-stat">19.1</span></div>
-            <div class="leader-row"><span class="leader-rank">3</span><span class="leader-who"><b>Chris Nguyen</b><small>Team Delta</small></span><span class="leader-stat">17.6</span></div>
-          </div>
+      <section class="home-block">
+        <h2>League Leaders</h2>
+        <div class="leader-stack">
+          <section class="home-block">
+            <h2>Points Per Game</h2>
+            <div class="panel">
+              <div class="leader-feature">
+                <div class="team-logo-slot" aria-hidden="true"></div>
+                <div class="leader-feature-name"><b>Jordan<br>Hale</b><small>ALP</small></div>
+                <span class="leader-stat">24.6</span>
+              </div>
+              <ol class="leader-rest">
+                <li><span>2</span><span>Miles Grant</span><span class="abbr">BET</span><span>21.8</span></li>
+                <li><span>3</span><span>Andre Cole</span><span class="abbr">GAM</span><span>19.4</span></li>
+                <li><span>4</span><span>Evan Brooks</span><span class="abbr">ALP</span><span>16.2</span></li>
+                <li><span>5</span><span>Malik Reed</span><span class="abbr">GAM</span><span>14.7</span></li>
+              </ol>
+            </div>
+          </section>
+          <section class="home-block">
+            <h2>Rebounds Per Game</h2>
+            <div class="panel">
+              <div class="leader-feature">
+                <div class="team-logo-slot" aria-hidden="true"></div>
+                <div class="leader-feature-name"><b>Chris<br>Nguyen</b><small>DEL</small></div>
+                <span class="leader-stat">11.2</span>
+              </div>
+              <ol class="leader-rest">
+                <li><span>2</span><span>Andre Cole</span><span class="abbr">GAM</span><span>9.6</span></li>
+                <li><span>3</span><span>Jordan Hale</span><span class="abbr">ALP</span><span>8.1</span></li>
+                <li><span>4</span><span>Miles Grant</span><span class="abbr">BET</span><span>6.4</span></li>
+                <li><span>5</span><span>-</span><span class="abbr"></span><span>-</span></li>
+              </ol>
+            </div>
+          </section>
+          <section class="home-block">
+            <h2>Assists Per Game</h2>
+            <div class="panel">
+              <div class="leader-feature">
+                <div class="team-logo-slot" aria-hidden="true"></div>
+                <div class="leader-feature-name"><b>Evan<br>Brooks</b><small>ALP</small></div>
+                <span class="leader-stat">7.8</span>
+              </div>
+              <ol class="leader-rest">
+                <li><span>2</span><span>Miles Grant</span><span class="abbr">BET</span><span>6.4</span></li>
+                <li><span>3</span><span>Malik Reed</span><span class="abbr">GAM</span><span>5.9</span></li>
+                <li><span>4</span><span>Jordan Hale</span><span class="abbr">ALP</span><span>4.8</span></li>
+                <li><span>5</span><span>Chris Nguyen</span><span class="abbr">DEL</span><span>3.2</span></li>
+              </ol>
+            </div>
+          </section>
+          <section class="home-block">
+            <h2>GmSc</h2>
+            <div class="panel">
+              <div class="leader-feature">
+                <div class="team-logo-slot" aria-hidden="true"></div>
+                <div class="leader-feature-name"><b>Jordan<br>Hale</b><small>ALP</small></div>
+                <span class="leader-stat">22.4</span>
+              </div>
+              <ol class="leader-rest">
+                <li><span>2</span><span>Miles Grant</span><span class="abbr">BET</span><span>19.1</span></li>
+                <li><span>3</span><span>Chris Nguyen</span><span class="abbr">DEL</span><span>17.6</span></li>
+                <li><span>4</span><span>Andre Cole</span><span class="abbr">GAM</span><span>15.2</span></li>
+                <li><span>5</span><span>Evan Brooks</span><span class="abbr">ALP</span><span>13.8</span></li>
+              </ol>
+            </div>
+          </section>
         </div>
       </section>
     </div>

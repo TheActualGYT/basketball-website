@@ -608,24 +608,8 @@ article h3 {
   border-bottom: 0;
 }
 
-.leader-groups {
-  display: flex;
-  flex-direction: column;
-}
 
-.leader-group + .leader-group {
-  margin-top: 0.85rem;
-  padding-top: 0.85rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
 
-.leader-group h3 {
-  margin: 0 0 0.15rem;
-  color: #fff;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
 
 .leader-row {
   display: grid;
@@ -663,6 +647,116 @@ article h3 {
   font-weight: 700;
   font-size: 1.05rem;
   font-variant-numeric: tabular-nums;
+}
+
+
+
+.home-block > h2 {
+  margin: 0 0 0.7rem;
+  text-align: center;
+  font-size: 1.12rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  background: none;
+  -webkit-text-fill-color: #fff;
+  animation: titlePulse 3.6s ease-in-out infinite;
+}
+
+.panel-more {
+  display: block;
+  margin-top: 0.9rem;
+  text-align: center;
+  color: #cfcfcf;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.panel-more:hover {
+  color: #fff;
+}
+
+.leader-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.leader-feature {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  align-items: center;
+  padding: 0.75rem;
+  margin-bottom: 0.35rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.team-logo-slot {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+}
+
+.leader-feature-name b {
+  display: block;
+  color: #fff;
+  font-size: 1.2rem;
+  line-height: 1.05;
+  font-weight: 700;
+}
+
+.leader-feature-name small {
+  display: block;
+  margin-top: 0.3rem;
+  color: #a3a3a3;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.leader-feature .leader-stat {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.leader-rest {
+  list-style: none;
+}
+
+.leader-rest li {
+  display: grid;
+  grid-template-columns: 1.3rem minmax(0, 1fr) auto auto;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.62rem 0.2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: #e8e8e8;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.leader-rest li span:first-child,
+.leader-rest .abbr {
+  color: #9a9a9a;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.leader-rest li span:last-child {
+  color: #fff;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 2.4rem;
+  text-align: right;
 }
 
 
