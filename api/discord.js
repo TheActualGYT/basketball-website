@@ -42,23 +42,23 @@ export default async function handler(req, res) {
   }
 
   const guilds = [];
-  let after = "0";
+  let after = "";
   for (let page = 0; page < 10; page += 1) {
-    const guildRes = await fetch(
-      "https://discord.com/api/users/@me/guilds?limit=200&after=" + after,
-      { headers: auth }
-    );
+    const url = new URL("https://discord.com/api/v10/users/@me/guilds");
+    url.searchParams.set("limit", "200");
+    if (after) url.searchParams.set("after", after);
+    const guildRes = await fetch(url, { headers: auth });
     const batch = await guildRes.json();
-    if (!Array.isArray(batch)) {
+    if (!guildRes.ok || !Array.isArray(batch)) {
       res.status(401).json({ error: "Discord did not share your server list. Approve login again." });
       return;
     }
     guilds.push(...batch);
     if (batch.length < 200) break;
-    after = batch[batch.length - 1].id;
+    after = String(batch[batch.length - 1].id);
   }
 
-  const member = guilds.some((guild) => guild.id === GUILD_ID);
+  const member = guilds.some((guild) => String(guild.id) === GUILD_ID);
   if (!member) {
     res.status(200).json({
       needsJoin: true,
