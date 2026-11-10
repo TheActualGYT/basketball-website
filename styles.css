@@ -136,11 +136,20 @@ nav {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  margin-left: 0.45rem;
 }
 
 .nav-social a {
   display: block;
   line-height: 0;
+  border-radius: 10px;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: outline-color 0.15s ease;
+}
+
+.nav-social a:hover {
+  outline-color: rgba(255, 255, 255, 0.55);
 }
 
 .nav-social img {
@@ -180,6 +189,16 @@ nav {
 
 .nav-login {
   padding: 0.55rem 1rem;
+}
+
+.nav-avatar {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  flex: 0 0 26px;
 }
 
 nav ul {
@@ -224,14 +243,12 @@ nav a:hover {
   transform: translateX(-50%);
   min-width: 11.5rem;
   padding: 0.4rem;
-  background-color: #141414;
-  background-image:
-    repeating-linear-gradient(115deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 8px),
-    linear-gradient(180deg, #1c1c1c 0%, #101010 100%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: #101010;
+  border: 1px solid #3a3a3a;
   border-radius: 12px;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
   z-index: 30;
+  opacity: 1;
 }
 
 .nav-drop:hover .nav-menu,
@@ -257,7 +274,7 @@ nav a:hover {
 
 .nav-menu a:hover,
 .nav-menu a.active {
-  background: rgba(255, 255, 255, 0.06);
+  background: #242424;
   color: #fff;
 }
 
