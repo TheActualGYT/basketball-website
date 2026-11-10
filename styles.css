@@ -13,11 +13,12 @@ body {
   color: #e5e5e5;
   line-height: 1.6;
   min-height: 100vh;
-  background-color: #0d0d0d;
+  background-color: #1c1c1c;
   background-image:
-    radial-gradient(circle at 30% 40%, rgba(192, 38, 211, 0.25), transparent 45%),
-    radial-gradient(circle at 70% 60%, rgba(236, 72, 153, 0.22), transparent 45%),
-    linear-gradient(145deg, #0a0a0a 0%, #1a0a1a 40%, #0d0d0d 100%);
+    url("palms.svg"),
+    radial-gradient(circle at 30% 40%, rgba(192, 38, 211, 0.2), transparent 46%),
+    radial-gradient(circle at 70% 60%, rgba(236, 72, 153, 0.16), transparent 46%),
+    linear-gradient(145deg, #242424 0%, #342838 42%, #202020 100%);
   background-attachment: fixed;
   background-repeat: no-repeat;
   background-size: cover;
@@ -402,17 +403,17 @@ article h3 {
 .home-board {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 1.75rem 2rem 4.5rem;
+  padding: 1.1rem 2rem 2.6rem;
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.8fr);
-  gap: 1.25rem;
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.8fr);
+  gap: 0.85rem 1rem;
+  align-items: start;
 }
 
 .home-main {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.85rem;
   min-width: 0;
 }
 
@@ -426,9 +427,9 @@ article h3 {
   background-size: 180px 180px, auto, auto, auto;
   background-blend-mode: overlay, normal, normal, normal;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  padding: 1.25rem 1.3rem 1.15rem;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  border-radius: 14px;
+  padding: 0.85rem 0.9rem 0.8rem;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
 }
 
 .home-side {
@@ -514,7 +515,7 @@ article h3 {
 }
 
 .news-feature h3 {
-  font-size: 1.45rem;
+  font-size: 1.12rem;
   line-height: 1.2;
   margin-bottom: 0.45rem;
 }
@@ -679,9 +680,9 @@ article h3 {
 
 
 .home-block > h2 {
-  margin: 0 0 0.7rem;
+  margin: 0 0 0.4rem;
   text-align: center;
-  font-size: 1.12rem;
+  font-size: 0.95rem;
   line-height: 1.2;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -714,8 +715,8 @@ article h3 {
 
 .leader-feature {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) auto;
-  gap: 0.85rem;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  gap: 0.6rem;
   align-items: center;
   padding: 0.75rem;
   margin-bottom: 0.35rem;
@@ -725,8 +726,8 @@ article h3 {
 }
 
 .team-logo-slot {
-  width: 64px;
-  height: 64px;
+  width: 46px;
+  height: 46px;
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.35);
   border: 1px dashed rgba(255, 255, 255, 0.18);
@@ -735,7 +736,7 @@ article h3 {
 .leader-feature-name b {
   display: block;
   color: #fff;
-  font-size: 1.2rem;
+  font-size: 1rem;
   line-height: 1.05;
   font-weight: 700;
 }
@@ -750,7 +751,7 @@ article h3 {
 }
 
 .leader-feature .leader-stat {
-  font-size: 1.85rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: #fff;
 }
@@ -799,6 +800,113 @@ article h3 {
   text-shadow: none;
 }
 
+
+.home-side {
+  gap: 0.85rem;
+}
+
+.conf-board {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.conf-board section {
+  min-width: 0;
+  padding: 0.55rem 0.65rem 0.7rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.conf-board section:nth-child(2n) {
+  border-right: 0;
+}
+
+.conf-board section:nth-child(n + 3) {
+  border-bottom: 0;
+}
+
+.conf-board h3 {
+  margin: 0 0 0.35rem;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-align: left;
+}
+
+.conf-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.conf-table th,
+.conf-table td {
+  padding: 0.28rem 0.18rem;
+  text-align: right;
+  font-size: 0.68rem;
+  line-height: 1.2;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-variant-numeric: tabular-nums;
+}
+
+.conf-table th {
+  color: #9a9a9a;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.conf-table th:nth-child(2),
+.conf-table td:nth-child(2) {
+  text-align: left;
+}
+
+.conf-table td:first-child,
+.conf-table th:first-child {
+  text-align: left;
+  color: #cfcfcf;
+  width: 1.1rem;
+}
+
+.conf-team {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #f2f2f2;
+  font-weight: 600;
+  min-width: 0;
+}
+
+.conf-team span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mark {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.score-game {
+  padding: 0.55rem 0.7rem;
+  gap: 0.2rem 0.7rem;
+}
+
+.news-secondary {
+  gap: 0.65rem;
+  padding-top: 0.6rem;
+}
+
+.leader-stack {
+  gap: 0.75rem;
+}
+
+
 @media (max-width: 768px) {
   .hero-content h1 {
     font-size: 2.1rem;
@@ -829,7 +937,17 @@ article h3 {
   }
   .home-board,
   .score-list,
-  .news-secondary {
+  .news-secondary,
+  .conf-board {
     grid-template-columns: 1fr;
+  }
+  .conf-board section {
+    border-right: 0;
+  }
+  .conf-board section:nth-child(n + 3) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .conf-board section:last-child {
+    border-bottom: 0;
   }
 }
