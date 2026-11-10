@@ -87,12 +87,12 @@ header::after {
   height: 2px;
   background: rgba(255, 255, 255, 0.14);
   pointer-events: none;
-  z-index: 3;
+  z-index: 1;
 }
 
 nav {
   position: relative;
-  z-index: 2;
+  z-index: 5;
   max-width: 1400px;
   margin: 0 auto;
   padding: 0.8rem 2rem;
@@ -142,14 +142,11 @@ nav {
 .nav-social a {
   display: block;
   line-height: 0;
-  border-radius: 10px;
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-  transition: outline-color 0.15s ease;
+  border-radius: 8px;
 }
 
-.nav-social a:hover {
-  outline-color: rgba(255, 255, 255, 0.55);
+.nav-social a:hover img {
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.55);
 }
 
 .nav-social img {
@@ -247,7 +244,7 @@ nav a:hover {
   border: 1px solid #3a3a3a;
   border-radius: 12px;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
-  z-index: 30;
+  z-index: 50;
   opacity: 1;
 }
 
@@ -948,6 +945,11 @@ article h3 {
   list-style: none;
 }
 
+.leader-feature:hover,
+.leader-rest li:hover {
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.55);
+}
+
 .leader-rest li {
   display: grid;
   grid-template-columns: 0.9rem 18px minmax(0, 1fr) auto auto;
@@ -955,6 +957,7 @@ article h3 {
   align-items: center;
   padding: 0.4rem 0.1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
   color: #e8e8e8;
   font-size: 0.8rem;
   font-weight: 600;
