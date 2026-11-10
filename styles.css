@@ -169,6 +169,16 @@ nav ul a.active {
 .hero-content {
   position: relative;
   z-index: 1;
+  transform: translateY(-2.4rem);
+}
+
+.league-title {
+  animation: titlePulse 3.6s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+  0%, 100% { text-shadow: 0 0 8px rgba(255, 255, 255, 0.16); }
+  50% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
 }
 
 .hero-logo {
@@ -199,6 +209,10 @@ nav ul a.active {
   margin-top: 1rem;
   color: #d1d5db;
   font-size: 0.9rem;
+}
+
+.login-note a {
+  color: #fff;
 }
 
 .hero-actions {

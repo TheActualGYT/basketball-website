@@ -27,10 +27,22 @@
     const status = document.getElementById("status");
     const actions = document.getElementById("actions");
 
+    function tellOpener(message) {
+      try {
+        const channel = new BroadcastChannel("jba-discord");
+        channel.postMessage(message);
+        channel.close();
+      } catch (err) {}
+      if (window.opener) {
+        window.opener.postMessage(message, location.origin);
+      }
+    }
+
     function finish(user) {
       localStorage.setItem("jba-discord", JSON.stringify(user));
+      localStorage.removeItem("jba-discord-status");
+      tellOpener({ type: "jba-discord", user: user });
       if (window.opener) {
-        window.opener.postMessage({ type: "jba-discord", user: user }, location.origin);
         window.close();
         return;
       }
@@ -38,10 +50,14 @@
     }
 
     function requireJoin(invite) {
+      const link = invite || "https://discord.gg/36FHef566k";
       title.textContent = "Join the server";
       status.textContent = "You have to join the JBA Discord before login can finish.";
-      document.getElementById("join-link").href = invite || "https://discord.gg/36FHef566k";
+      document.getElementById("join-link").href = link;
       actions.hidden = false;
+      const statusInfo = { needsJoin: true, invite: link };
+      localStorage.setItem("jba-discord-status", JSON.stringify(statusInfo));
+      tellOpener({ type: "jba-discord-status", status: statusInfo });
     }
 
     document.getElementById("retry-btn").addEventListener("click", function () {
@@ -73,8 +89,12 @@
           finish(result.data);
         })
         .catch(function (error) {
+          const message = error.message || "Discord login could not be completed.";
           title.textContent = "Login failed";
-          status.textContent = error.message || "Discord login could not be completed.";
+          status.textContent = message;
+          const statusInfo = { error: message };
+          localStorage.setItem("jba-discord-status", JSON.stringify(statusInfo));
+          tellOpener({ type: "jba-discord-status", status: statusInfo });
         });
     }
   </script>

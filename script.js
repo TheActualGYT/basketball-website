@@ -28,7 +28,7 @@ if (loginBtn) {
   if (saved) {
     try {
       const user = JSON.parse(saved);
-      loginBtn.textContent = user.name || user.username || "Discord connected";
+      loginBtn.textContent = user.username || user.name || "Discord connected";
     } catch (err) {
       localStorage.removeItem("jba-discord");
     }
@@ -37,21 +37,53 @@ if (loginBtn) {
   function applyDiscordUser(user) {
     if (!user || user.needsJoin) return;
     localStorage.setItem("jba-discord", JSON.stringify(user));
-    loginBtn.textContent = user.name || user.username || "Discord connected";
+    localStorage.removeItem("jba-discord-status");
+    loginBtn.textContent = user.username || user.name || "Discord connected";
     if (loginNote) loginNote.hidden = true;
+    if (typeof showNavUser === "function") showNavUser();
+  }
+
+  function showLoginStatus(info) {
+    if (!loginNote || !info) return;
+    loginNote.hidden = false;
+    if (info.needsJoin) {
+      const invite = info.invite || "https://discord.gg/36FHef566k";
+      loginNote.innerHTML = 'Join the <a href="' + invite + '" target="_blank" rel="noopener">JBA Discord</a>, then click Login again.';
+      return;
+    }
+    loginNote.textContent = info.error || "Discord login could not be completed.";
+  }
+
+  function readLoginStatus() {
+    try {
+      return JSON.parse(localStorage.getItem("jba-discord-status") || "null");
+    } catch (err) {
+      return null;
+    }
   }
 
   window.addEventListener("message", function (event) {
-    if (event.origin !== location.origin) return;
-    if (!event.data || event.data.type !== "jba-discord") return;
-    applyDiscordUser(event.data.user);
+    if (event.origin !== location.origin || !event.data) return;
+    if (event.data.type === "jba-discord") applyDiscordUser(event.data.user);
+    if (event.data.type === "jba-discord-status") showLoginStatus(event.data.status);
   });
 
+  try {
+    const channel = new BroadcastChannel("jba-discord");
+    channel.addEventListener("message", function (event) {
+      if (!event.data) return;
+      if (event.data.type === "jba-discord") applyDiscordUser(event.data.user);
+      if (event.data.type === "jba-discord-status") showLoginStatus(event.data.status);
+    });
+  } catch (err) {}
+
   window.addEventListener("storage", function (event) {
-    if (event.key !== "jba-discord" || !event.newValue) return;
-    try {
-      applyDiscordUser(JSON.parse(event.newValue));
-    } catch (err) {}
+    if (event.key === "jba-discord" && event.newValue) {
+      try { applyDiscordUser(JSON.parse(event.newValue)); } catch (err) {}
+    }
+    if (event.key === "jba-discord-status" && event.newValue) {
+      try { showLoginStatus(JSON.parse(event.newValue)); } catch (err) {}
+    }
   });
 
   loginBtn.addEventListener("click", function () {
@@ -79,10 +111,12 @@ if (loginBtn) {
       "jba-discord-login",
       "popup=yes,width=" + width + ",height=" + height + ",left=" + left + ",top=" + top
     );
+    localStorage.removeItem("jba-discord-status");
     if (!popup) {
       location.href = url.toString();
       return;
     }
+    const started = Date.now();
     const watch = setInterval(function () {
       const saved = localStorage.getItem("jba-discord");
       if (saved) {
@@ -90,7 +124,9 @@ if (loginBtn) {
         clearInterval(watch);
         return;
       }
-      if (popup.closed) clearInterval(watch);
+      const info = readLoginStatus();
+      if (info) showLoginStatus(info);
+      if (Date.now() - started > 120000) clearInterval(watch);
     }, 400);
   });
 }
