@@ -1,3 +1,3 @@
 window.JBA_DISCORD = {
-  clientId: ""
+  clientId: "1569494991250653184"
 };
