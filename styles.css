@@ -713,8 +713,8 @@ article h3 {
 .home-block > h2 {
   margin: 0 0 0.4rem;
   text-align: center;
-  font-size: 0.95rem;
-  line-height: 1.2;
+  font-size: 1.65rem;
+  line-height: 1.15;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -837,8 +837,35 @@ article h3 {
 }
 
 .conf-board {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
+}
+
+.conf-board::before,
+.conf-board::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.conf-board::before {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 3px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, transparent 0%, #c026d3 16%, #ec4899 50%, #c026d3 84%, transparent 100%);
+}
+
+.conf-board::after {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 3px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, transparent 0%, #c026d3 16%, #ec4899 50%, #c026d3 84%, transparent 100%);
 }
 
 .conf-board section {
@@ -847,24 +874,8 @@ article h3 {
   padding: 0.7rem 0.8rem 0.85rem;
 }
 
-.conf-board section:nth-child(odd)::after {
-  content: "";
-  position: absolute;
-  top: 0.45rem;
-  bottom: 0.45rem;
-  right: 0;
-  width: 3px;
-  background: linear-gradient(180deg, #c026d3, #ec4899);
-}
-
-.conf-board section:nth-child(-n + 2)::before {
-  content: "";
-  position: absolute;
-  left: 0.45rem;
-  right: 0.45rem;
-  bottom: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #c026d3, #ec4899);
+.conf-board section:nth-child(odd) {
+  padding-right: 1.35rem;
 }
 
 .conf-board h3 {
@@ -901,6 +912,15 @@ article h3 {
 .conf-table th:nth-child(2),
 .conf-table td:nth-child(2) {
   text-align: left;
+  width: 99%;
+}
+
+.conf-table th:nth-child(n + 3),
+.conf-table td:nth-child(n + 3) {
+  width: 1%;
+  white-space: nowrap;
+  padding-left: 0.28rem;
+  padding-right: 0.12rem;
 }
 
 .conf-table td:first-child,
@@ -958,41 +978,12 @@ article h3 {
   margin-bottom: 0.95rem;
 }
 
-.reg-form {
+.reg-link {
   display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-}
-
-.reg-form label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  color: #cfcfcf;
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.reg-form input {
-  background: #101010;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  color: #fff;
-  font: inherit;
-  font-size: 0.95rem;
-  padding: 0.6rem 0.7rem;
-}
-
-.reg-form .cta-btn {
-  align-self: center;
-  margin-top: 0.25rem;
-  min-width: 11.5rem;
-}
-
-.reg-note {
-  text-align: center;
-  color: #fff;
-  font-size: 0.88rem;
+  width: fit-content;
+  margin: 0.2rem auto 0;
+  min-width: 15rem;
+  padding: 0.85rem 1.4rem;
 }
 
 
@@ -1030,20 +1021,21 @@ article h3 {
   .conf-board {
     grid-template-columns: 1fr;
   }
-  .conf-board section::after {
+  .conf-board::before,
+  .conf-board::after {
     display: none;
   }
-  .conf-board section::before {
-    display: none;
+  .conf-board section:nth-child(odd) {
+    padding-right: 0.8rem;
   }
-  .conf-board section:not(:last-child)::before {
+  .conf-board section:not(:last-child)::after {
     content: "";
     display: block;
     position: absolute;
-    left: 0.45rem;
-    right: 0.45rem;
+    left: 0;
+    right: 0;
     bottom: 0;
     height: 3px;
-    background: linear-gradient(90deg, #c026d3, #ec4899);
+    background: linear-gradient(90deg, transparent, #c026d3 18%, #ec4899 50%, #c026d3 82%, transparent);
   }
 }

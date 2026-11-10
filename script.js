@@ -185,12 +185,3 @@ function showNavUser() {
 
 showNavUser();
 
-const regForm = document.getElementById("reg-form");
-if (regForm) {
-  regForm.addEventListener("submit", function (event) {
-    event.preventDefault();
-    const note = document.getElementById("reg-note");
-    if (note) note.hidden = false;
-    regForm.reset();
-  });
-}
