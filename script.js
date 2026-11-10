@@ -48,8 +48,7 @@ if (loginBtn) {
   if (existing) {
     localStorage.setItem("jba-discord", JSON.stringify(existing));
     location.replace("home.html");
-    return;
-  }
+  } else {
 
   function applyDiscordUser(user) {
     if (!verifiedUser(user)) return;
@@ -139,17 +138,16 @@ if (loginBtn) {
       location.href = url.toString();
       return;
     }
-    const started = Date.now();
     const watch = setInterval(function () {
       const cookieUser = userFromCookie();
-      if (cookieUser && cookieUser.checkedAt >= started) {
+      if (verifiedUser(cookieUser)) {
         applyDiscordUser(cookieUser);
         clearInterval(watch);
         return;
       }
       let savedUser = null;
       try { savedUser = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
-      if (verifiedUser(savedUser) && savedUser.checkedAt >= started) {
+      if (verifiedUser(savedUser)) {
         applyDiscordUser(savedUser);
         clearInterval(watch);
         return;
@@ -159,6 +157,8 @@ if (loginBtn) {
       if (Date.now() - started > 120000) clearInterval(watch);
     }, 400);
   });
+}
+
 }
 
 function readDiscordUser() {
