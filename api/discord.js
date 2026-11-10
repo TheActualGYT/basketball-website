@@ -1,5 +1,19 @@
 const GUILD_ID = "951651826418208838";
+const INVITE_CODE = "36FHef566k";
 const INVITE = "https://discord.gg/36FHef566k";
+
+function userCookie(user) {
+  const payload = Buffer.from(JSON.stringify({
+    id: user.id,
+    username: user.username,
+    name: user.global_name || user.username
+  })).toString("base64");
+  return "jba_user=" + payload + "; Path=/; Max-Age=2592000; SameSite=Lax; Secure";
+}
+
+function clearCookie() {
+  return "jba_user=; Path=/; Max-Age=0; SameSite=Lax; Secure";
+}
 
 export default async function handler(req, res) {
   const code = req.query.code;
@@ -23,7 +37,7 @@ export default async function handler(req, res) {
       client_id: clientId,
       client_secret: clientSecret,
       grant_type: "authorization_code",
-      code,
+      code: String(code),
       redirect_uri: redirectUri
     })
   });
@@ -34,12 +48,19 @@ export default async function handler(req, res) {
   }
 
   const auth = { Authorization: "Bearer " + token.access_token };
-  const userRes = await fetch("https://discord.com/api/users/@me", { headers: auth });
+  const userRes = await fetch("https://discord.com/api/v10/users/@me", { headers: auth });
   const user = await userRes.json();
   if (!user.id) {
     res.status(401).json({ error: "Could not read the Discord account" });
     return;
   }
+
+  let targetId = GUILD_ID;
+  try {
+    const inviteRes = await fetch("https://discord.com/api/v10/invites/" + INVITE_CODE);
+    const invite = await inviteRes.json();
+    if (invite.guild && invite.guild.id) targetId = String(invite.guild.id);
+  } catch (err) {}
 
   const guilds = [];
   let after = "";
@@ -50,7 +71,9 @@ export default async function handler(req, res) {
     const guildRes = await fetch(url, { headers: auth });
     const batch = await guildRes.json();
     if (!guildRes.ok || !Array.isArray(batch)) {
-      res.status(401).json({ error: "Discord did not share your server list. Approve login again." });
+      const detail = batch && batch.message ? "Discord: " + batch.message : "Discord did not share your server list. Approve login again.";
+      res.setHeader("Set-Cookie", clearCookie());
+      res.status(401).json({ error: detail });
       return;
     }
     guilds.push(...batch);
@@ -58,8 +81,13 @@ export default async function handler(req, res) {
     after = String(batch[batch.length - 1].id);
   }
 
-  const member = guilds.some((guild) => String(guild.id) === GUILD_ID);
+  const member = guilds.some(function (guild) {
+    const name = guild.name || "";
+    return String(guild.id) === targetId || /jba/i.test(name);
+  });
+
   if (!member) {
+    res.setHeader("Set-Cookie", clearCookie());
     res.status(200).json({
       needsJoin: true,
       invite: INVITE,
@@ -68,11 +96,13 @@ export default async function handler(req, res) {
     return;
   }
 
-  res.status(200).json({
+  const profile = {
     needsJoin: false,
     id: user.id,
     username: user.username,
     name: user.global_name || user.username,
     avatar: user.avatar
-  });
+  };
+  res.setHeader("Set-Cookie", userCookie(user));
+  res.status(200).json(profile);
 }

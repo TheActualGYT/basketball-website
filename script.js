@@ -21,11 +21,25 @@ document.querySelectorAll('.team-card').forEach(card => {
 
 console.log('Hoops Central loaded! Let\'s ball.');
 
+function userFromCookie() {
+  const match = document.cookie.match(/(?:^|; )jba_user=([^;]+)/);
+  if (!match || !match[1]) return null;
+  try {
+    return JSON.parse(atob(decodeURIComponent(match[1])));
+  } catch (err) {
+    return null;
+  }
+}
+
 const loginBtn = document.getElementById("login-btn");
 const loginNote = document.getElementById("login-note");
 if (loginBtn) {
   const saved = localStorage.getItem("jba-discord");
-  if (saved) {
+  const cookieUser = userFromCookie();
+  if (cookieUser && cookieUser.username) {
+    localStorage.setItem("jba-discord", JSON.stringify(cookieUser));
+    loginBtn.textContent = cookieUser.username;
+  } else if (saved) {
     try {
       const user = JSON.parse(saved);
       loginBtn.textContent = user.username || user.name || "Discord connected";
@@ -47,8 +61,10 @@ if (loginBtn) {
     if (!loginNote || !info) return;
     loginNote.hidden = false;
     if (info.needsJoin) {
+      localStorage.removeItem("jba-discord");
+      loginBtn.textContent = "Login";
       const invite = info.invite || "https://discord.gg/36FHef566k";
-      loginNote.innerHTML = 'Join the <a href="' + invite + '" target="_blank" rel="noopener">JBA Discord</a>, then click Login again.';
+      loginNote.innerHTML = 'Discord does not see this account in the JBA server yet. Join the <a href="' + invite + '" target="_blank" rel="noopener">JBA Discord</a>, then click Login again.';
       return;
     }
     loginNote.textContent = info.error || "Discord login could not be completed.";
@@ -87,6 +103,10 @@ if (loginBtn) {
   });
 
   loginBtn.addEventListener("click", function () {
+    if (location.host !== "basketball-website-psi.vercel.app") {
+      location.href = "https://basketball-website-psi.vercel.app/";
+      return;
+    }
     const cfg = window.JBA_DISCORD || {};
     if (!cfg.clientId) {
       if (loginNote) {
@@ -118,6 +138,12 @@ if (loginBtn) {
     }
     const started = Date.now();
     const watch = setInterval(function () {
+      const cookieUser = userFromCookie();
+      if (cookieUser && cookieUser.username) {
+        applyDiscordUser(cookieUser);
+        clearInterval(watch);
+        return;
+      }
       const saved = localStorage.getItem("jba-discord");
       if (saved) {
         try { applyDiscordUser(JSON.parse(saved)); } catch (err) {}
