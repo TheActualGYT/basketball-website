@@ -43,7 +43,7 @@ if (loginBtn) {
       }
       return;
     }
-    const redirect = location.origin + "/callback.html";
+    const redirect = (window.JBA_DISCORD && window.JBA_DISCORD.redirectUri) || (location.origin + "/callback.html");
     const url = new URL("https://discord.com/oauth2/authorize");
     url.searchParams.set("client_id", clientId);
     url.searchParams.set("response_type", "code");
