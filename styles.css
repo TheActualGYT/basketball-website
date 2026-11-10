@@ -41,7 +41,7 @@ body::after {
   background-image: url("palm.png");
   background-repeat: no-repeat;
   background-position: center bottom;
-  background-size: 100% 100%;
+  background-size: contain;
 }
 
 body::before {
