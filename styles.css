@@ -126,6 +126,30 @@ nav {
   font-weight: 700;
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.nav-social {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.nav-social a {
+  display: block;
+  line-height: 0;
+}
+
+.nav-social img {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: block;
+}
+
 .nav-end {
   display: flex;
   align-items: center;
@@ -148,12 +172,14 @@ nav {
   box-shadow: 0 4px 16px rgba(192, 38, 211, 0.4);
 }
 
-.nav-avatar {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
+.nav-user a,
+.nav-user a:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
+.nav-login {
+  padding: 0.55rem 1rem;
 }
 
 nav ul {
@@ -807,8 +833,9 @@ article h3 {
   color: #fff;
 }
 
-.section-head-end {
-  justify-content: flex-end;
+.leaders-head h2 {
+  margin-left: auto;
+  text-align: right;
 }
 
 .leaders-block {

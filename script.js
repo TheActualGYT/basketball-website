@@ -243,12 +243,16 @@ function showNavUser() {
   const user = readDiscordUser();
   const label = user && user.serverChecked && (user.username || user.name);
   if (!label) {
-    el.hidden = true;
+    el.hidden = false;
+    el.className = "nav-user nav-login";
     el.textContent = "";
+    const link = document.createElement("a");
+    link.href = "index.html";
+    link.textContent = "LOG IN";
+    el.appendChild(link);
     return;
   }
-  el.hidden = false;
-  el.textContent = "";
+  el.className = "nav-user";
   const url = discordAvatarUrl(user);
   if (url) {
     const pic = document.createElement("img");
