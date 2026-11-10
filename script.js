@@ -177,8 +177,8 @@ function discordAvatarUrl(user) {
 }
 
 const KNOWN_PROFILES = {
-  themoistbagle: { id: "365233938945277952", avatar: "1b6b28841b2deeb7c5a6b7e7b5638705", name: "MoistBagle", username: "themoistbagle" },
-  moistbagle: { id: "365233938945277952", avatar: "1b6b28841b2deeb7c5a6b7e7b5638705", name: "MoistBagle", username: "themoistbagle" },
+  themoistbagle: { id: "365233938945277952", avatar: "3001ae38526f038def2c6561973e7563", name: "MoistBagle", username: "themoistbagle" },
+  moistbagle: { id: "365233938945277952", avatar: "3001ae38526f038def2c6561973e7563", name: "MoistBagle", username: "themoistbagle" },
   theactualgyt: { id: "625380503335206912", avatar: "c1eaa5abd77a7640f499c4590ffa402a", name: "Guerrilla", username: "theactualgyt" },
   guerrilla: { id: "625380503335206912", avatar: "c1eaa5abd77a7640f499c4590ffa402a", name: "Guerrilla", username: "theactualgyt" }
 };
@@ -256,11 +256,37 @@ function showNavUser() {
     pic.alt = "";
     pic.className = "nav-avatar";
     pic.referrerPolicy = "no-referrer";
+    if (user.id) pic.setAttribute("data-discord-id", user.id);
     el.appendChild(pic);
   }
   el.appendChild(document.createTextNode(label));
 }
 
+function refreshDiscordAvatars() {
+  const nodes = document.querySelectorAll("[data-discord-id]");
+  const ids = [];
+  nodes.forEach(function (node) {
+    const id = node.getAttribute("data-discord-id");
+    if (id && ids.indexOf(id) === -1) ids.push(id);
+  });
+  if (!ids.length) return;
+  fetch("/api/avatars?ids=" + encodeURIComponent(ids.join(",")))
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      const avatars = data && data.avatars ? data.avatars : {};
+      nodes.forEach(function (node) {
+        const url = avatars[node.getAttribute("data-discord-id")];
+        if (!url) return;
+        if (node.tagName === "IMG") {
+          node.src = url;
+          node.referrerPolicy = "no-referrer";
+        }
+      });
+    })
+    .catch(function () {});
+}
+
 showNavUser();
 fillMoistbagleAvatar();
+refreshDiscordAvatars();
 

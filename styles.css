@@ -928,7 +928,7 @@ article h3 {
   grid-template-rows: auto auto;
   grid-auto-flow: column;
   column-gap: 1.6rem;
-  row-gap: 2.2rem;
+  row-gap: 0;
 }
 
 .conf-board::before {
@@ -948,20 +948,6 @@ article h3 {
   position: relative;
   min-width: 0;
   padding: 0.7rem 0.8rem 0.85rem;
-}
-
-.conf-board section:nth-child(1)::after,
-.conf-board section:nth-child(3)::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -2.2rem;
-  width: 22px;
-  height: 2.2rem;
-  transform: translateX(-50%);
-  pointer-events: none;
-  z-index: 2;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='40' viewBox='0 0 22 40'%3E%3Cpath d='M11 11.5V28.5' stroke='%23ffffff' stroke-width='2.6' stroke-linecap='butt'/%3E%3Cpath d='M4.5 12.2L11 4.2l6.5 8' fill='none' stroke='%23ffffff' stroke-width='2.6' stroke-linejoin='round' stroke-linecap='round'/%3E%3Cpath d='M4.5 27.8L11 35.8l6.5-8' fill='none' stroke='%23ffffff' stroke-width='2.6' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") center / 18px 34px no-repeat;
 }
 
 .conf-board h3 {
@@ -1163,7 +1149,7 @@ article h3 {
   }
   .conf-board {
     grid-auto-flow: row;
-    row-gap: 2.2rem;
+    row-gap: 0;
   }
   .conf-board::before {
     display: none;
