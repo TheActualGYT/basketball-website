@@ -38,6 +38,11 @@ function verifiedUser(user) {
   return !!(user && user.serverChecked && (user.username || user.name));
 }
 
+const KNOWN_PROFILES = {
+  themoistbagle: { id: "365233938945277952", avatar: "3001ae38526f038def2c6561973e7563", name: "MoistBagle", username: "themoistbagle" },
+  moistbagle: { id: "365233938945277952", avatar: "3001ae38526f038def2c6561973e7563", name: "MoistBagle", username: "themoistbagle" }
+};
+
 function clearTestLogin() {
   if (localStorage.getItem("jba-auth-reset") === "2") return;
   let saved = null;
@@ -380,11 +385,6 @@ function discordAvatarUrl(user) {
   const ext = String(user.avatar).indexOf("a_") === 0 ? "gif" : "png";
   return "https://cdn.discordapp.com/avatars/" + user.id + "/" + user.avatar + "." + ext + "?size=128";
 }
-
-const KNOWN_PROFILES = {
-  themoistbagle: { id: "365233938945277952", avatar: "3001ae38526f038def2c6561973e7563", name: "MoistBagle", username: "themoistbagle" },
-  moistbagle: { id: "365233938945277952", avatar: "3001ae38526f038def2c6561973e7563", name: "MoistBagle", username: "themoistbagle" }
-};
 
 function profileKey(value) {
   return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
