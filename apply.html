@@ -75,7 +75,7 @@
     <p class="apply-lead">Finish this application to potentially take ownership of one of the teams for Season 1.</p>
     <div class="apply-grid">
     <form class="panel apply-form" id="apply-form">
-      <h3 class="box-title">Ownership</h3>
+      <div class="section-banner"><h3 class="box-title">Ownership</h3></div>
       <div class="field-label">
         <span>Discord username <i class="req">*</i></span>
         <button type="button" class="info-tip" aria-label="About Discord username">i<span>This is the Discord account you use to sign in. It has to be in the JBA server, and you cannot type a different name.</span></button>
@@ -112,7 +112,7 @@
       </div>
     </form>
     <aside class="panel roster-box is-locked" id="roster-box">
-      <h3 class="box-title">Roster Construction</h3>
+      <div class="section-banner"><h3 class="box-title">Roster Construction</h3></div>
       <label class="field-label" for="player-search">Search free agents <i class="req">*</i></label>
       <div class="player-search">
         <input id="player-search" type="search" placeholder="Search players" autocomplete="off">
@@ -266,22 +266,28 @@
         item.appendChild(nameNode(person, true));
         const side = document.createElement("div");
         side.className = "roster-side";
+        const stack = document.createElement("span");
+        stack.className = "role-stack";
         if (player.owner) {
           const ownerTag = document.createElement("span");
           ownerTag.className = "owner-tag";
           ownerTag.textContent = "(OWNER)";
-          side.appendChild(ownerTag);
+          stack.appendChild(ownerTag);
         }
+        const roleRow = document.createElement("span");
+        roleRow.className = "role-row";
         const role = document.createElement("span");
         role.className = "role-label " + roleClass(player.role);
         role.textContent = player.role;
-        side.appendChild(role);
+        roleRow.appendChild(role);
         if (players && index < 5) {
           const star = document.createElement("i");
           star.className = "req";
           star.textContent = "*";
-          side.appendChild(star);
+          roleRow.appendChild(star);
         }
+        stack.appendChild(roleRow);
+        side.appendChild(stack);
         side.appendChild(editButton(player.owner ? null : player));
         item.appendChild(side);
         list.appendChild(item);
