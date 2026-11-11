@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Application | Junior Basketball Association</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <nav>
+      <div class="brand">
+        <a class="logo" href="home.html">
+          <img src="logo.png" alt="JBA Logo">
+          <span class="logo-name">Junior Basketball<br>Association</span>
+        </a>
+        <div class="nav-social">
+          <a href="https://discord.gg/36FHef566k" target="_blank" rel="noopener" aria-label="Discord"><img src="discord.svg" alt=""></a>
+          <a href="https://www.youtube.com/@PracticaIBasketball" target="_blank" rel="noopener" aria-label="YouTube"><img src="youtube.svg" alt=""></a>
+        </div>
+      </div>
+      <div class="nav-end">
+      <ul>
+        <li class="nav-drop">
+          <a href="rules.html" data-nav="league">League</a>
+          <div class="nav-menu">
+            <a href="rules.html" data-nav="rules">Rules</a>
+            <a href="teams.html" data-nav="teams">Teams</a>
+            <a href="players.html" data-nav="players">Players</a>
+            <a href="staff.html" data-nav="staff">Staff</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="standings.html" data-nav="standings">Standings</a>
+          <div class="nav-menu">
+            <a href="standings.html" data-nav="divisional">Divisional Standings</a>
+            <a href="power-rankings.html" data-nav="power">Power Rankings</a>
+            <a href="playoff.html" data-nav="playoff">Playoff Bracket</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="schedule.html" data-nav="games">Games</a>
+          <div class="nav-menu">
+            <a href="schedule.html" data-nav="schedule">Schedule</a>
+            <a href="scores.html" data-nav="scores">Final Scores</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="player-stats.html" data-nav="statistics">Statistics</a>
+          <div class="nav-menu">
+            <a href="team-stats.html" data-nav="team-stats">Team Stats</a>
+            <a href="player-stats.html" data-nav="player-stats">Player Stats</a>
+            <a href="records.html" data-nav="records">Records</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="mvp.html" data-nav="awards">Awards</a>
+          <div class="nav-menu">
+            <a href="mvp.html" data-nav="mvp">MVP Race</a>
+            <a href="all-stars.html" data-nav="all-stars">All-Stars</a>
+            <a href="hall-of-fame.html" data-nav="hall">Hall of Fame</a>
+          </div>
+        </li>
+      </ul>
+      <span class="nav-user" id="nav-user" hidden></span>
+      </div>
+    </nav>
+  </header>
+
+
+  <section class="apply-page">
+    <h2>Team Application</h2>
+    <p class="apply-lead">Pick a team, then a backup in case that one is taken. Your Roblox username is checked before this can be submitted.</p>
+    <form class="panel apply-form" id="apply-form">
+      <label>Roblox username
+        <input id="roblox-name" name="username" autocomplete="off" maxlength="20" required placeholder="Username">
+      </label>
+      <p class="apply-status" id="name-status"></p>
+      <label>First choice
+        <select id="first-team" name="first" required>
+            <option value="">Select a team</option>
+            <option>Random</option>
+            <option>Arizona Wildcats</option>
+            <option>Baylor Bears</option>
+            <option>Duke Blue Devils</option>
+            <option>Florida Gators</option>
+            <option>Georgia Bulldogs</option>
+            <option>Houston Cougars</option>
+            <option>Kansas Jayhawks</option>
+            <option>Kentucky Wildcats</option>
+            <option>LSU Tigers</option>
+            <option>Miami Hurricanes</option>
+            <option>Michigan Wolverines</option>
+            <option>North Carolina Tar Heels</option>
+            <option>Ohio State Buckeyes</option>
+            <option>Oregon Ducks</option>
+            <option>UCLA Bruins</option>
+            <option>Virginia Cavaliers</option>
+        </select>
+      </label>
+      <label>Backup choice
+        <select id="second-team" name="second" required>
+            <option value="">Select a backup</option>
+            <option>Random</option>
+            <option>Arizona Wildcats</option>
+            <option>Baylor Bears</option>
+            <option>Duke Blue Devils</option>
+            <option>Florida Gators</option>
+            <option>Georgia Bulldogs</option>
+            <option>Houston Cougars</option>
+            <option>Kansas Jayhawks</option>
+            <option>Kentucky Wildcats</option>
+            <option>LSU Tigers</option>
+            <option>Miami Hurricanes</option>
+            <option>Michigan Wolverines</option>
+            <option>North Carolina Tar Heels</option>
+            <option>Ohio State Buckeyes</option>
+            <option>Oregon Ducks</option>
+            <option>UCLA Bruins</option>
+            <option>Virginia Cavaliers</option>
+        </select>
+      </label>
+      <button class="cta-btn apply-submit" type="submit">Submit application</button>
+      <p class="apply-status" id="form-status"></p>
+    </form>
+  </section>
+  <script src="script.js"></script>
+  <script>
+    const form = document.getElementById("apply-form");
+    const nameInput = document.getElementById("roblox-name");
+    const nameStatus = document.getElementById("name-status");
+    const formStatus = document.getElementById("form-status");
+
+    function setStatus(el, message, ok) {
+      el.textContent = message || "";
+      el.className = "apply-status" + (message ? (ok ? " good" : " bad") : "");
+    }
+
+    async function checkApplication(checkOnly) {
+      const res = await fetch("/api/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: nameInput.value.trim(),
+          first: document.getElementById("first-team").value,
+          second: document.getElementById("second-team").value,
+          checkOnly: checkOnly
+        })
+      });
+      return res.json();
+    }
+
+    nameInput.addEventListener("blur", async function () {
+      if (!nameInput.value.trim()) {
+        setStatus(nameStatus, "", false);
+        return;
+      }
+      setStatus(nameStatus, "Checking Roblox…", true);
+      try {
+        const data = await checkApplication(true);
+        if (data.ok) setStatus(nameStatus, "Roblox account found: " + data.roblox.name, true);
+        else setStatus(nameStatus, data.error || "That username could not be checked.", false);
+      } catch (err) {
+        setStatus(nameStatus, "Could not check that username.", false);
+      }
+    });
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      setStatus(formStatus, "Checking application…", true);
+      try {
+        const data = await checkApplication(false);
+        if (data && data.ok) {
+          setStatus(nameStatus, "Roblox account found: " + data.roblox.name, true);
+          setStatus(formStatus, "Application accepted for " + data.roblox.displayName + ". This draft does not lock the team yet.", true);
+          form.reset();
+        } else {
+          setStatus(formStatus, (data && data.error) || "Application could not be submitted.", false);
+        }
+      } catch (err) {
+        setStatus(formStatus, "Application could not be submitted.", false);
+      }
+    });
+  </script>
+</body>
+</html>
