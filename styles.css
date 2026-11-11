@@ -1008,7 +1008,7 @@ article h3 {
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(100% - 1px);
+  top: 100%;
   flex-direction: column;
   margin: 0;
   padding: 0;
@@ -1020,15 +1020,21 @@ article h3 {
   z-index: 30;
 }
 
-.player-search.is-open input {
+.roster-box .player-search.is-open input {
   border-color: rgba(255, 255, 255, 0.72);
-  border-bottom-color: transparent;
-  border-radius: 10px 10px 0 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-color: rgba(255, 255, 255, 0.72);
   box-shadow: none;
 }
 
-.player-search.is-open .player-results {
+.roster-box .player-search.is-open .player-results {
   display: flex;
+  top: 100%;
+  margin-top: -1px;
+  left: 0;
+  right: 0;
+  width: 100%;
 }
 
 .player-results button,
@@ -1053,9 +1059,25 @@ article h3 {
 }
 
 .roster-count {
-  margin: 0.85rem 0 0.45rem;
+  margin: 0.7rem 0 0.55rem;
   color: #bdbdbd;
-  font-size: 0.8rem;
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.staff-label {
+  margin: 0.85rem 0 0.4rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.roster-list li.is-empty {
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 0.78rem;
+  min-height: 42px;
 }
 
 .roster-list {

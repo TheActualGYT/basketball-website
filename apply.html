@@ -118,8 +118,10 @@
         <input id="player-search" type="search" placeholder="Search players" autocomplete="off">
         <div class="player-results" id="player-results"></div>
       </div>
-      <p class="roster-count" id="roster-count">Teams must include at least 5 active players. Coaches are optional, owners can be a player themselves, or team staff.</p>
+      <p class="roster-count" id="roster-count">Teams must include at least 5 active players, coaches are optional. Owners can be a player themselves, or team staff.</p>
       <ol class="roster-list" id="roster-list"></ol>
+      <p class="staff-label">Staff</p>
+      <ol class="roster-list" id="staff-list"></ol>
     </aside>
     </div>
     <button class="cta-btn apply-submit" id="apply-submit" type="submit" form="apply-form" disabled>Submit application</button>
@@ -211,39 +213,54 @@
     }
 
     function renderRoster() {
-      const list = document.getElementById("roster-list");
+      const players = document.getElementById("roster-list");
+      const staff = document.getElementById("staff-list");
       const count = document.getElementById("roster-count");
       const owner = signedInUser();
-      list.innerHTML = "";
-      const ownerItem = document.createElement("li");
-      ownerItem.className = "roster-owner";
-      ownerItem.appendChild(nameNode(owner || { name: "Owner", username: "" }, true));
-      const side = document.createElement("div");
-      const ownerTag = document.createElement("span");
-      ownerTag.className = "owner-tag";
-      ownerTag.textContent = "(OWNER)";
-      const tag = document.createElement("span");
-      tag.className = "role-label " + roleClass(ownerRole);
-      tag.textContent = ownerRole;
-      side.appendChild(ownerTag);
-      side.appendChild(tag);
-      side.appendChild(editButton(null));
-      ownerItem.appendChild(side);
-      list.appendChild(ownerItem);
+      const ownerEntry = { owner: true, role: ownerRole, name: owner ? displayName(owner) : "Owner", username: owner ? tagName(owner) : "", id: owner && owner.id, avatar: owner && owner.avatar };
+      const playerRows = [];
+      const staffRows = [];
+      if (ownerRole === "Player") playerRows.push(ownerEntry);
+      else staffRows.push(ownerEntry);
       roster.forEach(function (player) {
+        if (player.role === "Player") playerRows.push(player);
+        else staffRows.push(player);
+      });
+      while (playerRows.length < 10) playerRows.push(null);
+      while (staffRows.length < 3) staffRows.push(null);
+      fillSlots(players, playerRows.slice(0, 10));
+      fillSlots(staff, staffRows.slice(0, 3));
+      count.textContent = "Teams must include at least 5 active players, coaches are optional. Owners can be a player themselves, or team staff.";
+      refreshSubmit();
+    }
+
+    function fillSlots(list, rows) {
+      list.innerHTML = "";
+      rows.forEach(function (player) {
         const item = document.createElement("li");
-        item.appendChild(nameNode(player, true));
+        if (!player) {
+          item.className = "is-empty";
+          item.textContent = "Empty";
+          list.appendChild(item);
+          return;
+        }
+        const person = player.owner ? (signedInUser() || { name: "Owner", username: "" }) : player;
+        item.appendChild(nameNode(person, true));
+        const side = document.createElement("div");
+        if (player.owner) {
+          const ownerTag = document.createElement("span");
+          ownerTag.className = "owner-tag";
+          ownerTag.textContent = "(OWNER)";
+          side.appendChild(ownerTag);
+        }
         const role = document.createElement("span");
         role.className = "role-label " + roleClass(player.role);
         role.textContent = player.role;
-        const side = document.createElement("div");
         side.appendChild(role);
-        side.appendChild(editButton(player));
+        side.appendChild(editButton(player.owner ? null : player));
         item.appendChild(side);
         list.appendChild(item);
       });
-      count.textContent = "Teams must include at least 5 active players. Coaches are optional, owners can be a player themselves, or team staff.";
-      refreshSubmit();
     }
 
     function avatarUrl(player) {
@@ -336,7 +353,6 @@
         button.appendChild(nameNode(player));
         button.addEventListener("mousedown", function (event) {
           event.preventDefault();
-          if (roster.length >= 10) return;
           pendingPlayer = player;
           pendingMode = "add";
           openRoleModal(player);
@@ -355,8 +371,11 @@
       const ownerOnly = document.getElementById("owner-only-choice");
       actions.hidden = false;
       ownerOnly.hidden = pendingMode !== "owner";
-      modal.querySelector('[data-role="Head Coach"]').disabled = roleTaken("Head Coach") && current !== "Head Coach";
-      modal.querySelector('[data-role="Assistant Coach"]').disabled = roleTaken("Assistant Coach") && current !== "Assistant Coach";
+      const playersFull = (ownerRole === "Player" ? 1 : 0) + roster.filter(function (picked) { return picked.role === "Player"; }).length >= 10;
+      const staffFull = (ownerRole === "Player" ? 0 : 1) + roster.filter(function (picked) { return picked.role !== "Player"; }).length >= 3;
+      modal.querySelector('[data-role="Player"]').disabled = pendingMode === "add" && playersFull;
+      modal.querySelector('[data-role="Head Coach"]').disabled = (roleTaken("Head Coach") && current !== "Head Coach") || (pendingMode === "add" && staffFull);
+      modal.querySelector('[data-role="Assistant Coach"]').disabled = (roleTaken("Assistant Coach") && current !== "Assistant Coach") || (pendingMode === "add" && staffFull);
       remove.hidden = pendingMode !== "edit";
       modal.hidden = false;
     }
