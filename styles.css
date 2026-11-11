@@ -875,11 +875,18 @@ article h3 {
   top: calc(100% + 0.3rem);
   max-height: 240px;
   overflow: auto;
+  scrollbar-width: none;
   padding: 0.35rem;
   background: #101010;
-  border: 1px solid #3a3a3a;
+  border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 12px;
   z-index: 6;
+}
+
+.pick-menu::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .team-pick.is-open .pick-menu {
@@ -980,16 +987,6 @@ article h3 {
   font-family: inherit;
   font-size: 0.92rem;
 }
-  margin: 0 0 0.35rem;
-  text-align: left;
-  font-size: 1.15rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #fff;
-  background: none;
-  -webkit-text-fill-color: #fff;
-  animation: titlePulse 3.6s ease-in-out infinite;
-}
 
 .roster-box.is-locked {
   opacity: 0.38;
@@ -1002,31 +999,31 @@ article h3 {
 }
 
 .player-search.is-open {
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  margin-top: 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 10px;
   background: #101010;
-  overflow: hidden;
 }
 
 .player-results {
   display: none;
-  position: static;
   flex-direction: column;
   margin: 0;
-  padding: 0.15rem 0 0.25rem;
+  padding: 0;
   background: #101010;
   border: 0;
-  border-radius: 0;
 }
 
 .player-search.is-open input {
+  margin-top: 0;
   border: 0;
-  border-radius: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 10px 10px 0 0;
+  box-shadow: none;
 }
 
 .player-search.is-open .player-results {
   display: flex;
+  border-top: 1px solid rgba(255, 255, 255, 0.72);
 }
 
 .player-results button,
@@ -1314,10 +1311,12 @@ article h3 {
   display: block;
 }
 
-.role-later {
-  margin: 0.35rem 0 0;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.64rem;
+.role-card .role-later {
+  margin: 1rem 0 0;
+  color: #fff;
+  opacity: 0.5;
+  font-size: 0.58rem;
+  font-weight: 500;
   line-height: 1.35;
 }
 
