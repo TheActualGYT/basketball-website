@@ -1365,13 +1365,37 @@ article h3 {
   color: #fff;
 }
 
-.login-card label,
-.login-build-label {
+.login-card .field-title {
   display: block;
-  margin: 0.9rem 0 0.35rem;
+  margin: 1.05rem 0 0.4rem;
   color: #fff;
   font-size: 0.82rem;
   font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.login-card .not-player {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  width: auto;
+  line-height: 1;
+}
+
+.login-card .not-player input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
 .login-card input,
@@ -1418,11 +1442,7 @@ article h3 {
 .login-card .apply-status.bad { color: #ff6b81; opacity: 1; }
 
 .login-card .login-build-label {
-  margin-top: 1.15rem;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0;
-  text-transform: none;
+  margin: 1.05rem 0 0.4rem;
 }
 
 .login-card .team-pick {
@@ -1436,26 +1456,20 @@ article h3 {
 
 .not-player {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  width: 100%;
-  margin-top: 1rem;
-  color: #fff;
-  font-size: 0.82rem;
-  font-weight: 700;
-  line-height: 0.82rem;
   cursor: pointer;
 }
 
 .login-card .not-player input {
   position: absolute;
+  left: 0;
+  top: 0;
   opacity: 0;
   width: 1px;
   height: 1px;
+  min-height: 0;
   margin: 0;
   padding: 0;
+  border: 0;
 }
 
 .not-box {

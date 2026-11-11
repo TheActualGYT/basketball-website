@@ -60,17 +60,17 @@
   <div class="role-modal" id="login-modal" hidden>
     <form class="role-card login-card" id="login-form">
       <p>Login</p>
-      <label for="discord-connect">Discord</label>
+      <label class="field-title" for="discord-connect">Discord</label>
       <button type="button" class="discord-connect is-empty" id="discord-connect">Connect Discord</button>
       <p class="apply-status" id="discord-login-status"></p>
       <p class="login-fine">You must allow Discord authorization, and join the official JBA Discord server in order to sign-up. This is to unlock the full mechanics of the site to function.</p>
-      <label for="login-roblox">Roblox Username</label>
+      <label class="field-title" for="login-roblox">Roblox Username</label>
       <div class="player-fields" id="player-fields">
       <input id="login-roblox" name="roblox" maxlength="20" autocomplete="off" placeholder="Username">
       <p class="apply-status" id="login-name-status"></p>
       <p class="apply-status" id="login-unique-status"></p>
       <p class="login-fine">Submitting a Roblox account that does not belong to you is strictly prohibited and constitutes a major violation of our terms.</p>
-      <p class="login-build-label">Build</p>
+      <p class="field-title login-build-label">Build</p>
       <div class="team-pick" id="build-pick">
         <button type="button" class="pick-button is-empty" id="build-button">Select a build</button>
         <div class="pick-menu" id="build-menu">
@@ -81,7 +81,7 @@
       </div>
       <p class="login-fine">You can only stay on one build for the entire season. This can be changed until you are on an approved roster. Once you are on an approved roster, your build is locked and cannot be changed.</p>
       </div>
-      <label class="not-player" for="not-player">
+      <label class="field-title not-player" for="not-player">
         <input type="checkbox" id="not-player">
         <span class="not-box" aria-hidden="true"></span>
         <span>Not a Player?</span>
