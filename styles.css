@@ -568,13 +568,51 @@ article h3 {
   gap: 0.85rem;
 }
 
+.directory-reg {
+  max-width: 760px;
+  margin: 0 auto 2.3rem;
+}
+
+.directory-reg .section-head {
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.7rem;
+}
+
+.directory-reg .section-head h2,
+.directory-reg .section-head a {
+  text-align: center;
+}
+
 .dir-card {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 228px;
-  padding: 0.85rem 0.9rem 0.7rem;
+  min-height: 248px;
+  padding: 1rem 1rem 0.9rem;
   text-align: left;
   border-image: none;
+}
+
+.dir-mark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 72%;
+  height: auto;
+  transform: translate(-50%, -50%) scale(1.55);
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 0;
+  filter: none;
+}
+
+.dir-card > :not(.dir-mark) {
+  position: relative;
+  z-index: 1;
 }
 
 .dir-card:hover {
@@ -621,9 +659,9 @@ article h3 {
 
 .dir-card p {
   margin: 0;
-  color: #d7d7d7;
-  font-size: 0.78rem;
-  line-height: 1.45;
+  color: #ededed;
+  font-size: 0.98rem;
+  line-height: 1.65;
 }
 
 .dir-city {
@@ -655,7 +693,7 @@ article h3 {
 
 .dir-foot a {
   color: #eee;
-  font-size: 0.78rem;
+  font-size: 0.98rem;
   font-weight: 600;
   text-decoration: none;
 }

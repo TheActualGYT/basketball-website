@@ -301,6 +301,8 @@ function markNav() {
     "standings.html": ["standings", "divisional"],
     "power-rankings.html": ["standings", "power"],
     "playoff.html": ["standings", "playoff"],
+    "schedule.html": ["games", "schedule"],
+    "scores.html": ["games", "scores"],
     "team-stats.html": ["statistics", "team-stats"],
     "player-stats.html": ["statistics", "player-stats"],
     "records.html": ["statistics", "records"],
