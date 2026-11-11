@@ -724,8 +724,11 @@ article h3 {
   font-weight: 600;
 }
 
-.apply-form input,
-.apply-form select {
+.apply-form input[type="hidden"] {
+  display: none;
+}
+
+.apply-form input {
   display: block;
   width: 100%;
   margin-top: 0.4rem;
@@ -736,6 +739,130 @@ article h3 {
   color: #fff;
   font-family: inherit;
   font-size: 0.92rem;
+}
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.95rem;
+  color: #d7d7d7;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.info-tip {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: help;
+}
+
+.info-tip span {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.4rem);
+  transform: translateX(-50%);
+  width: 220px;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  background: #101010;
+  border: 1px solid #3a3a3a;
+  color: #eee;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: left;
+  z-index: 5;
+}
+
+.info-tip:hover span,
+.info-tip:focus span {
+  display: block;
+}
+
+.team-pick {
+  position: relative;
+  margin-top: 0.4rem;
+}
+
+.pick-button,
+.pick-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.92rem;
+  text-align: left;
+}
+
+.pick-button {
+  padding: 0.72rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: #101010;
+  cursor: pointer;
+}
+
+.pick-button.is-empty {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.pick-menu {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.3rem);
+  max-height: 240px;
+  overflow: auto;
+  padding: 0.35rem;
+  background: #101010;
+  border: 1px solid #3a3a3a;
+  border-radius: 12px;
+  z-index: 6;
+}
+
+.team-pick.is-open .pick-menu {
+  display: block;
+}
+
+.pick-option {
+  padding: 0.42rem 0.45rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.pick-option:hover {
+  background: #242424;
+}
+
+.pick-icon {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 22px;
+}
+
+.pick-icon img,
+.pick-icon svg {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 
 .apply-submit {

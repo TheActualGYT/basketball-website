@@ -73,69 +73,131 @@
     <h2>Team Application</h2>
     <p class="apply-lead">Pick a team, then a backup in case that one is taken. Your Roblox username is checked before this can be submitted.</p>
     <form class="panel apply-form" id="apply-form">
-      <label>Roblox username
-        <input id="roblox-name" name="username" autocomplete="off" maxlength="20" required placeholder="Username">
-      </label>
+      <div class="field-label">
+        <span>Roblox username</span>
+        <button type="button" class="info-tip" aria-label="About Roblox username">i<span>Use the exact username on your Roblox account. It is checked once, and it cannot already belong to another JBA player.</span></button>
+      </div>
+      <input id="roblox-name" name="username" autocomplete="off" maxlength="20" required placeholder="Username">
       <p class="apply-status" id="name-status"></p>
-      <label>First choice
-        <select id="first-team" name="first" required>
-            <option value="">Select a team</option>
-            <option>Random</option>
-            <option>Arizona Wildcats</option>
-            <option>Baylor Bears</option>
-            <option>Duke Blue Devils</option>
-            <option>Florida Gators</option>
-            <option>Georgia Bulldogs</option>
-            <option>Houston Cougars</option>
-            <option>Kansas Jayhawks</option>
-            <option>Kentucky Wildcats</option>
-            <option>LSU Tigers</option>
-            <option>Miami Hurricanes</option>
-            <option>Michigan Wolverines</option>
-            <option>North Carolina Tar Heels</option>
-            <option>Ohio State Buckeyes</option>
-            <option>Oregon Ducks</option>
-            <option>UCLA Bruins</option>
-            <option>Virginia Cavaliers</option>
-        </select>
-      </label>
-      <label>Backup choice
-        <select id="second-team" name="second" required>
-            <option value="">Select a backup</option>
-            <option>Random</option>
-            <option>Arizona Wildcats</option>
-            <option>Baylor Bears</option>
-            <option>Duke Blue Devils</option>
-            <option>Florida Gators</option>
-            <option>Georgia Bulldogs</option>
-            <option>Houston Cougars</option>
-            <option>Kansas Jayhawks</option>
-            <option>Kentucky Wildcats</option>
-            <option>LSU Tigers</option>
-            <option>Miami Hurricanes</option>
-            <option>Michigan Wolverines</option>
-            <option>North Carolina Tar Heels</option>
-            <option>Ohio State Buckeyes</option>
-            <option>Oregon Ducks</option>
-            <option>UCLA Bruins</option>
-            <option>Virginia Cavaliers</option>
-        </select>
-      </label>
+      <p class="apply-status" id="unique-status"></p>
+
+      <div class="field-label">
+        <span>First available team choice</span>
+        <button type="button" class="info-tip" aria-label="About first team">i<span>The open team you want first. Random means you will take whatever team is still available.</span></button>
+      </div>
+      <div class="team-pick" data-placeholder="Select a team" data-input="first-team"></div>
+      <input type="hidden" id="first-team" name="first" required>
+
+      <div class="field-label">
+        <span>Backup available team choice</span>
+        <button type="button" class="info-tip" aria-label="About backup team">i<span>Used only if your first team is taken before you get it. It has to be a different team.</span></button>
+      </div>
+      <div class="team-pick" data-placeholder="Select a backup" data-input="second-team"></div>
+      <input type="hidden" id="second-team" name="second" required>
+
       <button class="cta-btn apply-submit" type="submit">Submit application</button>
       <p class="apply-status" id="form-status"></p>
     </form>
   </section>
   <script src="script.js"></script>
   <script>
+    const TEAMS = [
+      ["Random", ""],
+      ["Arizona Wildcats", "arizona.png"],
+      ["Baylor Bears", "baylor.png"],
+      ["Duke Blue Devils", "duke.png"],
+      ["Florida Gators", "florida.png"],
+      ["Georgia Bulldogs", "georgia.png"],
+      ["Houston Cougars", "houston.png"],
+      ["Kansas Jayhawks", "kansas.png"],
+      ["Kentucky Wildcats", "kentucky.png"],
+      ["LSU Tigers", "lsu.png"],
+      ["Miami Hurricanes", "miami.png"],
+      ["Michigan Wolverines", "michigan.png"],
+      ["North Carolina Tar Heels", "unc.png"],
+      ["Ohio State Buckeyes", "ohiostate.png"],
+      ["Oregon Ducks", "oregon.png"],
+      ["UCLA Bruins", "ucla.png"],
+      ["Virginia Cavaliers", "virginia.png"]
+    ];
     const form = document.getElementById("apply-form");
     const nameInput = document.getElementById("roblox-name");
     const nameStatus = document.getElementById("name-status");
+    const uniqueStatus = document.getElementById("unique-status");
     const formStatus = document.getElementById("form-status");
+    let claimed = [];
 
     function setStatus(el, message, ok) {
       el.textContent = message || "";
       el.className = "apply-status" + (message ? (ok ? " good" : " bad") : "");
     }
+
+    function dice() {
+      return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="16" cy="16" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>';
+    }
+
+    function optionMarkup(name, logo) {
+      const icon = name === "Random" ? dice() : '<img src="' + logo + '" alt="">';
+      return '<span class="pick-icon">' + icon + '</span><span>' + name + '</span>';
+    }
+
+    function buildPick(pick) {
+      const input = document.getElementById(pick.dataset.input);
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "pick-button is-empty";
+      button.textContent = pick.dataset.placeholder;
+      const menu = document.createElement("div");
+      menu.className = "pick-menu";
+      pick.appendChild(button);
+      pick.appendChild(menu);
+
+      function render() {
+        menu.innerHTML = "";
+        TEAMS.forEach(function (team) {
+          if (team[0] !== "Random" && claimed.indexOf(team[0]) !== -1) return;
+          const choice = document.createElement("button");
+          choice.type = "button";
+          choice.className = "pick-option";
+          choice.innerHTML = optionMarkup(team[0], team[1]);
+          choice.addEventListener("click", function () {
+            input.value = team[0];
+            button.innerHTML = optionMarkup(team[0], team[1]);
+            button.classList.remove("is-empty");
+            pick.classList.remove("is-open");
+          });
+          menu.appendChild(choice);
+        });
+        if (input.value && input.value !== "Random" && claimed.indexOf(input.value) !== -1) {
+          input.value = "";
+          button.className = "pick-button is-empty";
+          button.textContent = pick.dataset.placeholder;
+        }
+      }
+
+      button.addEventListener("click", function () {
+        document.querySelectorAll(".team-pick.is-open").forEach(function (open) {
+          if (open !== pick) open.classList.remove("is-open");
+        });
+        pick.classList.toggle("is-open");
+      });
+      pick.render = render;
+      render();
+    }
+
+    document.querySelectorAll(".team-pick").forEach(buildPick);
+    document.addEventListener("click", function (event) {
+      if (!event.target.closest(".team-pick")) {
+        document.querySelectorAll(".team-pick.is-open").forEach(function (open) {
+          open.classList.remove("is-open");
+        });
+      }
+    });
+
+    fetch("/api/apply").then(function (res) { return res.json(); }).then(function (data) {
+      claimed = data.takenTeams || [];
+      document.querySelectorAll(".team-pick").forEach(function (pick) { pick.render(); });
+    }).catch(function () {});
 
     async function checkApplication(checkOnly) {
       const res = await fetch("/api/apply", {
@@ -151,16 +213,30 @@
       return res.json();
     }
 
+    function showAccount(data) {
+      if (!data || !data.roblox) {
+        setStatus(uniqueStatus, "", false);
+        return;
+      }
+      setStatus(nameStatus, "Roblox account found: " + data.roblox.name, true);
+      setStatus(uniqueStatus, "Unique account: " + (data.unique ? "Yes" : "No"), !!data.unique);
+    }
+
     nameInput.addEventListener("blur", async function () {
       if (!nameInput.value.trim()) {
         setStatus(nameStatus, "", false);
+        setStatus(uniqueStatus, "", false);
         return;
       }
       setStatus(nameStatus, "Checking Roblox…", true);
+      setStatus(uniqueStatus, "", false);
       try {
         const data = await checkApplication(true);
-        if (data.ok) setStatus(nameStatus, "Roblox account found: " + data.roblox.name, true);
-        else setStatus(nameStatus, data.error || "That username could not be checked.", false);
+        if (data.roblox) showAccount(data);
+        else {
+          setStatus(nameStatus, data.error || "That username could not be checked.", false);
+          setStatus(uniqueStatus, "", false);
+        }
       } catch (err) {
         setStatus(nameStatus, "Could not check that username.", false);
       }
@@ -171,10 +247,15 @@
       setStatus(formStatus, "Checking application…", true);
       try {
         const data = await checkApplication(false);
+        showAccount(data);
         if (data && data.ok) {
-          setStatus(nameStatus, "Roblox account found: " + data.roblox.name, true);
           setStatus(formStatus, "Application accepted for " + data.roblox.displayName + ". This draft does not lock the team yet.", true);
           form.reset();
+          document.querySelectorAll(".team-pick").forEach(function (pick) {
+            const button = pick.querySelector(".pick-button");
+            button.className = "pick-button is-empty";
+            button.textContent = pick.dataset.placeholder;
+          });
         } else {
           setStatus(formStatus, (data && data.error) || "Application could not be submitted.", false);
         }
