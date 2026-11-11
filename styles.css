@@ -836,6 +836,11 @@ article h3 {
   user-select: none;
 }
 
+.team-pick {
+  position: relative;
+  margin-top: 0.4rem;
+}
+
 .pick-button,
 .pick-option {
   display: flex;
@@ -1087,6 +1092,7 @@ article h3 {
   object-fit: cover;
   background: #2a2a2a;
   flex: 0 0 28px;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.45);
 }
 
 .role-modal {

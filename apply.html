@@ -186,6 +186,7 @@
     let claimed = [];
     let signedPlayers = [];
     let roster = [];
+    let robloxReady = false;
 
     function displayName(player) {
       return player.name || player.username || "Player";
@@ -536,8 +537,6 @@
       setStatus(nameStatus, "Roblox account found: " + data.roblox.name, true);
       setStatus(uniqueStatus, "Unique account: " + (data.unique ? "Yes" : "No"), !!data.unique);
     }
-
-    let robloxReady = false;
 
     function refreshSubmit() {
       const button = document.getElementById("apply-submit");
