@@ -581,9 +581,22 @@ article h3 {
   margin-bottom: 0.7rem;
 }
 
-.directory-reg .section-head h2,
-.directory-reg .section-head a {
+.directory-reg .section-head h2 {
   text-align: center;
+}
+
+.dir-rules {
+  display: block;
+  margin-top: 0.75rem;
+  text-align: center;
+  color: #d0d0d0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.dir-rules:hover {
+  color: #fff;
 }
 
 .dir-card {
@@ -599,15 +612,20 @@ article h3 {
 
 .dir-mark {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 72%;
+  left: 22%;
+  top: 18%;
+  width: 42%;
   height: auto;
-  transform: translate(-50%, -50%) scale(1.55);
-  opacity: 0.25;
+  opacity: 0.1;
   pointer-events: none;
   z-index: 0;
   filter: none;
+  animation: dirDrift 26s ease-in-out infinite alternate;
+}
+
+@keyframes dirDrift {
+  from { transform: translate(-30%, -40%); }
+  to { transform: translate(48%, 62%); }
 }
 
 .dir-card > :not(.dir-mark) {
@@ -1118,8 +1136,8 @@ article h3 {
   list-style: none;
 }
 
-.leader-feature:hover,
-.leader-rest li:hover {
+.leader-feature:hover .discord-pfp,
+.leader-rest li:hover .discord-pfp {
   box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.55);
 }
 
