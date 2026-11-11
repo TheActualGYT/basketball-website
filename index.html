@@ -60,6 +60,10 @@
   <div class="role-modal" id="login-modal" hidden>
     <form class="role-card login-card" id="login-form">
       <p>Login</p>
+      <label for="discord-connect">Discord</label>
+      <button type="button" class="discord-connect is-empty" id="discord-connect">Connect Discord</button>
+      <p class="apply-status" id="discord-login-status"></p>
+      <p class="login-fine">You must allow Discord authorization, and join the official JBA Discord server in order to sign-up. This is to unlock the full mechanics of the site to function.</p>
       <label for="login-roblox">Roblox Username</label>
       <div class="player-fields" id="player-fields">
       <input id="login-roblox" name="roblox" maxlength="20" autocomplete="off" placeholder="Username">
@@ -83,9 +87,6 @@
         <span>Not a Player?</span>
       </label>
       <p class="login-fine">Not participating as a player? No problem. Please note that selecting this option renders you ineligible to play for a team or serve as a head/assistant coach until these fields are completed. You may update this information at any time in your profile settings. This option is for those who simply want a viewing experience while logged in.</p>
-      <label for="discord-connect">Discord</label>
-      <button type="button" class="discord-connect is-empty" id="discord-connect">Connect Discord</button>
-      <p class="apply-status" id="discord-login-status"></p>
       <button class="cta-btn" id="login-continue" type="submit" disabled>Continue</button>
       <button type="button" class="role-cancel" id="login-cancel">Cancel</button>
     </form>

@@ -1419,6 +1419,10 @@ article h3 {
 
 .login-card .login-build-label {
   margin-top: 1.15rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .login-card .team-pick {
@@ -1434,12 +1438,14 @@ article h3 {
   position: relative;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.45rem;
+  width: 100%;
   margin-top: 1rem;
   color: #fff;
   font-size: 0.82rem;
   font-weight: 700;
-  line-height: 1;
+  line-height: 0.82rem;
   cursor: pointer;
 }
 
