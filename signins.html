@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signin's | Junior Basketball Association</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <nav>
+      <div class="brand">
+        <a class="logo" href="home.html">
+          <img src="logo.png" alt="JBA Logo">
+          <span class="logo-name">Junior Basketball<br>Association</span>
+        </a>
+        <div class="nav-social">
+          <a href="https://discord.gg/36FHef566k" target="_blank" rel="noopener" aria-label="Discord"><img src="discord.svg" alt=""></a>
+          <a href="https://www.youtube.com/@PracticaIBasketball" target="_blank" rel="noopener" aria-label="YouTube"><img src="youtube.svg" alt=""></a>
+        </div>
+      </div>
+      <div class="nav-end">
+      <ul>
+        <li class="nav-drop">
+          <a href="rules.html" data-nav="league">League</a>
+          <div class="nav-menu">
+            <a href="rules.html" data-nav="rules">Rules</a>
+            <a href="teams.html" data-nav="teams">Teams</a>
+            <a href="players.html" data-nav="players">Players</a>
+            <a href="staff.html" data-nav="staff">Staff</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="standings.html" data-nav="standings">Standings</a>
+          <div class="nav-menu">
+            <a href="standings.html" data-nav="divisional">Divisional Standings</a>
+            <a href="power-rankings.html" data-nav="power">Power Rankings</a>
+            <a href="playoff.html" data-nav="playoff">Playoff Bracket</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="schedule.html" data-nav="games">Games</a>
+          <div class="nav-menu">
+            <a href="schedule.html" data-nav="schedule">Schedule</a>
+            <a href="scores.html" data-nav="scores">Final Scores</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="player-stats.html" data-nav="statistics">Statistics</a>
+          <div class="nav-menu">
+            <a href="team-stats.html" data-nav="team-stats">Team Stats</a>
+            <a href="player-stats.html" data-nav="player-stats">Player Stats</a>
+            <a href="records.html" data-nav="records">Records</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="mvp.html" data-nav="awards">Awards</a>
+          <div class="nav-menu">
+            <a href="mvp.html" data-nav="mvp">MVP Race</a>
+            <a href="all-stars.html" data-nav="all-stars">All-Stars</a>
+            <a href="hall-of-fame.html" data-nav="hall">Hall of Fame</a>
+          </div>
+        </li>
+        <li><a href="signins.html" data-nav="signins">SIGNIN'S</a></li>
+      </ul>
+      <span class="nav-user" id="nav-user" hidden></span>
+      </div>
+    </nav>
+  </header>
+
+
+  <section class="signins-page">
+    <h2>SIGNIN'S</h2>
+    <p class="apply-lead">Everyone who has allowed this site to use their Discord account.</p>
+    <div class="panel signin-list" id="signin-list"></div>
+  </section>
+  <script src="script.js"></script>
+  <script>
+    const SIGNINS = [
+      { id: "625380503335206912", username: "theactualgyt", name: "Guerrilla", avatar: "c1eaa5abd77a7640f499c4590ffa402a", status: "Free Agent" },
+      { id: "365233938945277952", username: "themoistbagle", name: "MoistBagle", avatar: "3001ae38526f038def2c6561973e7563", status: "Free Agent" }
+    ];
+    const list = document.getElementById("signin-list");
+    SIGNINS.sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (player) {
+      const row = document.createElement("article");
+      const img = document.createElement("img");
+      img.className = "roster-pfp";
+      img.alt = "";
+      img.referrerPolicy = "no-referrer";
+      img.src = "https://cdn.discordapp.com/avatars/" + player.id + "/" + player.avatar + ".png?size=128";
+      const copy = document.createElement("div");
+      const name = document.createElement("strong");
+      name.textContent = player.name;
+      const tag = document.createElement("span");
+      tag.textContent = "@" + player.username;
+      copy.appendChild(name);
+      copy.appendChild(tag);
+      const status = document.createElement("em");
+      status.textContent = player.status;
+      row.appendChild(img);
+      row.appendChild(copy);
+      row.appendChild(status);
+      list.appendChild(row);
+    });
+  </script>
+</body>
+</html>
