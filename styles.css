@@ -574,7 +574,7 @@ article h3 {
 
 .directory-reg {
   width: calc((100% - 3.2rem) * 1.35 / 2.15);
-  margin: 0 0 2.3rem;
+  margin: 0 auto 2.3rem;
 }
 
 .directory-reg .section-head {
@@ -606,7 +606,7 @@ article h3 {
 
 .dir-mark {
   position: absolute;
-  right: 26%;
+  right: 12%;
   top: 50%;
   width: 144px;
   height: 144px;
@@ -675,6 +675,7 @@ article h3 {
 
 .dir-card p:not(.dir-city) {
   color: #9a9a9a;
+  font-size: 0.86rem;
 }
 
 .dir-city {
@@ -1368,7 +1369,7 @@ article h3 {
 }
 
 .leader-stack {
-  gap: 0.75rem;
+  gap: 1.65rem;
 }
 
 
