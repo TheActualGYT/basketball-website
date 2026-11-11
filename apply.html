@@ -72,7 +72,7 @@
 
   <section class="apply-page">
     <h2>Team Application</h2>
-    <p class="apply-lead">Finish this application to potentially take ownership of one of the teams for Season 1.</p>
+    <p class="apply-lead">Please submit this application to be considered for team ownership in our first ever season.</p>
     <div class="apply-grid">
     <form class="panel apply-form" id="apply-form">
       <div class="section-banner"><h3 class="box-title">Ownership</h3></div>
@@ -126,6 +126,7 @@
         <ol class="roster-list roster-players" id="roster-list"></ol>
         <ol class="roster-list roster-staff" id="staff-list"></ol>
       </div>
+      <p class="roster-count roster-after">Additional players and staff can be added to the roster once your application is initially approved by staff. If you run into any bugs or concerns, please make a ticket in our server.</p>
     </aside>
     </div>
     <button class="cta-btn apply-submit" id="apply-submit" type="submit" form="apply-form" disabled>Submit application</button>
@@ -384,7 +385,7 @@
         const player = match.player;
         const button = document.createElement("button");
         button.type = "button";
-        button.appendChild(nameNode(player));
+        button.appendChild(nameNode(player, true));
         button.addEventListener("mousedown", function (event) {
           event.preventDefault();
           pendingPlayer = player;

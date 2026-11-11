@@ -699,7 +699,7 @@ article h3 {
 .apply-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.25rem;
+  gap: 2.4rem;
   align-items: start;
 }
 
@@ -1044,51 +1044,53 @@ article h3 {
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(100% + 0.35rem);
+  top: calc(100% + 0.3rem);
+  max-height: 240px;
+  overflow: auto;
+  scrollbar-width: none;
   flex-direction: column;
   margin: 0;
-  padding: 0.2rem 0;
-  background: #141414;
-  border: 0;
-  border-radius: 10px;
-  overflow: hidden;
+  padding: 0.35rem;
+  background: #101010;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 12px;
   z-index: 30;
 }
 
-.roster-box .player-search.is-open input {
-  border-color: rgba(255, 255, 255, 0.72);
-  border-radius: 10px;
-  box-shadow: none;
+.player-results::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
-.roster-box .player-search.is-open .player-results {
+.player-search.is-open .player-results {
   display: flex;
-  top: calc(100% + 0.35rem);
-  margin-top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-}
-
-.player-results button,
-.roster-list button {
-  border: 0;
-  background: #181818;
-  color: #fff;
-  font-family: inherit;
-  cursor: pointer;
 }
 
 .player-results button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
   text-align: left;
-  padding: 0.55rem 0.8rem;
+  padding: 0.42rem 0.45rem;
   border: 0;
-  border-radius: 0;
+  border-radius: 8px;
   background: transparent;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
 }
 
 .player-results button:hover {
   background: #242424;
+}
+
+.player-results .roster-pfp {
+  width: 22px;
+  height: 22px;
+  flex-basis: 22px;
 }
 
 .roster-count {
@@ -1096,6 +1098,10 @@ article h3 {
   color: #bdbdbd;
   font-size: 0.74rem;
   line-height: 1.35;
+}
+
+.roster-after {
+  margin: 0.85rem 0 0;
 }
 
 .roster-layout {
@@ -1506,11 +1512,13 @@ article h3 {
 }
 
 .roster-list button {
+  border: 0;
   color: #d0d0d0;
   font-size: 0.75rem;
   font-weight: 600;
   background: none;
   padding: 0;
+  cursor: pointer;
 }
 
 .apply-form {
