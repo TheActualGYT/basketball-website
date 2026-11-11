@@ -56,6 +56,13 @@ if (loginBtn) {
   const loginRoblox = document.getElementById("login-roblox");
   const loginContinue = document.getElementById("login-continue");
   let chosenBuild = "";
+  let robloxReady = false;
+
+  function setLoginStatus(el, message, ok) {
+    if (!el) return;
+    el.textContent = message || "";
+    el.className = "apply-status" + (message ? (ok ? " good" : " bad") : "");
+  }
 
   function pendingProfile() {
     try { return JSON.parse(localStorage.getItem("jba-login-profile") || "null"); } catch (err) { return null; }
@@ -124,7 +131,42 @@ if (loginBtn) {
 
   function refreshLoginContinue() {
     if (!loginContinue || !loginRoblox) return;
-    loginContinue.disabled = !(loginRoblox.value.trim() && chosenBuild);
+    loginContinue.disabled = !(robloxReady && chosenBuild);
+  }
+
+  async function checkLoginRoblox() {
+    const username = loginRoblox.value.trim();
+    robloxReady = false;
+    refreshLoginContinue();
+    const nameStatus = document.getElementById("login-name-status");
+    const uniqueStatus = document.getElementById("login-unique-status");
+    if (!username) {
+      setLoginStatus(nameStatus, "", false);
+      setLoginStatus(uniqueStatus, "", false);
+      return;
+    }
+    setLoginStatus(nameStatus, "Checking Roblox…", true);
+    setLoginStatus(uniqueStatus, "", false);
+    try {
+      const res = await fetch("/api/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: username, checkOnly: true })
+      });
+      const data = await res.json();
+      if (data && data.roblox) {
+        setLoginStatus(nameStatus, "Roblox account found: " + data.roblox.name, true);
+        setLoginStatus(uniqueStatus, "Unique account: " + (data.unique ? "Yes" : "No"), !!data.unique);
+        robloxReady = !!(data.ok && data.unique);
+      } else {
+        setLoginStatus(nameStatus, (data && data.error) || "That username could not be checked.", false);
+        setLoginStatus(uniqueStatus, "", false);
+      }
+    } catch (err) {
+      setLoginStatus(nameStatus, "Could not check that username.", false);
+      setLoginStatus(uniqueStatus, "", false);
+    }
+    refreshLoginContinue();
   }
 
   function startDiscordLogin() {
@@ -182,15 +224,33 @@ if (loginBtn) {
     }, 400);
   }
 
-  if (loginRoblox) loginRoblox.addEventListener("input", refreshLoginContinue);
-  document.querySelectorAll("#build-picks button").forEach(function (button) {
-    button.addEventListener("click", function () {
-      chosenBuild = button.dataset.build;
-      document.querySelectorAll("#build-picks button").forEach(function (item) {
-        item.classList.toggle("is-selected", item === button);
-      });
+  if (loginRoblox) {
+    loginRoblox.addEventListener("input", function () {
+      robloxReady = false;
+      setLoginStatus(document.getElementById("login-name-status"), "", false);
+      setLoginStatus(document.getElementById("login-unique-status"), "", false);
       refreshLoginContinue();
     });
+    loginRoblox.addEventListener("blur", checkLoginRoblox);
+  }
+  const buildPick = document.getElementById("build-pick");
+  const buildButton = document.getElementById("build-button");
+  if (buildButton) {
+    buildButton.addEventListener("click", function () {
+      buildPick.classList.toggle("is-open");
+    });
+  }
+  document.querySelectorAll("#build-menu .pick-option").forEach(function (button) {
+    button.addEventListener("click", function () {
+      chosenBuild = button.dataset.build;
+      buildButton.textContent = button.textContent;
+      buildButton.classList.remove("is-empty");
+      buildPick.classList.remove("is-open");
+      refreshLoginContinue();
+    });
+  });
+  document.addEventListener("click", function (event) {
+    if (buildPick && !event.target.closest("#build-pick")) buildPick.classList.remove("is-open");
   });
   document.getElementById("login-cancel").addEventListener("click", function () {
     if (loginModal) loginModal.hidden = true;
@@ -199,7 +259,7 @@ if (loginBtn) {
     loginForm.addEventListener("submit", function (event) {
       event.preventDefault();
       const roblox = loginRoblox.value.trim();
-      if (!roblox || !chosenBuild) return;
+      if (!robloxReady || !roblox || !chosenBuild) return;
       localStorage.setItem("jba-login-profile", JSON.stringify({ roblox: roblox, build: chosenBuild }));
       if (loginModal) loginModal.hidden = true;
       const signed = existing && verifiedUser(existing) ? existing : null;

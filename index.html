@@ -49,14 +49,19 @@
       <p>Login</p>
       <label for="login-roblox">Roblox username</label>
       <input id="login-roblox" name="roblox" maxlength="20" autocomplete="off" required placeholder="Username">
-      <p class="login-warn">If this is not your Roblox account, that is a serious offense and against our rules.</p>
+      <p class="apply-status" id="login-name-status"></p>
+      <p class="apply-status" id="login-unique-status"></p>
+      <p class="login-fine">Submitting a Roblox account that does not belong to you is strictly prohibited and constitutes a major violation of our terms.</p>
       <p class="login-build-label">Build</p>
-      <div class="build-picks" id="build-picks">
-        <button type="button" data-build="Guard">GUARD [PG / SG]</button>
-        <button type="button" data-build="Forward">FORWARD [SF / PF]</button>
-        <button type="button" data-build="Big">BIG [C / PF]</button>
+      <div class="team-pick" id="build-pick">
+        <button type="button" class="pick-button is-empty" id="build-button">Select a build</button>
+        <div class="pick-menu" id="build-menu">
+          <button type="button" class="pick-option" data-build="Guard">GUARD [PG / SG]</button>
+          <button type="button" class="pick-option" data-build="Forward">FORWARD [SF / PF]</button>
+          <button type="button" class="pick-option" data-build="Big">BIG [C / PF]</button>
+        </div>
       </div>
-      <p class="login-lock">You can only stay on one build for the entire season. This can be changed until you are on an approved roster. Once you are on an approved roster, your build is locked and cannot be changed.</p>
+      <p class="login-fine">You can only stay on one build for the entire season. This can be changed until you are on an approved roster. Once you are on an approved roster, your build is locked and cannot be changed.</p>
       <button class="cta-btn" id="login-continue" type="submit" disabled>Continue</button>
       <button type="button" class="role-cancel" id="login-cancel">Cancel</button>
     </form>

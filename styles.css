@@ -1385,41 +1385,25 @@ article h3 {
   font-size: 0.92rem;
 }
 
-.login-warn {
-  margin: 0.55rem 0 0 !important;
-  color: #ff8fa3;
-  font-size: 0.75rem;
-  line-height: 1.4;
-}
-
-.login-lock {
-  margin: 0.7rem 0 0 !important;
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 0.72rem;
-  line-height: 1.4;
-}
-
-.build-picks {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.build-picks button {
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: #101010;
+.login-card .login-fine {
+  margin: 0.55rem 0 0;
   color: #fff;
-  border-radius: 10px;
-  padding: 0.65rem 0.75rem;
-  font-family: inherit;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  cursor: pointer;
+  opacity: 0.5;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
-.build-picks button.is-selected {
-  border-color: rgba(255, 255, 255, 0.92);
+.login-card .login-build-label {
+  margin-top: 1.15rem;
+}
+
+.login-card .team-pick {
+  margin-top: 0;
+}
+
+.login-card .pick-menu {
+  z-index: 8;
 }
 
 .login-card .cta-btn {
