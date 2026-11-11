@@ -133,16 +133,16 @@
           <button type="button" data-role="Player">Player</button>
           <button type="button" data-role="Head Coach">Head Coach</button>
           <button type="button" data-role="Assistant Coach">Assistant Coach</button>
-          <div class="owner-only-row" id="owner-only-choice" hidden>
-            <button type="button" data-role="Owner ONLY">Owner ONLY</button>
-            <button type="button" class="info-tip" aria-label="About owner only">i<span>Owner only keeps this account on the roster for team transactions and management. They cannot play or coach.</span></button>
-          </div>
+          <button type="button" data-role="Owner ONLY" id="owner-only-choice" class="owner-only-btn">
+            <span>Owner ONLY</span>
+            <span class="inline-info">i<span>Owner only keeps this account on the roster for team transactions and management. They cannot play or coach.</span></span>
+          </button>
         </div>
         <div class="role-footer">
           <button type="button" class="role-remove" data-role="remove" hidden>Remove</button>
           <button type="button" class="role-cancel" data-role="cancel">Cancel</button>
         </div>
-        <p class="role-later">These roles can be changed even after registration.</p>
+        <p class="role-later">These roles can be changed even after registration. Players and coaching staff can also be added after registration.</p>
       </div>
     </div>
   <script src="discord-config.js"></script>
@@ -363,6 +363,7 @@
 
     document.querySelector(".role-card").addEventListener("click", function (event) {
       event.stopPropagation();
+      if (event.target.closest(".inline-info")) return;
       const choice = event.target.closest("[data-role]");
       const role = choice ? choice.getAttribute("data-role") : "";
       if (!role) return;

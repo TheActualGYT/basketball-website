@@ -1001,26 +1001,28 @@ article h3 {
   position: relative;
 }
 
+.player-search.is-open {
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 10px;
+  background: #101010;
+  overflow: hidden;
+}
+
 .player-results {
   display: none;
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 100%;
+  position: static;
   flex-direction: column;
-  gap: 0.2rem;
-  margin-top: -1px;
-  padding: 0.35rem;
+  margin: 0;
+  padding: 0.15rem 0 0.25rem;
   background: #101010;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-top: 0;
-  border-radius: 0 0 10px 10px;
-  z-index: 8;
+  border: 0;
+  border-radius: 0;
 }
 
 .player-search.is-open input {
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28);
 }
 
 .player-search.is-open .player-results {
@@ -1038,9 +1040,10 @@ article h3 {
 
 .player-results button {
   text-align: left;
-  padding: 0.5rem 0.65rem;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.55rem 0.8rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .player-results button:hover {
@@ -1230,7 +1233,7 @@ article h3 {
   justify-content: center;
   align-items: center;
   gap: 1.15rem;
-  margin-top: 0.85rem;
+  margin-top: 0.7rem;
 }
 
 .role-footer button {
@@ -1268,26 +1271,54 @@ article h3 {
   text-transform: none;
 }
 
-.owner-only-row {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
+.owner-only-btn[hidden] {
+  display: none;
 }
 
-.owner-only-row > button[data-role] {
-  flex: 1;
+.inline-info {
+  position: absolute;
+  right: 0.7rem;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 13px;
+  text-align: center;
 }
 
-.owner-only-row:hover .info-tip span,
-.owner-only-row:focus-within .info-tip span {
+.inline-info span {
+  display: none;
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.45rem);
+  width: 220px;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  background: #101010;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #eee;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: 0;
+  z-index: 6;
+}
+
+.inline-info:hover span,
+.owner-only-btn:hover .inline-info span {
   display: block;
 }
 
 .role-later {
-  margin: 0.85rem 0 0;
+  margin: 0.35rem 0 0;
   color: rgba(255, 255, 255, 0.5);
-  font-size: 0.75rem;
-  line-height: 1.4;
+  font-size: 0.64rem;
+  line-height: 1.35;
 }
 
 .role-edit {
