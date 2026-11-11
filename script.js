@@ -69,6 +69,8 @@ if (loginBtn) {
   const loginForm = document.getElementById("login-form");
   const loginRoblox = document.getElementById("login-roblox");
   const loginContinue = document.getElementById("login-continue");
+  const returning = location.search.indexOf("connected=1") !== -1 || sessionStorage.getItem("jba-resume-login") === "1";
+  if (returning && loginModal) loginModal.hidden = false;
   let chosenBuild = "";
   let robloxReady = false;
   let connectedDiscord = null;
@@ -253,6 +255,7 @@ if (loginBtn) {
     url.searchParams.set("redirect_uri", redirect);
     url.searchParams.set("prompt", "consent");
     localStorage.removeItem("jba-discord-status");
+    sessionStorage.setItem("jba-resume-login", "1");
     location.assign(url.toString());
   }
 
@@ -341,12 +344,10 @@ if (loginBtn) {
 
   restoreDraft();
   paintIfSaved();
-  if (location.search.indexOf("connected=1") !== -1) {
+  if (returning || connectedDiscord) {
     if (loginModal) loginModal.hidden = false;
-    if (!savedDiscord()) {
-      setLoginStatus(document.getElementById("discord-login-status"), "Discord did not return an account. Click Connect Discord again.", false);
-    }
-    history.replaceState(null, "", "index.html");
+    sessionStorage.removeItem("jba-resume-login");
+    if (location.search.indexOf("connected=1") !== -1) history.replaceState(null, "", location.pathname);
   }
 
   loginBtn.addEventListener("click", function () {
