@@ -121,10 +121,7 @@
       <p class="roster-count" id="roster-count">Teams must include at least 5 active players, coaches are optional. Owners can be a player themselves, or team staff.</p>
       <div class="roster-layout">
         <ol class="roster-list roster-players" id="roster-list"></ol>
-        <div class="staff-side">
-          <p class="staff-label">Staff</p>
-          <ol class="roster-list" id="staff-list"></ol>
-        </div>
+        <ol class="roster-list roster-staff" id="staff-list"></ol>
       </div>
     </aside>
     </div>
@@ -241,13 +238,13 @@
     }
 
     function fillSlots(list, rows, players) {
-      const staffLabels = ["HEAD COACH slot — Empty", "ASSISTANT COACH slot — Empty", "OWNER ONLY slot — Empty"];
+      const staffLabels = ["HEAD COACH — Empty", "ASSISTANT COACH — Empty", "OWNER ONLY — Empty"];
       list.innerHTML = "";
       rows.forEach(function (player, index) {
         const item = document.createElement("li");
         if (!player) {
           item.className = "is-empty";
-          item.textContent = players ? "PLAYER slot — Empty" + (index < 5 ? " *" : "") : staffLabels[index];
+          item.textContent = players ? "PLAYER — Empty" + (index < 5 ? " *" : "") : staffLabels[index];
           list.appendChild(item);
           return;
         }
