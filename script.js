@@ -38,6 +38,20 @@ function verifiedUser(user) {
   return !!(user && user.serverChecked && (user.username || user.name));
 }
 
+function clearTestLogin() {
+  if (localStorage.getItem("jba-auth-reset") === "2") return;
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
+  const name = saved && String(saved.username || "").toLowerCase();
+  if (name === "theactualgyt") {
+    localStorage.removeItem("jba-discord");
+    localStorage.removeItem("jba-login-profile");
+    document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
+  }
+  localStorage.setItem("jba-auth-reset", "2");
+}
+clearTestLogin();
+
 const loginBtn = document.getElementById("login-btn");
 const loginNote = document.getElementById("login-note");
 if (loginBtn) {
@@ -57,6 +71,7 @@ if (loginBtn) {
   const loginContinue = document.getElementById("login-continue");
   let chosenBuild = "";
   let robloxReady = false;
+  let connectedDiscord = null;
 
   function setLoginStatus(el, message, ok) {
     if (!el) return;
@@ -76,27 +91,41 @@ if (loginBtn) {
     return Object.assign({}, user, { roblox: extra.roblox, build: extra.build, notPlayer: false });
   }
 
-  function applyDiscordUser(user) {
-    user = withProfile(user);
-    if (!verifiedUser(user) || !(user.notPlayer || (user.roblox && user.build))) return;
-    localStorage.setItem("jba-discord", JSON.stringify(user));
-    localStorage.removeItem("jba-discord-status");
-    loginBtn.textContent = user.username || user.name;
+  function rememberDiscord(user) {
+    if (!verifiedUser(user)) return;
+    connectedDiscord = user;
+    localStorage.setItem("jba-discord", JSON.stringify(withProfile(user)));
+    const box = document.getElementById("discord-connect");
+    if (box) {
+      const handle = user.username ? " (@" + user.username + ")" : "";
+      box.textContent = (user.name || user.username) + handle;
+      box.classList.remove("is-empty");
+    }
+    setLoginStatus(document.getElementById("discord-login-status"), "", true);
     if (loginNote) loginNote.hidden = true;
-    location.replace("home.html");
+    refreshLoginContinue();
+  }
+
+  function applyDiscordUser(user) {
+    rememberDiscord(user);
   }
 
   function showLoginStatus(info) {
-    if (!loginNote || !info) return;
-    loginNote.hidden = false;
+    const line = document.getElementById("discord-login-status");
+    if (!info) return;
     if (info.needsJoin) {
       localStorage.removeItem("jba-discord");
-      loginBtn.textContent = "Login";
-      const invite = info.invite || "https://discord.gg/36FHef566k";
-      loginNote.innerHTML = 'Discord does not see this account in the JBA server yet. Join the <a href="' + invite + '" target="_blank" rel="noopener">JBA Discord</a>, then click Login again.';
+      connectedDiscord = null;
+      const box = document.getElementById("discord-connect");
+      if (box) {
+        box.textContent = "Connect Discord";
+        box.classList.add("is-empty");
+      }
+      setLoginStatus(line, "Join the JBA Discord server, then connect again.", false);
+      refreshLoginContinue();
       return;
     }
-    loginNote.textContent = info.error || "Discord login could not be completed.";
+    setLoginStatus(line, info.error || "Discord login could not be completed.", false);
   }
 
   function readLoginStatus() {
@@ -134,7 +163,8 @@ if (loginBtn) {
   function refreshLoginContinue() {
     if (!loginContinue || !loginRoblox) return;
     const skipped = document.getElementById("not-player") && document.getElementById("not-player").checked;
-    loginContinue.disabled = skipped ? false : !(robloxReady && chosenBuild);
+    const profileOk = skipped || (robloxReady && chosenBuild);
+    loginContinue.disabled = !(connectedDiscord && profileOk);
   }
 
   async function checkLoginRoblox() {
@@ -268,20 +298,21 @@ if (loginBtn) {
       const skipped = document.getElementById("not-player") && document.getElementById("not-player").checked;
       const roblox = loginRoblox.value.trim();
       if (!skipped && (!robloxReady || !roblox || !chosenBuild)) return;
-      localStorage.setItem("jba-login-profile", JSON.stringify({
+      if (!connectedDiscord) return;
+      const profile = {
         roblox: skipped ? "" : roblox,
         build: skipped ? "" : chosenBuild,
         notPlayer: !!skipped
-      }));
-      if (loginModal) loginModal.hidden = true;
-      const signed = existing && verifiedUser(existing) ? existing : null;
-      if (signed) {
-        applyDiscordUser(signed);
-        return;
-      }
-      startDiscordLogin();
+      };
+      localStorage.setItem("jba-login-profile", JSON.stringify(profile));
+      const user = Object.assign({}, connectedDiscord, profile);
+      localStorage.setItem("jba-discord", JSON.stringify(user));
+      localStorage.removeItem("jba-discord-status");
+      location.replace("home.html");
     });
   }
+
+  document.getElementById("discord-connect").addEventListener("click", startDiscordLogin);
 
   loginBtn.addEventListener("click", function () {
     if (loginModal) loginModal.hidden = false;

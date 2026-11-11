@@ -8,6 +8,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     (function () {
+      function wipeTestLogin() {
+        if (localStorage.getItem("jba-auth-reset") === "2") return;
+        var saved = null;
+        try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
+        var name = saved && String(saved.username || "").toLowerCase();
+        if (name === "theactualgyt") {
+          localStorage.removeItem("jba-discord");
+          localStorage.removeItem("jba-login-profile");
+          document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
+        }
+        localStorage.setItem("jba-auth-reset", "2");
+      }
+      wipeTestLogin();
       function signedIn(user) {
         return !!(user && user.serverChecked && (user.username || user.name) && ((user.roblox && user.build) || user.notPlayer));
       }
@@ -66,9 +79,13 @@
       </div>
       <label class="not-player" for="not-player">
         <input type="checkbox" id="not-player">
+        <span class="not-box" aria-hidden="true"></span>
         <span>Not a Player?</span>
       </label>
-      <p class="login-fine">You cannot be on a team, or be submitted to a team, until you fill the rest of this information out.</p>
+      <p class="login-fine">Not participating as a player? No problem. Please note that selecting this option renders you ineligible to play for a team or serve as a head/assistant coach until these fields are completed. You may update this information at any time in your profile settings. This option is for those who simply want a viewing experience while logged in.</p>
+      <label for="discord-connect">Discord</label>
+      <button type="button" class="discord-connect is-empty" id="discord-connect">Connect Discord</button>
+      <p class="apply-status" id="discord-login-status"></p>
       <button class="cta-btn" id="login-continue" type="submit" disabled>Continue</button>
       <button type="button" class="role-cancel" id="login-cancel">Cancel</button>
     </form>
