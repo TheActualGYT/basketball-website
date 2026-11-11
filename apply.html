@@ -118,7 +118,7 @@
         <input id="player-search" type="search" placeholder="Search players" autocomplete="off">
         <div class="player-results" id="player-results"></div>
       </div>
-      <p class="roster-count" id="roster-count">Owner plus 0 players. Add at least 4, up to 10.</p>
+      <p class="roster-count" id="roster-count">Teams must include at least 5 active players. Coaches are optional, owners can be a player themselves, or team staff.</p>
       <ol class="roster-list" id="roster-list"></ol>
     </aside>
     </div>
@@ -242,7 +242,7 @@
         item.appendChild(side);
         list.appendChild(item);
       });
-      count.textContent = "Owner plus " + roster.length + " player" + (roster.length === 1 ? "" : "s") + ". Add at least 4, up to 10.";
+      count.textContent = "Teams must include at least 5 active players. Coaches are optional, owners can be a player themselves, or team staff.";
       refreshSubmit();
     }
 
@@ -542,9 +542,11 @@
       pick.appendChild(menu);
 
       function render() {
+        const other = document.getElementById(input.id === "first-team" ? "second-team" : "first-team");
         menu.innerHTML = "";
         TEAMS.forEach(function (team) {
           if (team[0] !== "Random" && claimed.indexOf(team[0]) !== -1) return;
+          if (other && other.value && team[0] === other.value) return;
           const choice = document.createElement("button");
           choice.type = "button";
           choice.className = "pick-option";
@@ -553,12 +555,22 @@
             input.value = team[0];
             button.innerHTML = optionMarkup(team[0], team[1]);
             button.classList.remove("is-empty");
+            if (other && other.value === team[0]) {
+              other.value = "";
+              const otherPick = document.querySelector('.team-pick[data-input="' + other.id + '"]');
+              const otherButton = otherPick.querySelector(".pick-button");
+              otherButton.className = "pick-button is-empty";
+              otherButton.textContent = otherPick.dataset.placeholder;
+            }
             input.dispatchEvent(new Event("change"));
+            document.querySelectorAll(".team-pick").forEach(function (item) {
+              if (item.render) item.render();
+            });
             pick.classList.remove("is-open");
           });
           menu.appendChild(choice);
         });
-        if (input.value && input.value !== "Random" && claimed.indexOf(input.value) !== -1) {
+        if (input.value && ((input.value !== "Random" && claimed.indexOf(input.value) !== -1) || (other && other.value === input.value))) {
           input.value = "";
           button.className = "pick-button is-empty";
           button.textContent = pick.dataset.placeholder;
@@ -616,8 +628,9 @@
       const button = document.getElementById("apply-submit");
       const first = document.getElementById("first-team").value;
       const second = document.getElementById("second-team").value;
-      const teamsOk = first && second && (first === "Random" || first !== second);
-      button.disabled = !(signedInUser() && robloxReady && teamsOk && roster.length >= 4 && roster.length <= 10);
+      const teamsOk = first && second && first !== second;
+      const active = roster.filter(function (player) { return player.role === "Player"; }).length + (ownerRole === "Player" ? 1 : 0);
+      button.disabled = !(signedInUser() && robloxReady && teamsOk && active >= 5 && roster.length <= 10);
     }
 
     nameInput.addEventListener("input", function () {
