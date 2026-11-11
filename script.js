@@ -91,6 +91,20 @@ if (loginBtn) {
     return Object.assign({}, user, { roblox: extra.roblox, build: extra.build, notPlayer: false });
   }
 
+  function savedDiscord() {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
+    if (verifiedUser(saved)) return saved;
+    const cookie = userFromCookie();
+    if (verifiedUser(cookie)) return cookie;
+    return null;
+  }
+
+  function paintIfSaved() {
+    const user = savedDiscord();
+    if (user) rememberDiscord(user);
+  }
+
   function rememberDiscord(user) {
     if (!verifiedUser(user)) return;
     connectedDiscord = user;
@@ -256,16 +270,8 @@ if (loginBtn) {
     popup.focus();
     const started = Date.now();
     const watch = setInterval(function () {
-      const cookieUser = userFromCookie();
-      if (verifiedUser(cookieUser)) {
-        applyDiscordUser(cookieUser);
-        clearInterval(watch);
-        return;
-      }
-      let savedUser = null;
-      try { savedUser = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
-      if (verifiedUser(savedUser)) {
-        applyDiscordUser(savedUser);
+      paintIfSaved();
+      if (connectedDiscord) {
         clearInterval(watch);
         return;
       }
@@ -332,9 +338,19 @@ if (loginBtn) {
 
   document.getElementById("discord-connect").addEventListener("click", startDiscordLogin);
 
+  window.addEventListener("focus", paintIfSaved);
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) paintIfSaved();
+  });
+  paintIfSaved();
+  if (savedDiscord() || location.search.indexOf("connected=1") !== -1) {
+    if (loginModal) loginModal.hidden = false;
+  }
+
   loginBtn.addEventListener("click", function () {
     if (loginModal) loginModal.hidden = false;
-    if (loginRoblox) loginRoblox.focus();
+    paintIfSaved();
+    if (!connectedDiscord && loginRoblox) loginRoblox.focus();
   });
 }
 

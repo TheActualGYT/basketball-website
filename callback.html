@@ -41,12 +41,20 @@
     function finish(user) {
       localStorage.setItem("jba-discord", JSON.stringify(user));
       localStorage.removeItem("jba-discord-status");
-      tellOpener({ type: "jba-discord", user: user });
-      if (window.opener) {
-        window.close();
-        return;
-      }
-      location.replace("home.html");
+      let tries = 0;
+      const timer = setInterval(function () {
+        tellOpener({ type: "jba-discord", user: user });
+        tries += 1;
+        if (tries < 8) return;
+        clearInterval(timer);
+        const fromPopup = window.name === "jba-discord-login" || !!window.opener;
+        if (fromPopup) {
+          window.close();
+          setTimeout(function () { location.replace("index.html?connected=1"); }, 400);
+          return;
+        }
+        location.replace("index.html?connected=1");
+      }, 150);
     }
 
     function requireJoin(invite) {
