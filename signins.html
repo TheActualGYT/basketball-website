@@ -77,9 +77,7 @@
   </section>
   <script src="script.js"></script>
   <script>
-    const SIGNINS = [
-      { id: "365233938945277952", username: "themoistbagle", name: "MoistBagle", avatar: "3001ae38526f038def2c6561973e7563", status: "Free Agent" }
-    ];
+    const SIGNINS = [];
     const list = document.getElementById("signin-list");
     SIGNINS.sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (player) {
       const row = document.createElement("article");

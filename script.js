@@ -38,22 +38,15 @@ function verifiedUser(user) {
   return !!(user && user.serverChecked && (user.username || user.name));
 }
 
-const KNOWN_PROFILES = {
-  themoistbagle: { id: "365233938945277952", avatar: "3001ae38526f038def2c6561973e7563", name: "MoistBagle", username: "themoistbagle" },
-  moistbagle: { id: "365233938945277952", avatar: "3001ae38526f038def2c6561973e7563", name: "MoistBagle", username: "themoistbagle" }
-};
+const KNOWN_PROFILES = {};
 
 function clearTestLogin() {
-  if (localStorage.getItem("jba-auth-reset") === "2") return;
-  let saved = null;
-  try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
-  const name = saved && String(saved.username || "").toLowerCase();
-  if (name === "theactualgyt") {
-    localStorage.removeItem("jba-discord");
-    localStorage.removeItem("jba-login-profile");
-    document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
-  }
-  localStorage.setItem("jba-auth-reset", "2");
+  if (localStorage.getItem("jba-auth-reset") === "3") return;
+  localStorage.removeItem("jba-discord");
+  localStorage.removeItem("jba-login-profile");
+  localStorage.removeItem("jba-discord-status");
+  document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
+  localStorage.setItem("jba-auth-reset", "3");
 }
 clearTestLogin();
 
@@ -428,6 +421,7 @@ function fillMoistbagleAvatar() {
   const img = document.querySelector(".leader-feature img.discord-pfp");
   if (!img) return;
   const known = KNOWN_PROFILES.themoistbagle;
+  if (!known) return;
   img.src = discordAvatarUrl(known);
   img.referrerPolicy = "no-referrer";
 }

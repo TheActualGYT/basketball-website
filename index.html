@@ -9,16 +9,12 @@
   <script>
     (function () {
       function wipeTestLogin() {
-        if (localStorage.getItem("jba-auth-reset") === "2") return;
-        var saved = null;
-        try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
-        var name = saved && String(saved.username || "").toLowerCase();
-        if (name === "theactualgyt") {
-          localStorage.removeItem("jba-discord");
-          localStorage.removeItem("jba-login-profile");
-          document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
-        }
-        localStorage.setItem("jba-auth-reset", "2");
+        if (localStorage.getItem("jba-auth-reset") === "3") return;
+        localStorage.removeItem("jba-discord");
+        localStorage.removeItem("jba-login-profile");
+        localStorage.removeItem("jba-discord-status");
+        document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
+        localStorage.setItem("jba-auth-reset", "3");
       }
       wipeTestLogin();
       function signedIn(user) {

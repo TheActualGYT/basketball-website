@@ -1,10 +1,6 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-const FALLBACK = [
-  { id: "365233938945277952", username: "themoistbagle", name: "MoistBagle", avatar: "3001ae38526f038def2c6561973e7563", status: "Free Agent" }
-];
-
 function readJson(name) {
   try {
     return JSON.parse(readFileSync(join(process.cwd(), name), "utf8"));
@@ -22,7 +18,7 @@ export default function handler(req, res) {
     if (player.id) taken.add(String(player.id));
     if (player.username) taken.add(String(player.username).toLowerCase());
   });
-  const filePlayers = signed.players && signed.players.length ? signed.players : FALLBACK;
+  const filePlayers = Array.isArray(signed.players) ? signed.players : [];
   const players = filePlayers.filter(function (player) {
     if (player.id && taken.has(String(player.id))) return false;
     if (player.username && taken.has(String(player.username).toLowerCase())) return false;
