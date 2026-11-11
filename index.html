@@ -46,7 +46,7 @@
       <img src="logo.png" alt="JBA" class="hero-logo">
       <h1 class="league-title">Junior Basketball Association</h1>
       <div class="hero-actions">
-        <button type="button" class="cta-btn" id="login-btn">Login</button>
+        <button type="button" class="cta-btn" id="login-btn" onclick="var m=document.getElementById('login-modal');m.hidden=false;m.style.display='flex'">Login</button>
         <a href="home.html" class="cta-btn">View League</a>
       </div>
       <p class="login-note" id="login-note" hidden></p>
@@ -91,6 +91,23 @@
       <button type="button" class="role-cancel" id="login-cancel">Cancel</button>
     </form>
   </div>
+  <script>
+    (function () {
+      var params = location.search.indexOf("connected=1") !== -1;
+      var resume = false;
+      try { resume = sessionStorage.getItem("jba-resume-login") === "1"; } catch (err) {}
+      var saved = null;
+      try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
+      var unfinished = saved && saved.serverChecked && (saved.username || saved.name) && !((saved.roblox && saved.build) || saved.notPlayer);
+      if (params || resume || unfinished) {
+        var modal = document.getElementById("login-modal");
+        if (modal) {
+          modal.hidden = false;
+          modal.style.display = "flex";
+        }
+      }
+    })();
+  </script>
 
   <script src="discord-config.js"></script>
   <script src="script.js"></script>

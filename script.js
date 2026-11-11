@@ -292,7 +292,10 @@ if (loginBtn) {
     refreshLoginContinue();
   });
   document.getElementById("login-cancel").addEventListener("click", function () {
-    if (loginModal) loginModal.hidden = true;
+    if (loginModal) {
+      loginModal.hidden = true;
+      loginModal.style.display = "";
+    }
   });
   if (loginForm) {
     loginForm.addEventListener("submit", function (event) {
@@ -343,16 +346,21 @@ if (loginBtn) {
   }
 
   restoreDraft();
-  paintIfSaved();
+  try { paintIfSaved(); } catch (err) {}
   if (returning || connectedDiscord) {
-    if (loginModal) loginModal.hidden = false;
+    if (loginModal) {
+      loginModal.hidden = false;
+      loginModal.style.display = "flex";
+    }
     sessionStorage.removeItem("jba-resume-login");
-    if (location.search.indexOf("connected=1") !== -1) history.replaceState(null, "", location.pathname);
   }
 
   loginBtn.addEventListener("click", function () {
-    if (loginModal) loginModal.hidden = false;
-    paintIfSaved();
+    if (loginModal) {
+      loginModal.hidden = false;
+      loginModal.style.display = "flex";
+    }
+    try { paintIfSaved(); } catch (err) {}
     if (!connectedDiscord && loginRoblox) loginRoblox.focus();
   });
 }
