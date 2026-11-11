@@ -119,9 +119,13 @@
         <div class="player-results" id="player-results"></div>
       </div>
       <p class="roster-count" id="roster-count">Teams must include at least 5 active players, coaches are optional. Owners can be a player themselves, or team staff.</p>
-      <ol class="roster-list" id="roster-list"></ol>
-      <p class="staff-label">Staff</p>
-      <ol class="roster-list" id="staff-list"></ol>
+      <div class="roster-layout">
+        <ol class="roster-list roster-players" id="roster-list"></ol>
+        <div class="staff-side">
+          <p class="staff-label">Staff</p>
+          <ol class="roster-list" id="staff-list"></ol>
+        </div>
+      </div>
     </aside>
     </div>
     <button class="cta-btn apply-submit" id="apply-submit" type="submit" form="apply-form" disabled>Submit application</button>
@@ -219,28 +223,31 @@
       const owner = signedInUser();
       const ownerEntry = { owner: true, role: ownerRole, name: owner ? displayName(owner) : "Owner", username: owner ? tagName(owner) : "", id: owner && owner.id, avatar: owner && owner.avatar };
       const playerRows = [];
-      const staffRows = [];
       if (ownerRole === "Player") playerRows.push(ownerEntry);
-      else staffRows.push(ownerEntry);
       roster.forEach(function (player) {
         if (player.role === "Player") playerRows.push(player);
-        else staffRows.push(player);
       });
       while (playerRows.length < 10) playerRows.push(null);
-      while (staffRows.length < 3) staffRows.push(null);
-      fillSlots(players, playerRows.slice(0, 10));
-      fillSlots(staff, staffRows.slice(0, 3));
+      const staffRoles = ["Head Coach", "Assistant Coach", "Owner ONLY"];
+      const staffAssigned = {};
+      if (ownerRole !== "Player") staffAssigned[ownerRole] = ownerEntry;
+      roster.forEach(function (player) {
+        if (player.role !== "Player") staffAssigned[player.role] = player;
+      });
+      fillSlots(players, playerRows.slice(0, 10), true);
+      fillSlots(staff, staffRoles.map(function (role) { return staffAssigned[role] || null; }), false);
       count.textContent = "Teams must include at least 5 active players, coaches are optional. Owners can be a player themselves, or team staff.";
       refreshSubmit();
     }
 
-    function fillSlots(list, rows) {
+    function fillSlots(list, rows, players) {
+      const staffLabels = ["HEAD COACH slot — Empty", "ASSISTANT COACH slot — Empty", "OWNER ONLY slot — Empty"];
       list.innerHTML = "";
-      rows.forEach(function (player) {
+      rows.forEach(function (player, index) {
         const item = document.createElement("li");
         if (!player) {
           item.className = "is-empty";
-          item.textContent = "Empty";
+          item.textContent = players ? "PLAYER slot — Empty" + (index < 5 ? " *" : "") : staffLabels[index];
           list.appendChild(item);
           return;
         }
@@ -257,6 +264,12 @@
         role.className = "role-label " + roleClass(player.role);
         role.textContent = player.role;
         side.appendChild(role);
+        if (players && index < 5) {
+          const star = document.createElement("i");
+          star.className = "req";
+          star.textContent = "*";
+          side.appendChild(star);
+        }
         side.appendChild(editButton(player.owner ? null : player));
         item.appendChild(side);
         list.appendChild(item);

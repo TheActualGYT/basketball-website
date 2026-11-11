@@ -698,9 +698,9 @@ article h3 {
 
 .apply-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 1.25rem;
-  align-items: stretch;
+  align-items: start;
 }
 
 .apply-page h2 {
@@ -1065,8 +1065,22 @@ article h3 {
   line-height: 1.35;
 }
 
+.roster-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(240px, 0.8fr);
+  gap: 0.9rem;
+  align-items: start;
+  margin-top: 0.35rem;
+}
+
+.roster-players {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
 .staff-label {
-  margin: 0.85rem 0 0.4rem;
+  margin: 0 0 0.4rem;
   color: rgba(255, 255, 255, 0.72);
   font-size: 0.72rem;
   font-weight: 700;
@@ -1075,29 +1089,31 @@ article h3 {
 }
 
 .roster-list li.is-empty {
-  color: rgba(255, 255, 255, 0.38);
-  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.72rem;
   min-height: 42px;
+  justify-content: flex-start;
 }
 
 .roster-list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.4rem;
 }
 
 .roster-list li {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.6rem;
-  padding: 0.55rem 0.7rem;
+  gap: 0.45rem;
+  min-width: 0;
+  padding: 0.55rem 0.65rem;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.45);
-  background: rgba(255, 255, 255, 0.03);
+  background: #101010;
   color: #fff;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
 }
 
 .roster-list li div {
@@ -2178,7 +2194,8 @@ article h3 {
     grid-template-columns: 1fr;
   }
   .apply-grid,
-  .dir-grid {
+  .dir-grid,
+  .roster-layout {
     grid-template-columns: 1fr;
   }
   .dir-card:last-child:nth-child(3n + 1) {
