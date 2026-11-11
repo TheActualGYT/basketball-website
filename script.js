@@ -46,7 +46,7 @@ if (loginBtn) {
   try { savedUser = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
   if (savedUser && !verifiedUser(savedUser)) localStorage.removeItem("jba-discord");
   const existing = mergeUsers(verifiedUser(cookieUser) ? cookieUser : null, verifiedUser(savedUser) ? savedUser : null);
-  if (existing && existing.roblox && existing.build) {
+  if (existing && ((existing.roblox && existing.build) || existing.notPlayer)) {
     localStorage.setItem("jba-discord", JSON.stringify(existing));
     location.replace("home.html");
   } else {
@@ -70,13 +70,15 @@ if (loginBtn) {
 
   function withProfile(user) {
     const extra = pendingProfile();
-    if (!extra || !extra.roblox || !extra.build) return user;
-    return Object.assign({}, user, { roblox: extra.roblox, build: extra.build });
+    if (!extra) return user;
+    if (extra.notPlayer) return Object.assign({}, user, { roblox: extra.roblox || "", build: extra.build || "", notPlayer: true });
+    if (!extra.roblox || !extra.build) return user;
+    return Object.assign({}, user, { roblox: extra.roblox, build: extra.build, notPlayer: false });
   }
 
   function applyDiscordUser(user) {
     user = withProfile(user);
-    if (!verifiedUser(user) || !user.roblox || !user.build) return;
+    if (!verifiedUser(user) || !(user.notPlayer || (user.roblox && user.build))) return;
     localStorage.setItem("jba-discord", JSON.stringify(user));
     localStorage.removeItem("jba-discord-status");
     loginBtn.textContent = user.username || user.name;
@@ -131,7 +133,8 @@ if (loginBtn) {
 
   function refreshLoginContinue() {
     if (!loginContinue || !loginRoblox) return;
-    loginContinue.disabled = !(robloxReady && chosenBuild);
+    const skipped = document.getElementById("not-player") && document.getElementById("not-player").checked;
+    loginContinue.disabled = skipped ? false : !(robloxReady && chosenBuild);
   }
 
   async function checkLoginRoblox() {
@@ -252,15 +255,24 @@ if (loginBtn) {
   document.addEventListener("click", function (event) {
     if (buildPick && !event.target.closest("#build-pick")) buildPick.classList.remove("is-open");
   });
+  document.getElementById("not-player").addEventListener("change", function () {
+    loginForm.classList.toggle("is-bypass", this.checked);
+    refreshLoginContinue();
+  });
   document.getElementById("login-cancel").addEventListener("click", function () {
     if (loginModal) loginModal.hidden = true;
   });
   if (loginForm) {
     loginForm.addEventListener("submit", function (event) {
       event.preventDefault();
+      const skipped = document.getElementById("not-player") && document.getElementById("not-player").checked;
       const roblox = loginRoblox.value.trim();
-      if (!robloxReady || !roblox || !chosenBuild) return;
-      localStorage.setItem("jba-login-profile", JSON.stringify({ roblox: roblox, build: chosenBuild }));
+      if (!skipped && (!robloxReady || !roblox || !chosenBuild)) return;
+      localStorage.setItem("jba-login-profile", JSON.stringify({
+        roblox: skipped ? "" : roblox,
+        build: skipped ? "" : chosenBuild,
+        notPlayer: !!skipped
+      }));
       if (loginModal) loginModal.hidden = true;
       const signed = existing && verifiedUser(existing) ? existing : null;
       if (signed) {

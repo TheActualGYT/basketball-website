@@ -9,7 +9,7 @@
   <script>
     (function () {
       function signedIn(user) {
-        return !!(user && user.serverChecked && (user.username || user.name) && user.roblox && user.build);
+        return !!(user && user.serverChecked && (user.username || user.name) && ((user.roblox && user.build) || user.notPlayer));
       }
       try {
         var saved = JSON.parse(localStorage.getItem("jba-discord") || "null");
@@ -47,8 +47,9 @@
   <div class="role-modal" id="login-modal" hidden>
     <form class="role-card login-card" id="login-form">
       <p>Login</p>
-      <label for="login-roblox">Roblox username</label>
-      <input id="login-roblox" name="roblox" maxlength="20" autocomplete="off" required placeholder="Username">
+      <label for="login-roblox">Roblox Username</label>
+      <div class="player-fields" id="player-fields">
+      <input id="login-roblox" name="roblox" maxlength="20" autocomplete="off" placeholder="Username">
       <p class="apply-status" id="login-name-status"></p>
       <p class="apply-status" id="login-unique-status"></p>
       <p class="login-fine">Submitting a Roblox account that does not belong to you is strictly prohibited and constitutes a major violation of our terms.</p>
@@ -56,12 +57,18 @@
       <div class="team-pick" id="build-pick">
         <button type="button" class="pick-button is-empty" id="build-button">Select a build</button>
         <div class="pick-menu" id="build-menu">
-          <button type="button" class="pick-option" data-build="Guard">GUARD [PG / SG]</button>
-          <button type="button" class="pick-option" data-build="Forward">FORWARD [SF / PF]</button>
-          <button type="button" class="pick-option" data-build="Big">BIG [C / PF]</button>
+          <button type="button" class="pick-option" data-build="Guard">GUARD — PG / SG</button>
+          <button type="button" class="pick-option" data-build="Forward">FORWARD — SF / PF</button>
+          <button type="button" class="pick-option" data-build="Big">BIG — C / PF</button>
         </div>
       </div>
       <p class="login-fine">You can only stay on one build for the entire season. This can be changed until you are on an approved roster. Once you are on an approved roster, your build is locked and cannot be changed.</p>
+      </div>
+      <label class="not-player" for="not-player">
+        <input type="checkbox" id="not-player">
+        <span>Not a Player?</span>
+      </label>
+      <p class="login-fine">You cannot be on a team, or be submitted to a team, until you fill the rest of this information out.</p>
       <button class="cta-btn" id="login-continue" type="submit" disabled>Continue</button>
       <button type="button" class="role-cancel" id="login-cancel">Cancel</button>
     </form>

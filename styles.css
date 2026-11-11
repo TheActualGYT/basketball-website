@@ -1385,8 +1385,9 @@ article h3 {
   font-size: 0.92rem;
 }
 
-.login-card .login-fine {
-  margin: 0.55rem 0 0;
+.login-card .login-fine,
+.login-card .apply-status {
+  margin: 0.28rem 0 0;
   color: #fff;
   opacity: 0.5;
   font-size: 0.68rem;
@@ -1394,16 +1395,49 @@ article h3 {
   line-height: 1.4;
 }
 
+.login-card .apply-status.good { color: #3dff8a; opacity: 1; }
+.login-card .apply-status.bad { color: #ff6b81; opacity: 1; }
+
 .login-card .login-build-label {
   margin-top: 1.15rem;
 }
 
 .login-card .team-pick {
-  margin-top: 0;
+  margin: 0 -0.7rem;
 }
 
 .login-card .pick-menu {
   z-index: 8;
+  padding: 0.2rem;
+}
+
+.login-card .pick-button,
+.login-card .pick-option {
+  padding-left: 0.7rem;
+  padding-right: 0.7rem;
+}
+
+.not-player {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.login-card .not-player input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  accent-color: #c026d3;
+}
+
+.login-card.is-bypass .player-fields {
+  opacity: 0.38;
 }
 
 .login-card .cta-btn {
