@@ -1248,6 +1248,27 @@ article h3 {
 .role-label.is-owner { color: #fff; }
 .role-label.is-player { color: #3dff8a; }
 .role-label.is-coach { color: #ffe14a; }
+.role-label.is-owner-only { color: #fff; }
+
+.owner-tag {
+  margin-right: 0.4rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.role-note {
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #d5d5d5;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  text-align: left;
+}
 
 .role-edit {
   display: inline-flex;

@@ -133,7 +133,9 @@
           <button type="button" data-role="Player">Player</button>
           <button type="button" data-role="Head Coach">Head Coach</button>
           <button type="button" data-role="Assistant Coach">Assistant Coach</button>
+          <button type="button" data-role="Owner only" id="owner-only-choice">Owner only</button>
         </div>
+        <p class="role-note" id="role-note" hidden>Owner only keeps this account on the roster for team transactions and management. They cannot play or coach.</p>
         <div class="role-footer">
           <button type="button" class="role-remove" data-role="remove" hidden>Remove</button>
           <button type="button" class="role-cancel" data-role="cancel">Cancel</button>
@@ -195,6 +197,7 @@
     let signedPlayers = freeAgents.slice();
     let roster = [];
     let robloxReady = false;
+    let ownerRole = "Player";
 
     function displayName(player) {
       return player.name || player.username || "Player";
@@ -212,10 +215,14 @@
       const ownerItem = document.createElement("li");
       ownerItem.className = "roster-owner";
       ownerItem.appendChild(nameNode(owner || { name: "Owner", username: "" }, true));
-      const tag = document.createElement("span");
-      tag.className = "role-label is-owner";
-      tag.textContent = "Owner";
       const side = document.createElement("div");
+      const ownerTag = document.createElement("span");
+      ownerTag.className = "owner-tag";
+      ownerTag.textContent = "Owner";
+      const tag = document.createElement("span");
+      tag.className = "role-label " + roleClass(ownerRole);
+      tag.textContent = ownerRole;
+      side.appendChild(ownerTag);
       side.appendChild(tag);
       side.appendChild(editButton(null));
       ownerItem.appendChild(side);
@@ -224,7 +231,7 @@
         const item = document.createElement("li");
         item.appendChild(nameNode(player, true));
         const role = document.createElement("span");
-        role.className = "role-label " + (player.role === "Player" ? "is-player" : "is-coach");
+        role.className = "role-label " + roleClass(player.role);
         role.textContent = player.role;
         const side = document.createElement("div");
         side.appendChild(role);
@@ -266,6 +273,20 @@
     let searchOpen = false;
     let pendingPlayer = null;
     let pendingMode = "add";
+
+    function roleClass(role) {
+      if (role === "Head Coach" || role === "Assistant Coach") return "is-coach";
+      if (role === "Owner only") return "is-owner-only";
+      return "is-player";
+    }
+
+    function roleTaken(role) {
+      if (role !== "Head Coach" && role !== "Assistant Coach") return false;
+      if (pendingMode !== "owner" && ownerRole === role) return true;
+      return roster.some(function (picked) {
+        return picked.role === role && (!pendingPlayer || picked.id !== pendingPlayer.id);
+      });
+    }
 
     function editButton(player) {
       const button = document.createElement("button");
@@ -325,16 +346,16 @@
       const modal = document.getElementById("role-modal");
       const actions = document.getElementById("role-actions");
       const remove = modal.querySelector('[data-role="remove"]');
-      document.getElementById("role-title").textContent = pendingMode === "owner"
-        ? "The owner stays on the roster."
-        : "How should this player be listed?";
+      document.getElementById("role-title").textContent = "How should this player be listed?";
       document.getElementById("role-player").textContent = displayName(player) + (tagName(player) ? " (@" + tagName(player) + ")" : "");
-      const current = pendingMode === "edit" && pendingPlayer ? pendingPlayer.role : "";
-      const hasHead = roster.some(function (picked) { return picked.role === "Head Coach" && (!pendingPlayer || picked.id !== pendingPlayer.id); });
-      const hasAssist = roster.some(function (picked) { return picked.role === "Assistant Coach" && (!pendingPlayer || picked.id !== pendingPlayer.id); });
-      actions.hidden = pendingMode === "owner";
-      modal.querySelector('[data-role="Head Coach"]').disabled = hasHead && current !== "Head Coach";
-      modal.querySelector('[data-role="Assistant Coach"]').disabled = hasAssist && current !== "Assistant Coach";
+      const current = pendingMode === "owner" ? ownerRole : (pendingMode === "edit" && pendingPlayer ? pendingPlayer.role : "");
+      const ownerOnly = document.getElementById("owner-only-choice");
+      const note = document.getElementById("role-note");
+      actions.hidden = false;
+      ownerOnly.hidden = pendingMode !== "owner";
+      note.hidden = pendingMode !== "owner";
+      modal.querySelector('[data-role="Head Coach"]').disabled = roleTaken("Head Coach") && current !== "Head Coach";
+      modal.querySelector('[data-role="Assistant Coach"]').disabled = roleTaken("Assistant Coach") && current !== "Assistant Coach";
       remove.hidden = pendingMode !== "edit";
       modal.hidden = false;
     }
@@ -351,6 +372,8 @@
       }
       if (role === "remove" && pendingMode === "edit" && pendingPlayer) {
         roster = roster.filter(function (picked) { return picked.id !== pendingPlayer.id; });
+      } else if (role !== "remove" && pendingMode === "owner") {
+        ownerRole = role;
       } else if (role !== "remove" && pendingMode === "add" && pendingPlayer && roster.length < 10) {
         roster.push({
           id: pendingPlayer.id,
