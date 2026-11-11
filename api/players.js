@@ -10,7 +10,7 @@ function readJson(name) {
 }
 
 export default function handler(req, res) {
-  const signed = readJson("signed-in.json");
+  const signed = readJson("free-agents.json");
   const registry = readJson("registrations.json");
   const taken = new Set();
   (registry.players || []).forEach(function (player) {

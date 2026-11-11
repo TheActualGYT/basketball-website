@@ -25,7 +25,8 @@ function userFromCookie() {
   const match = document.cookie.match(/(?:^|; )jba_user=([^;]+)/);
   if (!match || !match[1]) return null;
   try {
-    const user = JSON.parse(atob(decodeURIComponent(match[1])));
+    const raw = decodeURIComponent(match[1]).replace(/ /g, "+");
+    const user = JSON.parse(atob(raw));
     if (!user || !user.serverChecked) return null;
     return user;
   } catch (err) {

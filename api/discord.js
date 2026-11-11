@@ -11,7 +11,7 @@ function userCookie(user) {
     serverChecked: true,
     checkedAt: Date.now()
   })).toString("base64");
-  return "jba_user=" + payload + "; Path=/; Max-Age=2592000; SameSite=Lax; Secure";
+  return "jba_user=" + encodeURIComponent(payload) + "; Path=/; Max-Age=2592000; SameSite=Lax; Secure";
 }
 
 function clearCookie() {

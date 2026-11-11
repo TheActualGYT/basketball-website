@@ -1073,6 +1073,22 @@ article h3 {
   font-weight: 600;
 }
 
+.person-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.roster-pfp {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #2a2a2a;
+  flex: 0 0 28px;
+}
+
 .role-modal {
   position: fixed;
   inset: 0;
