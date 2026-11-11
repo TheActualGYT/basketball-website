@@ -939,7 +939,9 @@ article h3 {
 }
 
 .box-title {
-  margin: 0 0 1.15rem;
+  margin: 0 0 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
   text-align: center;
   font-size: 1.5rem;
   letter-spacing: 0.06em;
@@ -948,6 +950,31 @@ article h3 {
   background: none;
   -webkit-text-fill-color: #fff;
   animation: titlePulse 3.6s ease-in-out infinite;
+}
+
+.apply-form,
+.roster-box {
+  position: relative;
+}
+
+.apply-form::before,
+.roster-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: url("logo-strip.png");
+  background-repeat: repeat;
+  background-size: 460px 276px;
+  animation: logoDrift 28s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.apply-form > *,
+.roster-box > * {
+  position: relative;
+  z-index: 1;
 }
 
 .apply-page > .apply-submit {
@@ -1008,30 +1035,27 @@ article h3 {
   position: absolute;
   left: 0;
   right: 0;
-  top: 100%;
+  top: calc(100% + 0.35rem);
   flex-direction: column;
   margin: 0;
-  padding: 0;
-  background: #101010;
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  border-top: 0;
-  border-radius: 0 0 10px 10px;
+  padding: 0.2rem 0;
+  background: #141414;
+  border: 0;
+  border-radius: 10px;
   overflow: hidden;
   z-index: 30;
 }
 
 .roster-box .player-search.is-open input {
   border-color: rgba(255, 255, 255, 0.72);
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  border-bottom-color: rgba(255, 255, 255, 0.72);
+  border-radius: 10px;
   box-shadow: none;
 }
 
 .roster-box .player-search.is-open .player-results {
   display: flex;
-  top: 100%;
-  margin-top: -1px;
+  top: calc(100% + 0.35rem);
+  margin-top: 0;
   left: 0;
   right: 0;
   width: 100%;
@@ -1072,7 +1096,7 @@ article h3 {
   column-gap: 0.45rem;
   row-gap: 0.45rem;
   align-items: start;
-  margin-top: 1.15rem;
+  margin-top: 1.9rem;
 }
 
 .slot-title {
@@ -1114,11 +1138,21 @@ article h3 {
   color: inherit;
 }
 
+.roster-list li:hover {
+  border-color: rgba(255, 255, 255, 0.92);
+}
+
 .roster-list li.is-empty {
   color: rgba(255, 255, 255, 0.45);
   font-size: 0.72rem;
-  min-height: 42px;
   justify-content: flex-start;
+  gap: 0.45rem;
+}
+
+.empty-pfp {
+  display: inline-block;
+  background: #2a2a2a;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.28);
 }
 
 .roster-list {

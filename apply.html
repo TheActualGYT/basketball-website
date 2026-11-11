@@ -247,7 +247,12 @@
         const item = document.createElement("li");
         if (!player) {
           item.className = "is-empty";
-          item.textContent = players ? "PLAYER — Empty" : staffLabels[index];
+          const pic = document.createElement("span");
+          pic.className = "roster-pfp empty-pfp";
+          item.appendChild(pic);
+          const label = document.createElement("span");
+          label.textContent = players ? "PLAYER — Empty" : staffLabels[index];
+          item.appendChild(label);
           if (players && index < 5) {
             const star = document.createElement("span");
             star.className = "slot-star";
