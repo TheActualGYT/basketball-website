@@ -74,6 +74,17 @@
     <p class="apply-lead">Pick a team, then a backup in case that one is taken. Your Roblox username is checked before this can be submitted.</p>
     <form class="panel apply-form" id="apply-form">
       <div class="field-label">
+        <span>Discord username</span>
+        <button type="button" class="info-tip" aria-label="About Discord username">i<span>This is the Discord account you use to sign in. It has to be in the JBA server, and you cannot type a different name.</span></button>
+      </div>
+      <div class="discord-lock" id="discord-lock">
+        <input id="discord-name" name="discord" readonly tabindex="-1">
+        <button type="button" class="discord-signup" id="discord-signup">Sign up</button>
+      </div>
+      <p class="apply-status" id="discord-status"></p>
+
+      <div class="apply-rest is-locked" id="apply-rest">
+      <div class="field-label">
         <span>Roblox username</span>
         <button type="button" class="info-tip" aria-label="About Roblox username">i<span>Use the exact username on your Roblox account. It is checked once, and it cannot already belong to another JBA player.</span></button>
       </div>
@@ -97,8 +108,10 @@
 
       <button class="cta-btn apply-submit" type="submit">Submit application</button>
       <p class="apply-status" id="form-status"></p>
+      </div>
     </form>
   </section>
+  <script src="discord-config.js"></script>
   <script src="script.js"></script>
   <script>
     const TEAMS = [
@@ -125,7 +138,89 @@
     const nameStatus = document.getElementById("name-status");
     const uniqueStatus = document.getElementById("unique-status");
     const formStatus = document.getElementById("form-status");
+    const discordName = document.getElementById("discord-name");
+    const discordLock = document.getElementById("discord-lock");
+    const discordStatus = document.getElementById("discord-status");
+    const applyRest = document.getElementById("apply-rest");
     let claimed = [];
+
+    function signedInUser() {
+      if (typeof readDiscordUser !== "function") return null;
+      const user = readDiscordUser();
+      if (!user || !user.serverChecked || !(user.username || user.name)) return null;
+      return user;
+    }
+
+    function lockDiscord(user) {
+      discordName.value = user.username || user.name;
+      discordLock.classList.add("is-ready");
+      applyRest.classList.remove("is-locked");
+      setStatus(discordStatus, "", true);
+    }
+
+    function unlockDiscord(message) {
+      discordName.value = "";
+      discordLock.classList.remove("is-ready");
+      applyRest.classList.add("is-locked");
+      setStatus(discordStatus, message || "", false);
+    }
+
+    function openDiscordSignup() {
+      if (location.host !== "basketball-website-psi.vercel.app") {
+        location.href = "https://basketball-website-psi.vercel.app/apply.html";
+        return;
+      }
+      const cfg = window.JBA_DISCORD || {};
+      if (!cfg.clientId) {
+        setStatus(discordStatus, "Discord login needs the league's Discord app connected before it can sign anyone in.", false);
+        return;
+      }
+      const redirect = cfg.redirectUri || (location.origin + "/callback.html");
+      const url = new URL("https://discord.com/oauth2/authorize");
+      url.searchParams.set("client_id", cfg.clientId);
+      url.searchParams.set("response_type", "code");
+      url.searchParams.set("scope", "identify guilds");
+      url.searchParams.set("redirect_uri", redirect);
+      url.searchParams.set("prompt", "consent");
+      const width = 480;
+      const height = 760;
+      const left = Math.max(0, Math.round(window.screenX + (window.outerWidth - width) / 2));
+      const top = Math.max(0, Math.round(window.screenY + (window.outerHeight - height) / 2));
+      const popup = window.open(url.toString(), "jba-discord-login", "popup=yes,width=" + width + ",height=" + height + ",left=" + left + ",top=" + top);
+      localStorage.removeItem("jba-discord-status");
+      if (!popup) location.href = url.toString();
+    }
+
+    function refreshDiscordGate() {
+      const user = signedInUser();
+      if (user) lockDiscord(user);
+    }
+
+    document.getElementById("discord-signup").addEventListener("click", openDiscordSignup);
+    window.addEventListener("message", function (event) {
+      if (event.origin !== location.origin || !event.data) return;
+      if (event.data.type === "jba-discord") refreshDiscordGate();
+      if (event.data.type === "jba-discord-status" && event.data.status && event.data.status.needsJoin) {
+        unlockDiscord("Join the JBA Discord server, then sign up again.");
+      }
+    });
+    try {
+      const channel = new BroadcastChannel("jba-discord");
+      channel.addEventListener("message", function (event) {
+        if (!event.data) return;
+        if (event.data.type === "jba-discord") refreshDiscordGate();
+        if (event.data.type === "jba-discord-status" && event.data.status && event.data.status.needsJoin) {
+          unlockDiscord("Join the JBA Discord server, then sign up again.");
+        }
+      });
+    } catch (err) {}
+    window.addEventListener("storage", function (event) {
+      if (event.key === "jba-discord") refreshDiscordGate();
+      if (event.key === "jba-discord-status" && event.newValue && event.newValue.indexOf("needsJoin") !== -1) {
+        unlockDiscord("Join the JBA Discord server, then sign up again.");
+      }
+    });
+    refreshDiscordGate();
 
     function setStatus(el, message, ok) {
       el.textContent = message || "";
@@ -244,6 +339,10 @@
 
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
+      if (!signedInUser()) {
+        unlockDiscord("Sign up with Discord and join the server before registering.");
+        return;
+      }
       setStatus(formStatus, "Checking application…", true);
       try {
         const data = await checkApplication(false);
