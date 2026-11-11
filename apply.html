@@ -120,6 +120,8 @@
       </div>
       <p class="roster-count" id="roster-count">Teams must include at least 5 active players, coaches are optional. Owners can be a player themselves, or team staff.</p>
       <div class="roster-layout">
+        <p class="slot-title players-title">Players</p>
+        <p class="slot-title staff-title">Staff</p>
         <ol class="roster-list roster-players" id="roster-list"></ol>
         <ol class="roster-list roster-staff" id="staff-list"></ol>
       </div>
@@ -251,6 +253,7 @@
         const person = player.owner ? (signedInUser() || { name: "Owner", username: "" }) : player;
         item.appendChild(nameNode(person, true));
         const side = document.createElement("div");
+        side.className = "roster-side";
         if (player.owner) {
           const ownerTag = document.createElement("span");
           ownerTag.className = "owner-tag";
@@ -291,12 +294,15 @@
         if (src) img.src = src;
         wrap.appendChild(img);
       }
+      const copy = document.createElement("span");
+      copy.className = "person-copy";
       const display = document.createElement("b");
       display.textContent = displayName(player);
       const tag = document.createElement("small");
-      if (tagName(player)) tag.textContent = " (@" + tagName(player) + ")";
-      wrap.appendChild(display);
-      wrap.appendChild(tag);
+      if (tagName(player)) tag.textContent = "@" + tagName(player);
+      copy.appendChild(display);
+      if (tagName(player)) copy.appendChild(tag);
+      wrap.appendChild(copy);
       return wrap;
     }
 
