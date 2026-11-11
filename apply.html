@@ -280,14 +280,14 @@
         role.className = "role-label " + roleClass(player.role);
         role.textContent = player.role;
         roleRow.appendChild(role);
+        stack.appendChild(roleRow);
+        side.appendChild(stack);
         if (players && index < 5) {
           const star = document.createElement("i");
           star.className = "req";
           star.textContent = "*";
-          roleRow.appendChild(star);
+          side.appendChild(star);
         }
-        stack.appendChild(roleRow);
-        side.appendChild(stack);
         side.appendChild(editButton(player.owner ? null : player));
         item.appendChild(side);
         list.appendChild(item);
