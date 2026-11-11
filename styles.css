@@ -1416,11 +1416,34 @@ article h3 {
   text-align: left;
 }
 
-.login-card .pick-button,
 .login-card .discord-connect {
   display: flex;
   align-items: center;
+  gap: 0.55rem;
   cursor: pointer;
+}
+
+.login-card .discord-connect .person-copy {
+  align-items: flex-start;
+  line-height: 1.1;
+}
+
+.login-card .discord-connect .person-copy b {
+  color: #fff;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.login-card .discord-connect .person-copy small {
+  color: #8d8d8d;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.login-card .discord-connect .roster-pfp {
+  width: 28px;
+  height: 28px;
+  flex-basis: 28px;
 }
 
 .login-card .pick-button.is-empty,

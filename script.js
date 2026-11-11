@@ -97,9 +97,21 @@ if (loginBtn) {
     localStorage.setItem("jba-discord", JSON.stringify(withProfile(user)));
     const box = document.getElementById("discord-connect");
     if (box) {
-      const handle = user.username ? " (@" + user.username + ")" : "";
-      box.textContent = (user.name || user.username) + handle;
       box.classList.remove("is-empty");
+      box.replaceChildren();
+      const img = document.createElement("img");
+      img.className = "roster-pfp";
+      img.alt = "";
+      img.referrerPolicy = "no-referrer";
+      img.src = discordAvatarUrl(user);
+      const copy = document.createElement("span");
+      copy.className = "person-copy";
+      const display = document.createElement("b");
+      display.textContent = user.name || user.username;
+      const tag = document.createElement("small");
+      tag.textContent = "@" + (user.username || user.name || "");
+      copy.append(display, tag);
+      box.append(img, copy);
     }
     setLoginStatus(document.getElementById("discord-login-status"), "", true);
     if (loginNote) loginNote.hidden = true;
