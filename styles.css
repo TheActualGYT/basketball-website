@@ -139,11 +139,6 @@ nav {
   margin-left: 0.85rem;
 }
 
-.nav-home {
-  margin-left: 1.35rem;
-  font-weight: 600;
-}
-
 .nav-social a {
   display: block;
   line-height: 0;
@@ -578,34 +573,23 @@ article h3 {
 }
 
 .directory-reg {
-  max-width: 760px;
-  margin: 0 auto 2.3rem;
+  margin: 0 0 2.3rem;
 }
 
 .directory-reg .section-head {
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  gap: 0.35rem;
-  margin-bottom: 0.7rem;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-direction: row;
+  margin-bottom: 0.55rem;
 }
 
 .directory-reg .section-head h2 {
-  text-align: center;
+  text-align: left;
 }
 
-.dir-rules {
-  display: block;
-  margin-top: 0.75rem;
-  text-align: center;
-  color: #d0d0d0;
-  font-size: 0.86rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.dir-rules:hover {
-  color: #fff;
+.directory-reg .section-head a {
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
 }
 
 .dir-card {
@@ -621,10 +605,11 @@ article h3 {
 
 .dir-mark {
   position: absolute;
-  right: -4%;
+  right: 1rem;
   top: 50%;
-  width: 46%;
-  height: auto;
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
   transform: translateY(-50%);
   opacity: 0.1;
   pointer-events: none;
@@ -718,7 +703,8 @@ article h3 {
   color: #eee;
   font-size: 0.98rem;
   font-weight: 600;
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 0.18rem;
 }
 
 .dir-foot a:hover {
