@@ -133,13 +133,16 @@
           <button type="button" data-role="Player">Player</button>
           <button type="button" data-role="Head Coach">Head Coach</button>
           <button type="button" data-role="Assistant Coach">Assistant Coach</button>
-          <button type="button" data-role="Owner only" id="owner-only-choice">Owner only</button>
+          <div class="owner-only-row" id="owner-only-choice" hidden>
+            <button type="button" data-role="Owner ONLY">Owner ONLY</button>
+            <button type="button" class="info-tip" aria-label="About owner only">i<span>Owner only keeps this account on the roster for team transactions and management. They cannot play or coach.</span></button>
+          </div>
         </div>
-        <p class="role-note" id="role-note" hidden>Owner only keeps this account on the roster for team transactions and management. They cannot play or coach.</p>
         <div class="role-footer">
           <button type="button" class="role-remove" data-role="remove" hidden>Remove</button>
           <button type="button" class="role-cancel" data-role="cancel">Cancel</button>
         </div>
+        <p class="role-later">These roles can be changed even after registration.</p>
       </div>
     </div>
   <script src="discord-config.js"></script>
@@ -218,7 +221,7 @@
       const side = document.createElement("div");
       const ownerTag = document.createElement("span");
       ownerTag.className = "owner-tag";
-      ownerTag.textContent = "Owner";
+      ownerTag.textContent = "(OWNER)";
       const tag = document.createElement("span");
       tag.className = "role-label " + roleClass(ownerRole);
       tag.textContent = ownerRole;
@@ -276,7 +279,7 @@
 
     function roleClass(role) {
       if (role === "Head Coach" || role === "Assistant Coach") return "is-coach";
-      if (role === "Owner only") return "is-owner-only";
+      if (role === "Owner ONLY" || role === "Owner only") return "is-owner-only";
       return "is-player";
     }
 
@@ -350,10 +353,8 @@
       document.getElementById("role-player").textContent = displayName(player) + (tagName(player) ? " (@" + tagName(player) + ")" : "");
       const current = pendingMode === "owner" ? ownerRole : (pendingMode === "edit" && pendingPlayer ? pendingPlayer.role : "");
       const ownerOnly = document.getElementById("owner-only-choice");
-      const note = document.getElementById("role-note");
       actions.hidden = false;
       ownerOnly.hidden = pendingMode !== "owner";
-      note.hidden = pendingMode !== "owner";
       modal.querySelector('[data-role="Head Coach"]').disabled = roleTaken("Head Coach") && current !== "Head Coach";
       modal.querySelector('[data-role="Assistant Coach"]').disabled = roleTaken("Assistant Coach") && current !== "Assistant Coach";
       remove.hidden = pendingMode !== "edit";
@@ -362,7 +363,8 @@
 
     document.querySelector(".role-card").addEventListener("click", function (event) {
       event.stopPropagation();
-      const role = event.target.getAttribute("data-role");
+      const choice = event.target.closest("[data-role]");
+      const role = choice ? choice.getAttribute("data-role") : "";
       if (!role) return;
       const modal = document.getElementById("role-modal");
       if (role === "cancel") {

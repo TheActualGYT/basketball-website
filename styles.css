@@ -1006,15 +1006,21 @@ article h3 {
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(100% + 0.3rem);
+  top: 100%;
   flex-direction: column;
-  gap: 0.25rem;
-  margin-top: 0;
+  gap: 0.2rem;
+  margin-top: -1px;
   padding: 0.35rem;
   background: #101010;
-  border: 1px solid #3a3a3a;
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
   z-index: 8;
+}
+
+.player-search.is-open input {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .player-search.is-open .player-results {
@@ -1251,23 +1257,37 @@ article h3 {
 .role-label.is-owner-only { color: #fff; }
 
 .owner-tag {
-  margin-right: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.35rem;
   color: rgba(255, 255, 255, 0.5);
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-transform: none;
 }
 
-.role-note {
-  margin: 0.75rem 0 0;
-  padding: 0.65rem 0.75rem;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #d5d5d5;
-  font-size: 0.78rem;
-  line-height: 1.45;
-  text-align: left;
+.owner-only-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.owner-only-row > button[data-role] {
+  flex: 1;
+}
+
+.owner-only-row:hover .info-tip span,
+.owner-only-row:focus-within .info-tip span {
+  display: block;
+}
+
+.role-later {
+  margin: 0.85rem 0 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 
 .role-edit {
