@@ -1,5 +1,4 @@
 const GUILD_ID = "951651826418208838";
-const INVITE_CODE = "36FHef566k";
 const INVITE = "https://discord.gg/36FHef566k";
 
 function userCookie(user) {
@@ -18,6 +17,21 @@ function clearCookie() {
   return "jba_user=; Path=/; Max-Age=0; SameSite=Lax; Secure";
 }
 
+function wait(ms) {
+  return new Promise(function (resolve) { setTimeout(resolve, ms); });
+}
+
+async function discordFetch(url, options) {
+  let res = await fetch(url, options);
+  if (res.status !== 429) return res;
+  let body = {};
+  try { body = await res.json(); } catch (err) {}
+  const retry = Math.min(Number(body.retry_after) || 1, 2);
+  await wait(retry * 1000);
+  res = await fetch(url, options);
+  return res;
+}
+
 export default async function handler(req, res) {
   const code = req.query.code;
   const clientId = process.env.DISCORD_CLIENT_ID;
@@ -33,7 +47,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const tokenRes = await fetch("https://discord.com/api/oauth2/token", {
+  const tokenRes = await discordFetch("https://discord.com/api/oauth2/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -45,50 +59,42 @@ export default async function handler(req, res) {
     })
   });
   const token = await tokenRes.json();
+  if (tokenRes.status === 429 || (token && /rate limited/i.test(token.message || ""))) {
+    res.status(429).json({ error: "Discord is rate limiting logins. Wait a minute, then try again." });
+    return;
+  }
   if (!token.access_token) {
     res.status(401).json({ error: "Discord did not accept the login" });
     return;
   }
 
   const auth = { Authorization: "Bearer " + token.access_token };
-  const userRes = await fetch("https://discord.com/api/v10/users/@me", { headers: auth });
+  const userRes = await discordFetch("https://discord.com/api/v10/users/@me", { headers: auth });
   const user = await userRes.json();
+  if (userRes.status === 429 || (user && /rate limited/i.test(user.message || ""))) {
+    res.status(429).json({ error: "Discord is rate limiting logins. Wait a minute, then try again." });
+    return;
+  }
   if (!user.id) {
     res.status(401).json({ error: "Could not read the Discord account" });
     return;
   }
 
-  let targetId = GUILD_ID;
-  try {
-    const inviteRes = await fetch("https://discord.com/api/v10/invites/" + INVITE_CODE);
-    const invite = await inviteRes.json();
-    if (invite.guild && invite.guild.id) targetId = String(invite.guild.id);
-  } catch (err) {}
-
-  const guilds = [];
-  let after = "";
-  for (let page = 0; page < 10; page += 1) {
-    const url = new URL("https://discord.com/api/v10/users/@me/guilds");
-    url.searchParams.set("limit", "200");
-    if (after) url.searchParams.set("after", after);
-    const guildRes = await fetch(url, { headers: auth });
-    const batch = await guildRes.json();
-    if (!guildRes.ok || !Array.isArray(batch)) {
-      const detail = batch && batch.message ? "Discord: " + batch.message : "Discord did not share your server list. Approve login again.";
-      res.setHeader("Set-Cookie", clearCookie());
-      res.status(401).json({ error: detail });
-      return;
-    }
-    guilds.push(...batch);
-    if (batch.length < 200) break;
-    after = String(batch[batch.length - 1].id);
+  const guildRes = await discordFetch("https://discord.com/api/v10/users/@me/guilds?limit=200", { headers: auth });
+  let guilds = [];
+  try { guilds = await guildRes.json(); } catch (err) {}
+  if (guildRes.status === 429 || (guilds && /rate limited/i.test(guilds.message || ""))) {
+    res.status(429).json({ error: "Discord is rate limiting logins. Wait a minute, then try again." });
+    return;
+  }
+  if (!guildRes.ok || !Array.isArray(guilds)) {
+    res.status(401).json({ error: "Discord did not share your server list. Try again in a minute." });
+    return;
   }
 
   const member = guilds.some(function (guild) {
-    const name = guild.name || "";
-    return String(guild.id) === targetId || /jba/i.test(name);
+    return String(guild.id) === GUILD_ID;
   });
-
   if (!member) {
     res.setHeader("Set-Cookie", clearCookie());
     res.status(200).json({

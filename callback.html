@@ -71,7 +71,15 @@
     if (err || !code) {
       title.textContent = "Login cancelled";
       status.textContent = "Discord login was cancelled.";
+      actions.hidden = false;
+      document.getElementById("join-link").hidden = true;
+    } else if (sessionStorage.getItem("jba-oauth-code") === code) {
+      title.textContent = "Login failed";
+      status.textContent = "That Discord login was already used. Go back and click Connect Discord again.";
+      actions.hidden = false;
+      document.getElementById("join-link").hidden = true;
     } else {
+      sessionStorage.setItem("jba-oauth-code", code);
       fetch("/api/discord?code=" + encodeURIComponent(code))
         .then(function (res) {
           return res.json().then(function (data) { return { ok: res.ok, data: data }; });
@@ -88,6 +96,8 @@
           const message = error.message || "Discord login could not be completed.";
           title.textContent = "Login failed";
           status.textContent = message;
+          actions.hidden = false;
+          document.getElementById("join-link").hidden = true;
           const statusInfo = { error: message };
           localStorage.setItem("jba-discord-status", JSON.stringify(statusInfo));
           tellOpener({ type: "jba-discord-status", status: statusInfo });

@@ -2532,3 +2532,8 @@ article h3 {
     display: none;
   }
 }
+
+.hero-actions[hidden],
+.hero-actions [hidden] {
+  display: none !important;
+}
