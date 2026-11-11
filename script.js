@@ -228,23 +228,23 @@ if (loginBtn) {
     refreshLoginContinue();
   }
 
-  let discordOpening = false;
-
   function startDiscordLogin(event) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
-    if (discordOpening) return;
-    discordOpening = true;
-    setTimeout(function () { discordOpening = false; }, 1200);
-
     const cfg = window.JBA_DISCORD || {};
     if (!cfg.clientId) {
-      discordOpening = false;
       setLoginStatus(document.getElementById("discord-login-status"), "Discord login needs the league's Discord app connected before it can sign anyone in.", false);
       return;
     }
+    const notPlayer = document.getElementById("not-player");
+    sessionStorage.setItem("jba-login-draft", JSON.stringify({
+      roblox: loginRoblox ? loginRoblox.value : "",
+      build: chosenBuild,
+      notPlayer: !!(notPlayer && notPlayer.checked),
+      robloxReady: robloxReady
+    }));
     const redirect = cfg.redirectUri || (location.origin + "/callback.html");
     const url = new URL("https://discord.com/oauth2/authorize");
     url.searchParams.set("client_id", cfg.clientId);
@@ -252,33 +252,8 @@ if (loginBtn) {
     url.searchParams.set("scope", "identify guilds");
     url.searchParams.set("redirect_uri", redirect);
     url.searchParams.set("prompt", "consent");
-    const width = 480;
-    const height = 760;
-    const left = Math.max(0, Math.round(window.screenX + (window.outerWidth - width) / 2));
-    const top = Math.max(0, Math.round(window.screenY + (window.outerHeight - height) / 2));
-    const popup = window.open(
-      url.toString(),
-      "jba-discord-login",
-      "width=" + width + ",height=" + height + ",left=" + left + ",top=" + top
-    );
     localStorage.removeItem("jba-discord-status");
-    if (!popup) {
-      discordOpening = false;
-      setLoginStatus(document.getElementById("discord-login-status"), "The Discord window was blocked. Click Connect Discord again.", false);
-      return;
-    }
-    popup.focus();
-    const started = Date.now();
-    const watch = setInterval(function () {
-      paintIfSaved();
-      if (connectedDiscord) {
-        clearInterval(watch);
-        return;
-      }
-      const info = readLoginStatus();
-      if (info) showLoginStatus(info);
-      if (Date.now() - started > 120000) clearInterval(watch);
-    }, 400);
+    location.assign(url.toString());
   }
 
   if (loginRoblox) {
@@ -342,9 +317,36 @@ if (loginBtn) {
   document.addEventListener("visibilitychange", function () {
     if (!document.hidden) paintIfSaved();
   });
+  function restoreDraft() {
+    let draft = null;
+    try { draft = JSON.parse(sessionStorage.getItem("jba-login-draft") || "null"); } catch (err) {}
+    if (!draft) return;
+    if (loginRoblox && draft.roblox) loginRoblox.value = draft.roblox;
+    if (draft.build) {
+      chosenBuild = draft.build;
+      const match = document.querySelector('#build-menu [data-build="' + draft.build + '"]');
+      const buildButton = document.getElementById("build-button");
+      if (match && buildButton) {
+        buildButton.textContent = match.textContent;
+        buildButton.classList.remove("is-empty");
+      }
+    }
+    const notPlayer = document.getElementById("not-player");
+    if (notPlayer && draft.notPlayer) {
+      notPlayer.checked = true;
+      if (loginForm) loginForm.classList.add("is-bypass");
+    }
+    if (draft.robloxReady) robloxReady = true;
+  }
+
+  restoreDraft();
   paintIfSaved();
-  if (savedDiscord() || location.search.indexOf("connected=1") !== -1) {
+  if (location.search.indexOf("connected=1") !== -1) {
     if (loginModal) loginModal.hidden = false;
+    if (!savedDiscord()) {
+      setLoginStatus(document.getElementById("discord-login-status"), "Discord did not return an account. Click Connect Discord again.", false);
+    }
+    history.replaceState(null, "", "index.html");
   }
 
   loginBtn.addEventListener("click", function () {
