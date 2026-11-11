@@ -72,6 +72,7 @@
   <section class="apply-page">
     <h2>Team Application</h2>
     <p class="apply-lead">Pick a team, then a backup in case that one is taken. Your Roblox username is checked before this can be submitted.</p>
+    <div class="apply-grid">
     <form class="panel apply-form" id="apply-form">
       <div class="field-label">
         <span>Discord username</span>
@@ -105,11 +106,21 @@
       </div>
       <div class="team-pick" data-placeholder="Select a backup" data-input="second-team"></div>
       <input type="hidden" id="second-team" name="second" required>
+      <p class="backup-note">If both teams are unavailable before your application is approved, a staff member will contact you about the next team you would like. You will have priority on that choice.</p>
 
       <button class="cta-btn apply-submit" type="submit">Submit application</button>
       <p class="apply-status" id="form-status"></p>
       </div>
     </form>
+    <aside class="panel roster-box is-locked" id="roster-box">
+      <h3>Roster Construction</h3>
+      <label class="field-label" for="player-search">Search signed-in players</label>
+      <input id="player-search" type="search" placeholder="Search players" autocomplete="off">
+      <div class="player-results" id="player-results"></div>
+      <p class="roster-count" id="roster-count">Owner plus 0 players. Add at least 4, up to 10.</p>
+      <ol class="roster-list" id="roster-list"></ol>
+    </aside>
+    </div>
   </section>
   <script src="discord-config.js"></script>
   <script src="script.js"></script>
@@ -143,6 +154,76 @@
     const discordStatus = document.getElementById("discord-status");
     const applyRest = document.getElementById("apply-rest");
     let claimed = [];
+    let signedPlayers = [];
+    let roster = [];
+
+    function playerLabel(player) {
+      return player.name && player.name !== player.username ? player.name + " (@" + player.username + ")" : (player.username || player.name);
+    }
+
+    function renderRoster() {
+      const list = document.getElementById("roster-list");
+      const count = document.getElementById("roster-count");
+      const owner = signedInUser();
+      list.innerHTML = "";
+      const ownerItem = document.createElement("li");
+      ownerItem.className = "roster-owner";
+      ownerItem.textContent = owner ? playerLabel(owner) : "Owner";
+      const tag = document.createElement("span");
+      tag.textContent = "Owner";
+      ownerItem.appendChild(tag);
+      list.appendChild(ownerItem);
+      roster.forEach(function (player) {
+        const item = document.createElement("li");
+        const name = document.createElement("span");
+        name.textContent = playerLabel(player);
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.textContent = "Remove";
+        remove.addEventListener("click", function () {
+          roster = roster.filter(function (picked) { return picked.id !== player.id; });
+          renderRoster();
+          renderPlayerResults();
+        });
+        item.appendChild(name);
+        item.appendChild(remove);
+        list.appendChild(item);
+      });
+      count.textContent = "Owner plus " + roster.length + " player" + (roster.length === 1 ? "" : "s") + ". Add at least 4, up to 10.";
+    }
+
+    function renderPlayerResults() {
+      const box = document.getElementById("player-results");
+      const query = document.getElementById("player-search").value.trim().toLowerCase();
+      const owner = signedInUser();
+      box.innerHTML = "";
+      if (!owner) return;
+      signedPlayers.forEach(function (player) {
+        const label = playerLabel(player).toLowerCase();
+        if (query && label.indexOf(query) === -1) return;
+        if (owner && (player.id === owner.id || player.username === owner.username)) return;
+        if (roster.some(function (picked) { return picked.id === player.id; })) return;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = playerLabel(player);
+        button.addEventListener("click", function () {
+          if (roster.length >= 10) return;
+          roster.push(player);
+          document.getElementById("player-search").value = "";
+          renderRoster();
+          renderPlayerResults();
+        });
+        box.appendChild(button);
+      });
+    }
+
+    document.getElementById("player-search").addEventListener("input", renderPlayerResults);
+    document.getElementById("player-search").addEventListener("focus", renderPlayerResults);
+    fetch("/api/players").then(function (res) { return res.json(); }).then(function (data) {
+      signedPlayers = data.players || [];
+      renderPlayerResults();
+    }).catch(function () {});
+    renderRoster();
 
     function signedInUser() {
       if (typeof readDiscordUser !== "function") return null;
@@ -155,14 +236,18 @@
       discordName.value = user.username || user.name;
       discordLock.classList.add("is-ready");
       applyRest.classList.remove("is-locked");
+      document.getElementById("roster-box").classList.remove("is-locked");
       setStatus(discordStatus, "", true);
+      if (typeof renderRoster === "function") renderRoster();
     }
 
     function unlockDiscord(message) {
       discordName.value = "";
       discordLock.classList.remove("is-ready");
       applyRest.classList.add("is-locked");
+      document.getElementById("roster-box").classList.add("is-locked");
       setStatus(discordStatus, message || "", false);
+      if (typeof renderRoster === "function") renderRoster();
     }
 
     function openDiscordSignup() {
@@ -343,6 +428,10 @@
         unlockDiscord("Sign up with Discord and join the server before registering.");
         return;
       }
+      if (roster.length < 4) {
+        setStatus(formStatus, "Add at least 4 players besides the owner.", false);
+        return;
+      }
       setStatus(formStatus, "Checking application…", true);
       try {
         const data = await checkApplication(false);
@@ -350,6 +439,9 @@
         if (data && data.ok) {
           setStatus(formStatus, "Application accepted for " + data.roblox.displayName + ". This draft does not lock the team yet.", true);
           form.reset();
+          roster = [];
+          renderRoster();
+          refreshDiscordGate();
           document.querySelectorAll(".team-pick").forEach(function (pick) {
             const button = pick.querySelector(".pick-button");
             button.className = "pick-button is-empty";

@@ -691,9 +691,16 @@ article h3 {
 }
 
 .apply-page {
-  max-width: 640px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 2.6rem 2rem 4.5rem;
+}
+
+.apply-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
 }
 
 .apply-page h2 {
@@ -913,6 +920,110 @@ article h3 {
 
 .apply-status.good { color: #3dff8a; }
 .apply-status.bad { color: #ff6b81; }
+
+.backup-note {
+  margin: 0.75rem 0 0;
+  color: #bdbdbd;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.roster-box input {
+  display: block;
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.72rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: #101010;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.92rem;
+}
+  margin: 0 0 0.35rem;
+  text-align: left;
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  background: none;
+  -webkit-text-fill-color: #fff;
+  animation: titlePulse 3.6s ease-in-out infinite;
+}
+
+.roster-box.is-locked {
+  opacity: 0.38;
+  pointer-events: none;
+  user-select: none;
+}
+
+.player-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.45rem;
+}
+
+.player-results button,
+.roster-list button {
+  border: 0;
+  background: #181818;
+  color: #fff;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.player-results button {
+  text-align: left;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.player-results button:hover {
+  background: #242424;
+}
+
+.roster-count {
+  margin: 0.85rem 0 0.45rem;
+  color: #bdbdbd;
+  font-size: 0.8rem;
+}
+
+.roster-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.roster-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font-size: 0.88rem;
+}
+
+.roster-owner span,
+.roster-list button {
+  color: #3dff8a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: none;
+  padding: 0;
+}
+
+.apply-form,
+.roster-box {
+  height: 100%;
+}
 
 .dir-city {
   margin-bottom: 0.35rem !important;
@@ -1699,6 +1810,10 @@ article h3 {
   .score-list,
   .news-secondary,
   .conf-board,
+  .dir-grid {
+    grid-template-columns: 1fr;
+  }
+  .apply-grid,
   .dir-grid {
     grid-template-columns: 1fr;
   }
