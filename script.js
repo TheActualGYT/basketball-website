@@ -202,17 +202,21 @@ if (loginBtn) {
     refreshLoginContinue();
   }
 
-  function startDiscordLogin() {
-    if (location.host !== "basketball-website-psi.vercel.app") {
-      location.href = "https://basketball-website-psi.vercel.app/";
-      return;
+  let discordOpening = false;
+
+  function startDiscordLogin(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
     }
+    if (discordOpening) return;
+    discordOpening = true;
+    setTimeout(function () { discordOpening = false; }, 1200);
+
     const cfg = window.JBA_DISCORD || {};
     if (!cfg.clientId) {
-      if (loginNote) {
-        loginNote.hidden = false;
-        loginNote.textContent = "Discord login needs the league's Discord app connected before it can sign anyone in.";
-      }
+      discordOpening = false;
+      setLoginStatus(document.getElementById("discord-login-status"), "Discord login needs the league's Discord app connected before it can sign anyone in.", false);
       return;
     }
     const redirect = cfg.redirectUri || (location.origin + "/callback.html");
@@ -229,13 +233,15 @@ if (loginBtn) {
     const popup = window.open(
       url.toString(),
       "jba-discord-login",
-      "popup=yes,width=" + width + ",height=" + height + ",left=" + left + ",top=" + top
+      "width=" + width + ",height=" + height + ",left=" + left + ",top=" + top
     );
     localStorage.removeItem("jba-discord-status");
     if (!popup) {
-      location.href = url.toString();
+      discordOpening = false;
+      setLoginStatus(document.getElementById("discord-login-status"), "The Discord window was blocked. Click Connect Discord again.", false);
       return;
     }
+    popup.focus();
     const started = Date.now();
     const watch = setInterval(function () {
       const cookieUser = userFromCookie();
