@@ -122,6 +122,7 @@
       <div class="roster-layout">
         <p class="slot-title players-title">Players</p>
         <p class="slot-title staff-title">Staff</p>
+        <div class="roster-divider" aria-hidden="true"></div>
         <ol class="roster-list roster-players" id="roster-list"></ol>
         <ol class="roster-list roster-staff" id="staff-list"></ol>
       </div>
@@ -246,7 +247,13 @@
         const item = document.createElement("li");
         if (!player) {
           item.className = "is-empty";
-          item.textContent = players ? "PLAYER — Empty" + (index < 5 ? " *" : "") : staffLabels[index];
+          item.textContent = players ? "PLAYER — Empty" : staffLabels[index];
+          if (players && index < 5) {
+            const star = document.createElement("span");
+            star.className = "slot-star";
+            star.textContent = " *";
+            item.appendChild(star);
+          }
           list.appendChild(item);
           return;
         }
