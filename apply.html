@@ -74,8 +74,9 @@
     <p class="apply-lead">Pick a team, then a backup in case that one is taken. Your Roblox username is checked before this can be submitted.</p>
     <div class="apply-grid">
     <form class="panel apply-form" id="apply-form">
+      <h3 class="box-title">Ownership</h3>
       <div class="field-label">
-        <span>Discord username</span>
+        <span>Discord username <i class="req">*</i></span>
         <button type="button" class="info-tip" aria-label="About Discord username">i<span>This is the Discord account you use to sign in. It has to be in the JBA server, and you cannot type a different name.</span></button>
       </div>
       <div class="discord-lock" id="discord-lock">
@@ -86,7 +87,7 @@
 
       <div class="apply-rest is-locked" id="apply-rest">
       <div class="field-label">
-        <span>Roblox username</span>
+        <span>Roblox username <i class="req">*</i></span>
         <button type="button" class="info-tip" aria-label="About Roblox username">i<span>Use the exact username on your Roblox account. It is checked once, and it cannot already belong to another JBA player.</span></button>
       </div>
       <input id="roblox-name" name="username" autocomplete="off" maxlength="20" required placeholder="Username">
@@ -94,34 +95,47 @@
       <p class="apply-status" id="unique-status"></p>
 
       <div class="field-label">
-        <span>First available team choice</span>
+        <span>First available team choice <i class="req">*</i></span>
         <button type="button" class="info-tip" aria-label="About first team">i<span>The open team you want first. Random means you will take whatever team is still available.</span></button>
       </div>
       <div class="team-pick" data-placeholder="Select a team" data-input="first-team"></div>
       <input type="hidden" id="first-team" name="first" required>
 
       <div class="field-label">
-        <span>Backup available team choice</span>
+        <span>Backup available team choice <i class="req">*</i></span>
         <button type="button" class="info-tip" aria-label="About backup team">i<span>Used only if your first team is taken before you get it. It has to be a different team.</span></button>
       </div>
       <div class="team-pick" data-placeholder="Select a backup" data-input="second-team"></div>
       <input type="hidden" id="second-team" name="second" required>
       <p class="backup-note">If both teams are unavailable before your application is approved, a staff member will contact you about the next team you would like. You will have priority on that choice.</p>
-
-      <button class="cta-btn apply-submit" type="submit">Submit application</button>
-      <p class="apply-status" id="form-status"></p>
       </div>
     </form>
     <aside class="panel roster-box is-locked" id="roster-box">
-      <h3>Roster Construction</h3>
-      <label class="field-label" for="player-search">Search signed-in players</label>
-      <input id="player-search" type="search" placeholder="Search players" autocomplete="off">
-      <div class="player-results" id="player-results"></div>
+      <h3 class="box-title">Roster Construction</h3>
+      <label class="field-label" for="player-search">Search signed-in players <i class="req">*</i></label>
+      <div class="player-search">
+        <input id="player-search" type="search" placeholder="Search players" autocomplete="off">
+        <div class="player-results" id="player-results"></div>
+      </div>
       <p class="roster-count" id="roster-count">Owner plus 0 players. Add at least 4, up to 10.</p>
       <ol class="roster-list" id="roster-list"></ol>
     </aside>
     </div>
+    <button class="cta-btn apply-submit" id="apply-submit" type="submit" form="apply-form" disabled>Submit application</button>
+    <p class="apply-status" id="form-status"></p>
   </section>
+    <div class="role-modal" id="role-modal" hidden>
+      <div class="role-card">
+        <p>How should this player be listed?</p>
+        <strong id="role-player"></strong>
+        <div class="role-actions">
+          <button type="button" data-role="Player">Player</button>
+          <button type="button" data-role="Head Coach">Head Coach</button>
+          <button type="button" data-role="Assistant Coach">Assistant Coach</button>
+          <button type="button" data-role="cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
   <script src="discord-config.js"></script>
   <script src="script.js"></script>
   <script>
@@ -157,8 +171,12 @@
     let signedPlayers = [];
     let roster = [];
 
-    function playerLabel(player) {
-      return player.name && player.name !== player.username ? player.name + " (@" + player.username + ")" : (player.username || player.name);
+    function displayName(player) {
+      return player.name || player.username || "Player";
+    }
+
+    function tagName(player) {
+      return player.username || player.name || "";
     }
 
     function renderRoster() {
@@ -168,15 +186,18 @@
       list.innerHTML = "";
       const ownerItem = document.createElement("li");
       ownerItem.className = "roster-owner";
-      ownerItem.textContent = owner ? playerLabel(owner) : "Owner";
+      ownerItem.appendChild(nameNode(owner || { name: "Owner", username: "" }));
       const tag = document.createElement("span");
+      tag.className = "role-label";
       tag.textContent = "Owner";
       ownerItem.appendChild(tag);
       list.appendChild(ownerItem);
       roster.forEach(function (player) {
         const item = document.createElement("li");
-        const name = document.createElement("span");
-        name.textContent = playerLabel(player);
+        item.appendChild(nameNode(player));
+        const role = document.createElement("span");
+        role.className = "role-label";
+        role.textContent = player.role;
         const remove = document.createElement("button");
         remove.type = "button";
         remove.textContent = "Remove";
@@ -184,44 +205,102 @@
           roster = roster.filter(function (picked) { return picked.id !== player.id; });
           renderRoster();
           renderPlayerResults();
+          refreshSubmit();
         });
-        item.appendChild(name);
-        item.appendChild(remove);
+        const side = document.createElement("div");
+        side.appendChild(role);
+        side.appendChild(remove);
+        item.appendChild(side);
         list.appendChild(item);
       });
       count.textContent = "Owner plus " + roster.length + " player" + (roster.length === 1 ? "" : "s") + ". Add at least 4, up to 10.";
+      refreshSubmit();
     }
+
+    function nameNode(player) {
+      const wrap = document.createElement("span");
+      wrap.className = "person-name";
+      const display = document.createElement("b");
+      display.textContent = displayName(player);
+      const tag = document.createElement("small");
+      if (tagName(player)) tag.textContent = " (@" + tagName(player) + ")";
+      wrap.appendChild(display);
+      wrap.appendChild(tag);
+      return wrap;
+    }
+
+    let searchOpen = false;
+    let pendingPlayer = null;
 
     function renderPlayerResults() {
       const box = document.getElementById("player-results");
       const query = document.getElementById("player-search").value.trim().toLowerCase();
       const owner = signedInUser();
       box.innerHTML = "";
-      if (!owner) return;
-      signedPlayers.forEach(function (player) {
-        const label = playerLabel(player).toLowerCase();
-        if (query && label.indexOf(query) === -1) return;
-        if (owner && (player.id === owner.id || player.username === owner.username)) return;
-        if (roster.some(function (picked) { return picked.id === player.id; })) return;
+      if (!searchOpen || !owner) return;
+      const matches = signedPlayers.filter(function (player) {
+        const label = (displayName(player) + " " + tagName(player)).toLowerCase();
+        if (query && label.indexOf(query) === -1) return false;
+        if (player.id === owner.id || player.username === owner.username) return false;
+        if (roster.some(function (picked) { return picked.id === player.id; })) return false;
+        return true;
+      }).sort(function (a, b) {
+        return displayName(a).localeCompare(displayName(b));
+      }).slice(0, 5);
+      matches.forEach(function (player) {
         const button = document.createElement("button");
         button.type = "button";
-        button.textContent = playerLabel(player);
+        button.appendChild(nameNode(player));
         button.addEventListener("click", function () {
           if (roster.length >= 10) return;
-          roster.push(player);
-          document.getElementById("player-search").value = "";
-          renderRoster();
-          renderPlayerResults();
+          pendingPlayer = player;
+          openRoleModal(player);
         });
         box.appendChild(button);
       });
     }
 
-    document.getElementById("player-search").addEventListener("input", renderPlayerResults);
-    document.getElementById("player-search").addEventListener("focus", renderPlayerResults);
+    function openRoleModal(player) {
+      const modal = document.getElementById("role-modal");
+      document.getElementById("role-player").textContent = displayName(player) + " (@" + tagName(player) + ")";
+      const hasHead = roster.some(function (picked) { return picked.role === "Head Coach"; });
+      const hasAssist = roster.some(function (picked) { return picked.role === "Assistant Coach"; });
+      modal.querySelector('[data-role="Head Coach"]').disabled = hasHead;
+      modal.querySelector('[data-role="Assistant Coach"]').disabled = hasAssist;
+      modal.hidden = false;
+    }
+
+    document.getElementById("role-modal").addEventListener("click", function (event) {
+      const role = event.target.getAttribute("data-role");
+      if (!role && event.target.id !== "role-modal") return;
+      const modal = document.getElementById("role-modal");
+      if (role && role !== "cancel" && pendingPlayer && roster.length < 10) {
+        roster.push({ id: pendingPlayer.id, username: pendingPlayer.username, name: pendingPlayer.name, role: role });
+        document.getElementById("player-search").value = "";
+      }
+      pendingPlayer = null;
+      modal.hidden = true;
+      searchOpen = false;
+      document.getElementById("player-search").parentElement.classList.remove("is-open");
+      renderRoster();
+      renderPlayerResults();
+    });
+
+    const searchBox = document.getElementById("player-search");
+    searchBox.addEventListener("focus", function () {
+      searchOpen = true;
+      searchBox.parentElement.classList.add("is-open");
+      renderPlayerResults();
+    });
+    searchBox.addEventListener("input", renderPlayerResults);
+    document.addEventListener("click", function (event) {
+      if (!event.target.closest(".player-search")) {
+        searchOpen = false;
+        searchBox.parentElement.classList.remove("is-open");
+      }
+    });
     fetch("/api/players").then(function (res) { return res.json(); }).then(function (data) {
       signedPlayers = data.players || [];
-      renderPlayerResults();
     }).catch(function () {});
     renderRoster();
 
@@ -233,7 +312,9 @@
     }
 
     function lockDiscord(user) {
-      discordName.value = user.username || user.name;
+      const display = user.name || user.username;
+      const tag = user.username || user.name;
+      discordName.value = display + " (@" + tag + ")";
       discordLock.classList.add("is-ready");
       applyRest.classList.remove("is-locked");
       document.getElementById("roster-box").classList.remove("is-locked");
@@ -344,6 +425,7 @@
             input.value = team[0];
             button.innerHTML = optionMarkup(team[0], team[1]);
             button.classList.remove("is-empty");
+            input.dispatchEvent(new Event("change"));
             pick.classList.remove("is-open");
           });
           menu.appendChild(choice);
@@ -402,10 +484,31 @@
       setStatus(uniqueStatus, "Unique account: " + (data.unique ? "Yes" : "No"), !!data.unique);
     }
 
+    let robloxReady = false;
+
+    function refreshSubmit() {
+      const button = document.getElementById("apply-submit");
+      const first = document.getElementById("first-team").value;
+      const second = document.getElementById("second-team").value;
+      const teamsOk = first && second && (first === "Random" || first !== second);
+      button.disabled = !(signedInUser() && robloxReady && teamsOk && roster.length >= 4 && roster.length <= 10);
+    }
+
+    nameInput.addEventListener("input", function () {
+      robloxReady = false;
+      setStatus(nameStatus, "", false);
+      setStatus(uniqueStatus, "", false);
+      refreshSubmit();
+    });
+    document.getElementById("first-team").addEventListener("change", refreshSubmit);
+    document.getElementById("second-team").addEventListener("change", refreshSubmit);
+
     nameInput.addEventListener("blur", async function () {
       if (!nameInput.value.trim()) {
         setStatus(nameStatus, "", false);
         setStatus(uniqueStatus, "", false);
+        robloxReady = false;
+        refreshSubmit();
         return;
       }
       setStatus(nameStatus, "Checking Roblox…", true);
@@ -417,7 +520,11 @@
           setStatus(nameStatus, data.error || "That username could not be checked.", false);
           setStatus(uniqueStatus, "", false);
         }
+        robloxReady = !!(data && data.ok && data.unique);
+        refreshSubmit();
       } catch (err) {
+        robloxReady = false;
+        refreshSubmit();
         setStatus(nameStatus, "Could not check that username.", false);
       }
     });
@@ -440,8 +547,10 @@
           setStatus(formStatus, "Application accepted for " + data.roblox.displayName + ". This draft does not lock the team yet.", true);
           form.reset();
           roster = [];
+          robloxReady = false;
           renderRoster();
           refreshDiscordGate();
+          refreshSubmit();
           document.querySelectorAll(".team-pick").forEach(function (pick) {
             const button = pick.querySelector(".pick-button");
             button.className = "pick-button is-empty";

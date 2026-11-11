@@ -1,11 +1,27 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-export default function handler(req, res) {
+function readJson(name) {
   try {
-    const data = JSON.parse(readFileSync(join(process.cwd(), "signed-in.json"), "utf8"));
-    res.status(200).json({ players: Array.isArray(data.players) ? data.players : [] });
+    return JSON.parse(readFileSync(join(process.cwd(), name), "utf8"));
   } catch (err) {
-    res.status(200).json({ players: [] });
+    return { players: [] };
   }
+}
+
+export default function handler(req, res) {
+  const signed = readJson("signed-in.json");
+  const registry = readJson("registrations.json");
+  const taken = new Set();
+  (registry.players || []).forEach(function (player) {
+    if (!player.team) return;
+    if (player.id) taken.add(String(player.id));
+    if (player.username) taken.add(String(player.username).toLowerCase());
+  });
+  const players = (signed.players || []).filter(function (player) {
+    if (player.id && taken.has(String(player.id))) return false;
+    if (player.username && taken.has(String(player.username).toLowerCase())) return false;
+    return true;
+  });
+  res.status(200).json({ players: players });
 }
