@@ -9,7 +9,7 @@
   <script>
     (function () {
       function signedIn(user) {
-        return !!(user && user.serverChecked && (user.username || user.name));
+        return !!(user && user.serverChecked && (user.username || user.name) && user.roblox && user.build);
       }
       try {
         var saved = JSON.parse(localStorage.getItem("jba-discord") || "null");
@@ -43,6 +43,24 @@
       <p>Practical Basketball</p>
     </div>
   </section>
+
+  <div class="role-modal" id="login-modal" hidden>
+    <form class="role-card login-card" id="login-form">
+      <p>Login</p>
+      <label for="login-roblox">Roblox username</label>
+      <input id="login-roblox" name="roblox" maxlength="20" autocomplete="off" required placeholder="Username">
+      <p class="login-warn">If this is not your Roblox account, that is a serious offense and against our rules.</p>
+      <p class="login-build-label">Build</p>
+      <div class="build-picks" id="build-picks">
+        <button type="button" data-build="Guard">GUARD [PG / SG]</button>
+        <button type="button" data-build="Forward">FORWARD [SF / PF]</button>
+        <button type="button" data-build="Big">BIG [C / PF]</button>
+      </div>
+      <p class="login-lock">You can only stay on one build for the entire season. This can be changed until you are on an approved roster. Once you are on an approved roster, your build is locked and cannot be changed.</p>
+      <button class="cta-btn" id="login-continue" type="submit" disabled>Continue</button>
+      <button type="button" class="role-cancel" id="login-cancel">Cancel</button>
+    </form>
+  </div>
 
   <script src="discord-config.js"></script>
   <script src="script.js"></script>

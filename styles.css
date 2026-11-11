@@ -1351,6 +1351,98 @@ article h3 {
   font-size: 1.05rem;
 }
 
+.login-card {
+  width: min(92vw, 440px);
+  text-align: left;
+}
+
+.login-card > p:first-child {
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.login-card label,
+.login-build-label {
+  display: block;
+  margin: 0.9rem 0 0.35rem;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background: #101010;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.92rem;
+}
+
+.login-warn {
+  margin: 0.55rem 0 0 !important;
+  color: #ff8fa3;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.login-lock {
+  margin: 0.7rem 0 0 !important;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.build-picks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.build-picks button {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: #101010;
+  color: #fff;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.build-picks button.is-selected {
+  border-color: rgba(255, 255, 255, 0.92);
+}
+
+.login-card .cta-btn {
+  width: 100%;
+  margin-top: 0.95rem;
+}
+
+.login-card .cta-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+#login-cancel {
+  display: block;
+  margin: 0.7rem auto 0;
+  border: 0;
+  background: none;
+  color: #ff5d6c;
+  font-family: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
 .role-actions {
   display: flex;
   flex-direction: column;

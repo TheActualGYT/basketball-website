@@ -46,13 +46,30 @@ if (loginBtn) {
   try { savedUser = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
   if (savedUser && !verifiedUser(savedUser)) localStorage.removeItem("jba-discord");
   const existing = mergeUsers(verifiedUser(cookieUser) ? cookieUser : null, verifiedUser(savedUser) ? savedUser : null);
-  if (existing) {
+  if (existing && existing.roblox && existing.build) {
     localStorage.setItem("jba-discord", JSON.stringify(existing));
     location.replace("home.html");
   } else {
 
+  const loginModal = document.getElementById("login-modal");
+  const loginForm = document.getElementById("login-form");
+  const loginRoblox = document.getElementById("login-roblox");
+  const loginContinue = document.getElementById("login-continue");
+  let chosenBuild = "";
+
+  function pendingProfile() {
+    try { return JSON.parse(localStorage.getItem("jba-login-profile") || "null"); } catch (err) { return null; }
+  }
+
+  function withProfile(user) {
+    const extra = pendingProfile();
+    if (!extra || !extra.roblox || !extra.build) return user;
+    return Object.assign({}, user, { roblox: extra.roblox, build: extra.build });
+  }
+
   function applyDiscordUser(user) {
-    if (!verifiedUser(user)) return;
+    user = withProfile(user);
+    if (!verifiedUser(user) || !user.roblox || !user.build) return;
     localStorage.setItem("jba-discord", JSON.stringify(user));
     localStorage.removeItem("jba-discord-status");
     loginBtn.textContent = user.username || user.name;
@@ -105,7 +122,12 @@ if (loginBtn) {
     }
   });
 
-  loginBtn.addEventListener("click", function () {
+  function refreshLoginContinue() {
+    if (!loginContinue || !loginRoblox) return;
+    loginContinue.disabled = !(loginRoblox.value.trim() && chosenBuild);
+  }
+
+  function startDiscordLogin() {
     if (location.host !== "basketball-website-psi.vercel.app") {
       location.href = "https://basketball-website-psi.vercel.app/";
       return;
@@ -158,6 +180,40 @@ if (loginBtn) {
       if (info) showLoginStatus(info);
       if (Date.now() - started > 120000) clearInterval(watch);
     }, 400);
+  }
+
+  if (loginRoblox) loginRoblox.addEventListener("input", refreshLoginContinue);
+  document.querySelectorAll("#build-picks button").forEach(function (button) {
+    button.addEventListener("click", function () {
+      chosenBuild = button.dataset.build;
+      document.querySelectorAll("#build-picks button").forEach(function (item) {
+        item.classList.toggle("is-selected", item === button);
+      });
+      refreshLoginContinue();
+    });
+  });
+  document.getElementById("login-cancel").addEventListener("click", function () {
+    if (loginModal) loginModal.hidden = true;
+  });
+  if (loginForm) {
+    loginForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+      const roblox = loginRoblox.value.trim();
+      if (!roblox || !chosenBuild) return;
+      localStorage.setItem("jba-login-profile", JSON.stringify({ roblox: roblox, build: chosenBuild }));
+      if (loginModal) loginModal.hidden = true;
+      const signed = existing && verifiedUser(existing) ? existing : null;
+      if (signed) {
+        applyDiscordUser(signed);
+        return;
+      }
+      startDiscordLogin();
+    });
+  }
+
+  loginBtn.addEventListener("click", function () {
+    if (loginModal) loginModal.hidden = false;
+    if (loginRoblox) loginRoblox.focus();
   });
 }
 
@@ -179,9 +235,7 @@ function discordAvatarUrl(user) {
 
 const KNOWN_PROFILES = {
   themoistbagle: { id: "365233938945277952", avatar: "3001ae38526f038def2c6561973e7563", name: "MoistBagle", username: "themoistbagle" },
-  moistbagle: { id: "365233938945277952", avatar: "3001ae38526f038def2c6561973e7563", name: "MoistBagle", username: "themoistbagle" },
-  theactualgyt: { id: "625380503335206912", avatar: "c1eaa5abd77a7640f499c4590ffa402a", name: "Guerrilla", username: "theactualgyt" },
-  guerrilla: { id: "625380503335206912", avatar: "c1eaa5abd77a7640f499c4590ffa402a", name: "Guerrilla", username: "theactualgyt" }
+  moistbagle: { id: "365233938945277952", avatar: "3001ae38526f038def2c6561973e7563", name: "MoistBagle", username: "themoistbagle" }
 };
 
 function profileKey(value) {

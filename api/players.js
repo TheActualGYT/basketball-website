@@ -2,7 +2,6 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 const FALLBACK = [
-  { id: "625380503335206912", username: "theactualgyt", name: "Guerrilla", avatar: "c1eaa5abd77a7640f499c4590ffa402a", status: "Free Agent" },
   { id: "365233938945277952", username: "themoistbagle", name: "MoistBagle", avatar: "3001ae38526f038def2c6561973e7563", status: "Free Agent" }
 ];
 
