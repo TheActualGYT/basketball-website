@@ -39,10 +39,20 @@
     }
 
     function finish(user) {
-      localStorage.setItem("jba-discord", JSON.stringify(user));
-      localStorage.removeItem("jba-discord-status");
-      tellOpener({ type: "jba-discord", user: user });
-      location.replace(location.origin + "/?connected=1");
+      var account = {
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        avatar: user.avatar || "",
+        serverChecked: true,
+        checkedAt: Date.now()
+      };
+      try {
+        localStorage.setItem("jba-discord", JSON.stringify(account));
+        localStorage.removeItem("jba-discord-status");
+      } catch (err) {}
+      tellOpener({ type: "jba-discord", user: account });
+      location.replace(location.origin + "/?connected=1#" + encodeURIComponent(JSON.stringify(account)));
     }
 
     function requireJoin(invite) {
@@ -74,10 +84,16 @@
       actions.hidden = false;
       document.getElementById("join-link").hidden = true;
     } else if (sessionStorage.getItem("jba-oauth-code") === code) {
-      title.textContent = "Login failed";
-      status.textContent = "That Discord login was already used. Go back and click Connect Discord again.";
-      actions.hidden = false;
-      document.getElementById("join-link").hidden = true;
+      var saved = null;
+      try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
+      if (saved && (saved.username || saved.name)) {
+        location.replace(location.origin + "/?connected=1#" + encodeURIComponent(JSON.stringify(saved)));
+      } else {
+        title.textContent = "Login failed";
+        status.textContent = "That Discord login was already used. Go back and click Connect Discord again.";
+        actions.hidden = false;
+        document.getElementById("join-link").hidden = true;
+      }
     } else {
       sessionStorage.setItem("jba-oauth-code", code);
       fetch("/api/discord?code=" + encodeURIComponent(code))

@@ -8,15 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     (function () {
-      function wipeTestLogin() {
-        if (localStorage.getItem("jba-auth-reset") === "3") return;
-        localStorage.removeItem("jba-discord");
-        localStorage.removeItem("jba-login-profile");
-        localStorage.removeItem("jba-discord-status");
-        document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
-        localStorage.setItem("jba-auth-reset", "3");
-      }
-      wipeTestLogin();
       function signedIn(user) {
         return !!(user && user.serverChecked && (user.username || user.name) && ((user.roblox && user.build) || user.notPlayer));
       }
@@ -89,19 +80,50 @@
   </div>
   <script>
     (function () {
+      var fromHash = null;
+      if (location.hash.length > 1) {
+        try { fromHash = JSON.parse(decodeURIComponent(location.hash.slice(1))); } catch (err) {}
+      }
+      if (fromHash && (fromHash.username || fromHash.name)) {
+        fromHash.serverChecked = true;
+        try { localStorage.setItem("jba-discord", JSON.stringify(fromHash)); } catch (err) {}
+        history.replaceState(null, "", location.pathname + location.search);
+      }
+      var saved = fromHash;
+      if (!saved) {
+        try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
+      }
       var params = location.search.indexOf("connected=1") !== -1;
       var resume = false;
       try { resume = sessionStorage.getItem("jba-resume-login") === "1"; } catch (err) {}
-      var saved = null;
-      try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
-      var unfinished = saved && saved.serverChecked && (saved.username || saved.name) && !((saved.roblox && saved.build) || saved.notPlayer);
-      if (params || resume || unfinished) {
-        var modal = document.getElementById("login-modal");
-        if (modal) {
-          modal.hidden = false;
-          modal.style.display = "flex";
-        }
+      var unfinished = saved && (saved.username || saved.name) && !((saved.roblox && saved.build) || saved.notPlayer);
+      if (!(params || resume || unfinished)) return;
+      var modal = document.getElementById("login-modal");
+      if (modal) {
+        modal.hidden = false;
+        modal.style.display = "flex";
       }
+      var box = document.getElementById("discord-connect");
+      if (!box || !saved || !(saved.username || saved.name)) return;
+      box.classList.remove("is-empty");
+      box.textContent = "";
+      var img = document.createElement("img");
+      img.className = "roster-pfp";
+      img.alt = "";
+      img.referrerPolicy = "no-referrer";
+      img.src = saved.avatar
+        ? "https://cdn.discordapp.com/avatars/" + saved.id + "/" + saved.avatar + ".png?size=128"
+        : "https://cdn.discordapp.com/embed/avatars/0.png";
+      var copy = document.createElement("span");
+      copy.className = "person-copy";
+      var display = document.createElement("b");
+      display.textContent = saved.name || saved.username;
+      var tag = document.createElement("small");
+      tag.textContent = "@" + (saved.username || "");
+      copy.appendChild(display);
+      copy.appendChild(tag);
+      box.appendChild(img);
+      box.appendChild(copy);
     })();
   </script>
 

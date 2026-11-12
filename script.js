@@ -40,16 +40,6 @@ function verifiedUser(user) {
 
 const KNOWN_PROFILES = {};
 
-function clearTestLogin() {
-  if (localStorage.getItem("jba-auth-reset") === "3") return;
-  localStorage.removeItem("jba-discord");
-  localStorage.removeItem("jba-login-profile");
-  localStorage.removeItem("jba-discord-status");
-  document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
-  localStorage.setItem("jba-auth-reset", "3");
-}
-clearTestLogin();
-
 const loginBtn = document.getElementById("login-btn");
 const loginNote = document.getElementById("login-note");
 if (loginBtn) {
