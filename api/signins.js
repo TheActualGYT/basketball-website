@@ -23,19 +23,23 @@ function wait(ms) {
 }
 
 async function crud(url, options) {
-  let lastStatus = 0;
+  const headers = Object.assign({
+    "Accept": "application/json",
+    "User-Agent": "Mozilla/5.0"
+  }, (options && options.headers) || {});
+  let lastError = "unreachable";
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      const res = await fetch(url, options);
+      const res = await fetch(url, Object.assign({}, options, { headers: headers }));
       if (res.ok) return { ok: true, res: res };
-      lastStatus = res.status;
-      if (res.status < 500 && res.status !== 429) return { ok: false, res: res, status: res.status };
+      lastError = "status " + res.status;
+      if (res.status < 500 && res.status !== 429) return { ok: false, res: res, error: lastError };
     } catch (err) {
-      lastStatus = 0;
+      lastError = err && err.message ? err.message : "fetch failed";
     }
-    await wait(300 * (attempt + 1));
+    await wait(250 * (attempt + 1));
   }
-  return { ok: false, res: null, status: lastStatus };
+  return { ok: false, res: null, error: lastError };
 }
 
 function readFilePlayers() {
@@ -96,17 +100,17 @@ export default async function handler(req, res) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(next)
       });
-      if (!update.ok) throw new Error("update " + update.status);
+      if (!update.ok) throw new Error(update.error || "update failed");
     } else {
       const create = await crud(STORE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(next)
       });
-      if (!create.ok) throw new Error("create " + create.status);
+      if (!create.ok) throw new Error(create.error || "create failed");
     }
     res.status(200).json({ ok: true, player: next });
   } catch (err) {
-    res.status(500).json({ error: "Could not save that sign-in" });
+    res.status(500).json({ error: "Could not save that sign-in", detail: String(err && err.message || err) });
   }
 }

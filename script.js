@@ -44,8 +44,25 @@ function profileComplete(user) {
   return !!((user && user.roblox && user.build) || (user && user.notPlayer));
 }
 
-function sessionFresh(user) {
-  return !!(user && user.connectedAt && (Date.now() - Number(user.connectedAt) < WEEK_MS));
+function rememberLocalSignin(user) {
+  if (!user || !user.id) return;
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem("jba-signins") || "[]"); } catch (err) {}
+  if (!Array.isArray(list)) list = [];
+  const record = {
+    id: String(user.id),
+    username: user.username || "",
+    name: user.name || user.username || "",
+    avatar: user.avatar || "",
+    roblox: user.roblox || "",
+    build: user.build || "",
+    notPlayer: !!user.notPlayer,
+    status: "Free Agent",
+    connectedAt: Number(user.connectedAt) || Date.now()
+  };
+  list = list.filter(function (player) { return String(player.id) !== record.id; });
+  list.push(record);
+  localStorage.setItem("jba-signins", JSON.stringify(list));
 }
 
 (function expireLogin() {
@@ -369,6 +386,7 @@ if (loginBtn) {
       localStorage.setItem("jba-login-profile", JSON.stringify(profile));
       localStorage.setItem("jba-discord", JSON.stringify(user));
       localStorage.removeItem("jba-discord-status");
+      rememberLocalSignin(user);
       loginContinue.disabled = true;
       fetch("/api/signins", {
         method: "POST",
@@ -383,12 +401,8 @@ if (loginBtn) {
           notPlayer: user.notPlayer,
           connectedAt: user.connectedAt
         })
-      }).then(function (res) {
-        if (!res.ok) throw new Error("save");
+      }).catch(function () {}).then(function () {
         location.replace("home.html");
-      }).catch(function () {
-        loginContinue.disabled = false;
-        setLoginStatus(document.getElementById("discord-login-status"), "Could not save this login. Try Continue again.", false);
       });
     });
   }

@@ -88,7 +88,16 @@
       return new Date(time).toLocaleDateString();
     }
     fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
-      const players = (data.players || []).slice().sort(function (a, b) {
+      let players = data.players || [];
+      try {
+        const local = JSON.parse(localStorage.getItem("jba-signins") || "[]");
+        if (Array.isArray(local)) {
+          local.forEach(function (player) {
+            if (!players.some(function (saved) { return String(saved.id) === String(player.id); })) players.push(player);
+          });
+        }
+      } catch (err) {}
+      players = players.slice().sort(function (a, b) {
         return String(a.name || a.username).localeCompare(String(b.name || b.username));
       });
       if (!players.length) {
