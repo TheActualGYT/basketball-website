@@ -38,6 +38,28 @@ function verifiedUser(user) {
   return !!(user && user.serverChecked && (user.username || user.name));
 }
 
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+function profileComplete(user) {
+  return !!((user && user.roblox && user.build) || (user && user.notPlayer));
+}
+
+function sessionFresh(user) {
+  return !!(user && user.connectedAt && (Date.now() - Number(user.connectedAt) < WEEK_MS));
+}
+
+(function expireLogin() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
+  if (!profileComplete(saved) || sessionFresh(saved)) return;
+  localStorage.removeItem("jba-discord");
+  localStorage.removeItem("jba-login-profile");
+  document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
+  const path = location.pathname || "/";
+  const start = path === "/" || path.endsWith("/index.html");
+  if (!start) location.replace("/");
+})();
+
 const KNOWN_PROFILES = {};
 
 const loginBtn = document.getElementById("login-btn");
@@ -48,7 +70,7 @@ if (loginBtn) {
   try { savedUser = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
   if (savedUser && !verifiedUser(savedUser)) localStorage.removeItem("jba-discord");
   const existing = mergeUsers(verifiedUser(cookieUser) ? cookieUser : null, verifiedUser(savedUser) ? savedUser : null);
-  if (existing && ((existing.roblox && existing.build) || existing.notPlayer)) {
+  if (existing && profileComplete(existing) && sessionFresh(existing)) {
     localStorage.setItem("jba-discord", JSON.stringify(existing));
     location.replace("home.html");
   } else {
@@ -120,6 +142,52 @@ if (loginBtn) {
     setLoginStatus(document.getElementById("discord-login-status"), "", true);
     if (loginNote) loginNote.hidden = true;
     refreshLoginContinue();
+    resumeKnownAccount(user);
+  }
+
+  let resumeStarted = false;
+  async function resumeKnownAccount(user) {
+    if (resumeStarted || !user || !user.id || profileComplete(user)) return;
+    resumeStarted = true;
+    try {
+      const res = await fetch("/api/signins");
+      const data = await res.json();
+      const found = (data.players || []).find(function (player) { return String(player.id) === String(user.id); });
+      if (!found || !((found.roblox && found.build) || found.notPlayer)) {
+        resumeStarted = false;
+        return;
+      }
+      const next = Object.assign({}, user, {
+        roblox: found.roblox || "",
+        build: found.build || "",
+        notPlayer: !!found.notPlayer,
+        connectedAt: Date.now(),
+        serverChecked: true
+      });
+      localStorage.setItem("jba-discord", JSON.stringify(next));
+      localStorage.setItem("jba-login-profile", JSON.stringify({
+        roblox: next.roblox,
+        build: next.build,
+        notPlayer: next.notPlayer
+      }));
+      await fetch("/api/signins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: next.id,
+          username: next.username,
+          name: next.name,
+          avatar: next.avatar || "",
+          roblox: next.roblox,
+          build: next.build,
+          notPlayer: next.notPlayer,
+          connectedAt: next.connectedAt
+        })
+      });
+      location.replace("home.html");
+    } catch (err) {
+      resumeStarted = false;
+    }
   }
 
   function applyDiscordUser(user) {
@@ -297,11 +365,31 @@ if (loginBtn) {
         build: skipped ? "" : chosenBuild,
         notPlayer: !!skipped
       };
+      const user = Object.assign({}, connectedDiscord, profile, { connectedAt: Date.now(), serverChecked: true });
       localStorage.setItem("jba-login-profile", JSON.stringify(profile));
-      const user = Object.assign({}, connectedDiscord, profile);
       localStorage.setItem("jba-discord", JSON.stringify(user));
       localStorage.removeItem("jba-discord-status");
-      location.replace("home.html");
+      loginContinue.disabled = true;
+      fetch("/api/signins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: user.id,
+          username: user.username,
+          name: user.name || user.username,
+          avatar: user.avatar || "",
+          roblox: user.roblox,
+          build: user.build,
+          notPlayer: user.notPlayer,
+          connectedAt: user.connectedAt
+        })
+      }).then(function (res) {
+        if (!res.ok) throw new Error("save");
+        location.replace("home.html");
+      }).catch(function () {
+        loginContinue.disabled = false;
+        setLoginStatus(document.getElementById("discord-login-status"), "Could not save this login. Try Continue again.", false);
+      });
     });
   }
 

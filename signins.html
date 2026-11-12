@@ -77,28 +77,51 @@
   </section>
   <script src="script.js"></script>
   <script>
-    const SIGNINS = [];
     const list = document.getElementById("signin-list");
-    SIGNINS.sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (player) {
-      const row = document.createElement("article");
-      const img = document.createElement("img");
-      img.className = "roster-pfp";
-      img.alt = "";
-      img.referrerPolicy = "no-referrer";
-      img.src = "https://cdn.discordapp.com/avatars/" + player.id + "/" + player.avatar + ".png?size=128";
-      const copy = document.createElement("div");
-      const name = document.createElement("strong");
-      name.textContent = player.name;
-      const tag = document.createElement("span");
-      tag.textContent = "@" + player.username;
-      copy.appendChild(name);
-      copy.appendChild(tag);
-      const status = document.createElement("em");
-      status.textContent = player.status;
-      row.appendChild(img);
-      row.appendChild(copy);
-      row.appendChild(status);
-      list.appendChild(row);
+    function avatarSrc(player) {
+      if (player.avatar && player.id) return "https://cdn.discordapp.com/avatars/" + player.id + "/" + player.avatar + ".png?size=128";
+      return "https://cdn.discordapp.com/embed/avatars/0.png";
+    }
+    function when(value) {
+      const time = Number(value);
+      if (!time) return "";
+      return new Date(time).toLocaleDateString();
+    }
+    fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+      const players = (data.players || []).slice().sort(function (a, b) {
+        return String(a.name || a.username).localeCompare(String(b.name || b.username));
+      });
+      if (!players.length) {
+        list.textContent = "No one has finished login yet.";
+        return;
+      }
+      players.forEach(function (player) {
+        const row = document.createElement("article");
+        const img = document.createElement("img");
+        img.className = "roster-pfp";
+        img.alt = "";
+        img.referrerPolicy = "no-referrer";
+        img.src = avatarSrc(player);
+        const copy = document.createElement("div");
+        const name = document.createElement("strong");
+        name.textContent = player.name || player.username;
+        const tag = document.createElement("span");
+        tag.textContent = "@" + (player.username || "");
+        const meta = document.createElement("span");
+        const detail = player.notPlayer ? "Not a player" : ((player.roblox || "No Roblox") + " · " + (player.build || "No build"));
+        meta.textContent = detail + (player.connectedAt ? " · " + when(player.connectedAt) : "");
+        copy.appendChild(name);
+        copy.appendChild(tag);
+        copy.appendChild(meta);
+        const status = document.createElement("em");
+        status.textContent = player.status || "Free Agent";
+        row.appendChild(img);
+        row.appendChild(copy);
+        row.appendChild(status);
+        list.appendChild(row);
+      });
+    }).catch(function () {
+      list.textContent = "Sign-ins could not be loaded.";
     });
   </script>
 </body>
