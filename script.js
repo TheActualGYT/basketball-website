@@ -737,7 +737,16 @@ function showNavUser() {
   const profile = document.createElement("a");
   profile.href = "profile.html";
   profile.textContent = "View Profile";
-  menu.appendChild(profile);
+  const logout = document.createElement("button");
+  logout.type = "button";
+  logout.className = "nav-logout";
+  logout.textContent = "Logout";
+  logout.addEventListener("click", function () {
+    clearStoredLogin();
+    try { sessionStorage.removeItem("jba-resume-login"); } catch (err) {}
+    location.replace("index.html");
+  });
+  menu.append(profile, logout);
   el.appendChild(menu);
   document.dispatchEvent(new Event("jba-user"));
 }

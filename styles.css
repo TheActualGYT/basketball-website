@@ -289,9 +289,23 @@ nav a:hover {
 }
 
 .nav-menu a:hover,
-.nav-menu a.active {
+.nav-menu a.active,
+.nav-menu button:hover {
   background: #242424;
   color: #fff;
+}
+
+.nav-menu button {
+  padding: 0.48rem 0.75rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
 }
 
 .logo,
