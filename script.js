@@ -54,7 +54,8 @@ function clearStoredLogin() {
 }
 
 function wipedLogin(user) {
-  return !!(JBA_WIPED_AT && user && user.id && (!user.connectedAt || Number(user.connectedAt) < JBA_WIPED_AT));
+  if (!JBA_WIPED_AT || !user || !user.id || !profileComplete(user)) return false;
+  return !user.connectedAt || Number(user.connectedAt) < JBA_WIPED_AT;
 }
 
 function profileComplete(user) {

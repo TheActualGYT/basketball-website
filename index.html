@@ -39,7 +39,7 @@
       }
       try {
         var saved = readSaved();
-        if (saved && (!saved.connectedAt || Number(saved.connectedAt) < WIPED_AT)) {
+        if (saved && signedIn(saved) && (!saved.connectedAt || Number(saved.connectedAt) < WIPED_AT)) {
           localStorage.removeItem("jba-session");
           localStorage.removeItem("jba-discord");
           localStorage.removeItem("jba-login-profile");
@@ -138,7 +138,17 @@
       var resume = false;
       try { resume = sessionStorage.getItem("jba-resume-login") === "1"; } catch (err) {}
       var unfinished = saved && (saved.username || saved.name) && !((saved.roblox && saved.build) || saved.notPlayer);
+      if (params && saved && !unfinished) {
+        location.replace("home.html");
+        return;
+      }
       if (!(params || resume || unfinished)) return;
+      var form = document.getElementById("login-form");
+      var title = document.getElementById("login-title");
+      if (unfinished && form) {
+        form.classList.add("is-new");
+        if (title) title.textContent = "Sign Up";
+      }
       var modal = document.getElementById("login-modal");
       if (modal) {
         modal.hidden = false;
