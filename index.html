@@ -16,37 +16,48 @@
         return !!(user && user.connectedAt && (Date.now() - Number(user.connectedAt) < WEEK));
       }
       function readSaved() {
-        try {
-          var session = JSON.parse(localStorage.getItem("jba-session") || "null");
-          if (session && session.id) return session;
-        } catch (err) {}
-        try {
-          var saved = JSON.parse(localStorage.getItem("jba-discord") || "null");
-          if (saved && saved.id) return saved;
-        } catch (err) {}
+        var options = [];
+        try { options.push(JSON.parse(localStorage.getItem("jba-session") || "null")); } catch (err) {}
+        try { options.push(JSON.parse(localStorage.getItem("jba-discord") || "null")); } catch (err) {}
         var match = document.cookie.match(/(?:^|; )jba_user=([^;]+)/);
-        if (!match) return null;
-        try {
-          return JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(match[1])))));
-        } catch (err) {
-          return null;
+        if (match) {
+          try { options.push(JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(match[1])))))); } catch (err) {}
         }
+        var i;
+        for (i = 0; i < options.length; i += 1) {
+          if (signedIn(options[i]) && fresh(options[i])) return options[i];
+        }
+        for (i = 0; i < options.length; i += 1) {
+          if (options[i] && options[i].id) return options[i];
+        }
+        return null;
       }
       try {
         var saved = readSaved();
         if (saved && signedIn(saved) && !saved.connectedAt) {
           saved.connectedAt = Date.now();
           saved.serverChecked = true;
+          localStorage.setItem("jba-session", JSON.stringify(saved));
           localStorage.setItem("jba-discord", JSON.stringify(saved));
         }
-        if (signedIn(saved) && fresh(saved) && location.search.indexOf("connected=1") === -1) {
+        if (signedIn(saved) && fresh(saved)) {
           location.replace("home.html");
           return;
         }
-        if (signedIn(saved) && saved.connectedAt && !fresh(saved)) {
-          localStorage.removeItem("jba-discord");
-          localStorage.removeItem("jba-login-profile");
-          document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
+        if (location.search.indexOf("silent=1") === -1 && location.search.indexOf("connected=1") === -1) {
+          var tried = false;
+          try { tried = sessionStorage.getItem("jba-silent") === "1"; } catch (err) {}
+          if (!tried) {
+            try { sessionStorage.setItem("jba-silent", "1"); } catch (err) {}
+            var url = new URL("https://discord.com/oauth2/authorize");
+            url.searchParams.set("client_id", "1569494991250653184");
+            url.searchParams.set("response_type", "code");
+            url.searchParams.set("scope", "identify guilds");
+            url.searchParams.set("redirect_uri", "https://basketball-website-psi.vercel.app/callback.html");
+            url.searchParams.set("prompt", "none");
+            url.searchParams.set("state", "silent");
+            location.replace(url.toString());
+          }
         }
       } catch (err) {}
     })();
@@ -112,6 +123,12 @@
         try { fromHash = JSON.parse(decodeURIComponent(location.hash.slice(1))); } catch (err) {}
       }
       if (fromHash && (fromHash.username || fromHash.name)) {
+        var existing = null;
+        try { existing = JSON.parse(localStorage.getItem("jba-session") || "null"); } catch (err) {}
+        if (existing && String(existing.id) === String(fromHash.id) && ((existing.roblox && existing.build) || existing.notPlayer)) {
+          location.replace("home.html");
+          return;
+        }
         fromHash.serverChecked = true;
         try { localStorage.setItem("jba-discord", JSON.stringify(fromHash)); } catch (err) {}
         history.replaceState(null, "", location.pathname + location.search);

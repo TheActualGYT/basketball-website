@@ -6,6 +6,15 @@
   <title>Connecting Discord | JBA</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var err = params.get("error");
+      if (err === "consent_required" || err === "login_required" || err === "interaction_required" || (err && params.get("state") === "silent")) {
+        location.replace("/?silent=1");
+      }
+    })();
+  </script>
 </head>
 <body class="page-start">
   <section class="hero">
@@ -47,12 +56,47 @@
         serverChecked: true,
         checkedAt: Date.now()
       };
-      try {
-        localStorage.setItem("jba-discord", JSON.stringify(account));
-        localStorage.removeItem("jba-discord-status");
-      } catch (err) {}
-      tellOpener({ type: "jba-discord", user: account });
-      location.replace(location.origin + "/?connected=1#" + encodeURIComponent(JSON.stringify(account)));
+      function saveSession(session) {
+        try {
+          localStorage.setItem("jba-session", JSON.stringify(session));
+          localStorage.setItem("jba-discord", JSON.stringify(session));
+          localStorage.setItem("jba-login-profile", JSON.stringify({
+            roblox: session.roblox || "",
+            build: session.build || "",
+            notPlayer: !!session.notPlayer
+          }));
+          localStorage.removeItem("jba-discord-status");
+          var payload = btoa(unescape(encodeURIComponent(JSON.stringify(session))));
+          document.cookie = "jba_user=" + encodeURIComponent(payload) + "; Path=/; Max-Age=604800; SameSite=Lax";
+        } catch (err) {}
+      }
+      fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+        var found = (data.players || []).find(function (player) { return String(player.id) === String(account.id); });
+        if (found && ((found.roblox && found.build) || found.notPlayer)) {
+          var session = {
+            id: String(account.id),
+            username: found.username || account.username || "",
+            name: found.name || account.name || account.username || "",
+            avatar: account.avatar || found.avatar || "",
+            roblox: found.roblox || "",
+            build: found.build || "",
+            notPlayer: !!found.notPlayer,
+            serverChecked: true,
+            connectedAt: Date.now()
+          };
+          saveSession(session);
+          tellOpener({ type: "jba-discord", user: session });
+          location.replace("/home.html");
+          return;
+        }
+        try { localStorage.setItem("jba-discord", JSON.stringify(account)); } catch (err) {}
+        tellOpener({ type: "jba-discord", user: account });
+        location.replace(location.origin + "/?connected=1#" + encodeURIComponent(JSON.stringify(account)));
+      }).catch(function () {
+        try { localStorage.setItem("jba-discord", JSON.stringify(account)); } catch (err) {}
+        tellOpener({ type: "jba-discord", user: account });
+        location.replace(location.origin + "/?connected=1#" + encodeURIComponent(JSON.stringify(account)));
+      });
     }
 
     function requireJoin(invite) {

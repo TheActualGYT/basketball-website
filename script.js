@@ -939,7 +939,7 @@ function setupProfile() {
   const start = path === "/" || path.endsWith("/index.html");
   if (kept) {
     saveWeekSession(kept);
-    if (start && location.search.indexOf("connected=1") === -1) location.replace("home.html");
+    if (start) location.replace("home.html");
     return;
   }
   let saved = null;
@@ -958,7 +958,7 @@ function setupProfile() {
       connectedAt: Date.now()
     }));
     if (!next) return;
-    if (start && location.search.indexOf("connected=1") === -1) location.replace("home.html");
+    if (start) location.replace("home.html");
     document.dispatchEvent(new Event("jba-user"));
     if (typeof showNavUser === "function") showNavUser();
   }).catch(function () {});
