@@ -17,6 +17,10 @@
       }
       try {
         var saved = JSON.parse(localStorage.getItem("jba-discord") || "null");
+        if (signedIn(saved) && fresh(saved) && location.search.indexOf("connected=1") === -1) {
+          location.replace("home.html");
+          return;
+        }
         if (signedIn(saved) && !fresh(saved)) {
           localStorage.removeItem("jba-discord");
           localStorage.removeItem("jba-login-profile");

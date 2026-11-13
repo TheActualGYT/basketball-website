@@ -61,7 +61,7 @@ function writeUserCookie(user) {
     serverChecked: true,
     connectedAt: Number(user.connectedAt) || Date.now()
   }))));
-  document.cookie = "jba_user=" + encodeURIComponent(payload) + "; Path=/; Max-Age=2592000; SameSite=Lax";
+  document.cookie = "jba_user=" + encodeURIComponent(payload) + "; Path=/; Max-Age=604800; SameSite=Lax";
 }
 
 function publishSignin(user) {
@@ -263,6 +263,10 @@ if (loginBtn) {
     }
     if (found && profileComplete(found)) {
       enterLeague(user, found, false);
+      return;
+    }
+    if (profileComplete(user) && sessionFresh(user)) {
+      location.replace("home.html");
       return;
     }
     resumeStarted = false;
@@ -870,27 +874,22 @@ function setupProfile() {
 (function confirmServerAccount() {
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
-  if (!saved || !saved.id || !profileComplete(saved)) return;
+  if (!saved || !saved.id || !profileComplete(saved) || !sessionFresh(saved)) return;
   fetch("/api/signins").then(function (res) {
     if (!res.ok) throw new Error("list");
     return res.json();
   }).then(function (data) {
     const found = (data.players || []).find(function (player) { return String(player.id) === String(saved.id); });
-    if (found && profileComplete(found)) return;
-    localStorage.removeItem("jba-login-profile");
-    localStorage.removeItem("jba-signins");
-    document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
-    localStorage.setItem("jba-discord", JSON.stringify({
-      id: saved.id,
-      username: saved.username || "",
-      name: saved.name || saved.username || "",
-      avatar: saved.avatar || "",
-      serverChecked: true,
-      connectedAt: Date.now()
-    }));
-    const path = location.pathname || "/";
-    const start = path === "/" || path.endsWith("/index.html");
-    if (!start) location.replace("/?connected=1");
+    if (!found) return;
+    const next = Object.assign({}, saved, {
+      username: found.username || saved.username,
+      name: found.name || saved.name,
+      avatar: found.avatar || saved.avatar || "",
+      roblox: found.roblox || saved.roblox || "",
+      build: found.build || saved.build || "",
+      notPlayer: !!found.notPlayer
+    });
+    localStorage.setItem("jba-discord", JSON.stringify(next));
   }).catch(function () {});
 })();
 
