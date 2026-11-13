@@ -132,10 +132,7 @@ if (loginBtn) {
   try { savedUser = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
   if (savedUser && !verifiedUser(savedUser)) localStorage.removeItem("jba-discord");
   const existing = mergeUsers(verifiedUser(cookieUser) ? cookieUser : null, verifiedUser(savedUser) ? savedUser : null);
-  if (existing && profileComplete(existing) && sessionFresh(existing)) {
-    localStorage.setItem("jba-discord", JSON.stringify(existing));
-    location.replace("home.html");
-  } else {
+  if (existing && !verifiedUser(existing)) localStorage.removeItem("jba-discord");
 
   const loginModal = document.getElementById("login-modal");
   const loginForm = document.getElementById("login-form");
@@ -186,7 +183,7 @@ if (loginBtn) {
     return list.find(function (player) { return String(player.id) === String(user.id); }) || null;
   }
 
-  function enterLeague(user, found) {
+  function enterLeague(user, found, republish) {
     const next = Object.assign({}, user, {
       roblox: found.roblox || "",
       build: found.build || "",
@@ -206,6 +203,10 @@ if (loginBtn) {
     }));
     rememberLocalSignin(next);
     writeUserCookie(next);
+    if (republish === false) {
+      location.replace("home.html");
+      return;
+    }
     publishSignin(next).then(function () {
       location.replace("home.html");
     }).catch(function () {
@@ -249,26 +250,44 @@ if (loginBtn) {
   let resumeStarted = false;
   async function resumeKnownAccount(user) {
     if (resumeStarted || !user || !user.id) return;
-    const local = profileComplete(user) ? user : localSignin(user);
-    if (local && profileComplete(local)) {
-      enterLeague(user, local);
-      return;
-    }
     resumeStarted = true;
     let found = null;
+    let reachable = true;
     try {
       const res = await fetch("/api/signins");
+      if (!res.ok) throw new Error("list");
       const data = await res.json();
       found = (data.players || []).find(function (player) { return String(player.id) === String(user.id); }) || null;
     } catch (err) {
-      found = null;
+      reachable = false;
     }
     if (found && profileComplete(found)) {
-      enterLeague(user, found);
+      enterLeague(user, found, false);
       return;
     }
     resumeStarted = false;
+    if (!reachable) {
+      if (loginForm && !profileComplete(user)) loginForm.classList.add("is-new");
+      return;
+    }
+    localStorage.removeItem("jba-login-profile");
+    localStorage.removeItem("jba-signins");
+    document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
+    const bare = {
+      id: user.id,
+      username: user.username || "",
+      name: user.name || user.username || "",
+      avatar: user.avatar || "",
+      serverChecked: true,
+      connectedAt: Date.now()
+    };
+    localStorage.setItem("jba-discord", JSON.stringify(bare));
+    connectedDiscord = bare;
     if (loginForm) loginForm.classList.add("is-new");
+    if (loginModal) {
+      loginModal.hidden = false;
+      loginModal.style.display = "flex";
+    }
   }
 
   function applyDiscordUser(user) {
@@ -507,8 +526,6 @@ if (loginBtn) {
     }
     try { paintIfSaved(); } catch (err) {}
   });
-}
-
 }
 
 function discordAvatarUrl(user) {
@@ -848,4 +865,31 @@ function setupProfile() {
   });
   refreshSave();
 }
+
+(function confirmServerAccount() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
+  if (!saved || !saved.id || !profileComplete(saved)) return;
+  fetch("/api/signins").then(function (res) {
+    if (!res.ok) throw new Error("list");
+    return res.json();
+  }).then(function (data) {
+    const found = (data.players || []).find(function (player) { return String(player.id) === String(saved.id); });
+    if (found && profileComplete(found)) return;
+    localStorage.removeItem("jba-login-profile");
+    localStorage.removeItem("jba-signins");
+    document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
+    localStorage.setItem("jba-discord", JSON.stringify({
+      id: saved.id,
+      username: saved.username || "",
+      name: saved.name || saved.username || "",
+      avatar: saved.avatar || "",
+      serverChecked: true,
+      connectedAt: Date.now()
+    }));
+    const path = location.pathname || "/";
+    const start = path === "/" || path.endsWith("/index.html");
+    if (!start) location.replace("/?connected=1");
+  }).catch(function () {});
+})();
 
