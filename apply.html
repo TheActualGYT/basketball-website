@@ -89,9 +89,11 @@
       <div class="field-label">
         <span>Roblox username <i class="req">*</i></span>
       </div>
-      <input id="roblox-name" name="username" autocomplete="off" maxlength="20" required placeholder="Username">
-      <p class="apply-status" id="name-status"></p>
-      <p class="apply-status" id="unique-status"></p>
+      <div class="discord-lock is-ready" id="roblox-lock">
+        <input id="roblox-name" name="username" autocomplete="off" maxlength="20" required placeholder="Username">
+      </div>
+      <p class="apply-status" id="name-status" hidden></p>
+      <p class="apply-status" id="unique-status" hidden></p>
 
       <div class="field-label">
         <span>First available team choice <i class="req">*</i></span>
@@ -171,7 +173,8 @@
           roblox.value = user.roblox;
           roblox.readOnly = true;
           roblox.classList.add("is-profile");
-          roblox.dispatchEvent(new Event("blur"));
+          const lock = document.getElementById("roblox-lock");
+          if (lock) lock.classList.add("is-ready");
         }
       } catch (err) {}
     }
@@ -723,7 +726,10 @@
         setStatus(nameStatus, "Could not check that username.", false);
       }
     });
-    if (nameInput && nameInput.value && nameInput.readOnly) nameInput.dispatchEvent(new Event("blur"));
+    if (nameInput && nameInput.readOnly && nameInput.value) {
+      robloxReady = true;
+      refreshSubmit();
+    }
 
     form.addEventListener("submit", async function (event) {
       event.preventDefault();

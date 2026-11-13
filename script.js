@@ -48,6 +48,47 @@ function sessionFresh(user) {
   return !!(user && user.connectedAt && (Date.now() - Number(user.connectedAt) < WEEK_MS));
 }
 
+function readWeekSession() {
+  let session = null;
+  try { session = JSON.parse(localStorage.getItem("jba-session") || "null"); } catch (err) {}
+  if (!(session && session.id && profileComplete(session) && sessionFresh(session))) {
+    try { session = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) { session = null; }
+  }
+  if (!(session && session.id && profileComplete(session))) {
+    const cookie = userFromCookie();
+    if (cookie && cookie.id && profileComplete(cookie)) session = cookie;
+  }
+  if (!session || !session.id || !profileComplete(session)) return null;
+  if (!session.connectedAt) session.connectedAt = Date.now();
+  if (!sessionFresh(session)) return null;
+  session.serverChecked = true;
+  return session;
+}
+
+function saveWeekSession(user) {
+  if (!user || !user.id || !profileComplete(user)) return null;
+  const session = {
+    id: String(user.id),
+    username: user.username || "",
+    name: user.name || user.username || "",
+    avatar: user.avatar || "",
+    roblox: user.roblox || "",
+    build: user.build || "",
+    notPlayer: !!user.notPlayer,
+    serverChecked: true,
+    connectedAt: Number(user.connectedAt) || Date.now()
+  };
+  localStorage.setItem("jba-session", JSON.stringify(session));
+  localStorage.setItem("jba-discord", JSON.stringify(session));
+  localStorage.setItem("jba-login-profile", JSON.stringify({
+    roblox: session.roblox,
+    build: session.build,
+    notPlayer: session.notPlayer
+  }));
+  writeUserCookie(session);
+  return session;
+}
+
 function writeUserCookie(user) {
   if (!user || !user.id) return;
   const payload = btoa(unescape(encodeURIComponent(JSON.stringify({
@@ -69,6 +110,7 @@ function publishSignin(user) {
   rememberLocalSignin(user);
   writeUserCookie(user);
   localStorage.setItem("jba-discord", JSON.stringify(user));
+  if (profileComplete(user)) saveWeekSession(user);
   const save = fetch("/api/signins", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -110,10 +152,15 @@ function rememberLocalSignin(user) {
 }
 
 (function expireLogin() {
+  const kept = readWeekSession();
+  if (kept) {
+    saveWeekSession(kept);
+    return;
+  }
   let saved = null;
-  try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
-  if (!profileComplete(saved) || sessionFresh(saved)) return;
-  rememberLocalSignin(saved);
+  try { saved = JSON.parse(localStorage.getItem("jba-session") || localStorage.getItem("jba-discord") || "null"); } catch (err) {}
+  if (!profileComplete(saved)) return;
+  localStorage.removeItem("jba-session");
   localStorage.removeItem("jba-discord");
   localStorage.removeItem("jba-login-profile");
   document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
@@ -203,6 +250,7 @@ if (loginBtn) {
     }));
     rememberLocalSignin(next);
     writeUserCookie(next);
+    saveWeekSession(next);
     if (republish === false) {
       location.replace("home.html");
       return;
@@ -220,9 +268,12 @@ if (loginBtn) {
 
   function rememberDiscord(user) {
     if (!verifiedUser(user)) return;
+    const kept = readWeekSession();
+    if (kept && String(kept.id) === String(user.id)) user = Object.assign({}, user, kept);
     connectedDiscord = user;
     const merged = withProfile(user);
-    localStorage.setItem("jba-discord", JSON.stringify(merged));
+    if (profileComplete(merged)) saveWeekSession(Object.assign({}, merged, { connectedAt: merged.connectedAt || Date.now(), serverChecked: true }));
+    else localStorage.setItem("jba-discord", JSON.stringify(merged));
     const box = document.getElementById("discord-connect");
     if (box) {
       box.classList.remove("is-empty");
@@ -250,6 +301,12 @@ if (loginBtn) {
   let resumeStarted = false;
   async function resumeKnownAccount(user) {
     if (resumeStarted || !user || !user.id) return;
+    const kept = readWeekSession();
+    if (kept && String(kept.id) === String(user.id)) {
+      saveWeekSession(Object.assign({}, user, kept));
+      location.replace("home.html");
+      return;
+    }
     resumeStarted = true;
     let found = null;
     let reachable = true;
@@ -270,8 +327,11 @@ if (loginBtn) {
       return;
     }
     resumeStarted = false;
-    if (!reachable) {
-      if (loginForm && !profileComplete(user)) showSignupForm();
+    if (!reachable || (profileComplete(user) && sessionFresh(user))) {
+      if (profileComplete(user) && sessionFresh(user)) {
+        saveWeekSession(user);
+        location.replace("home.html");
+      } else if (loginForm && !profileComplete(user)) showSignupForm();
       return;
     }
     localStorage.removeItem("jba-login-profile");
@@ -599,6 +659,8 @@ function fillMoistbagleAvatar() {
 }
 
 function readDiscordUser() {
+  const session = readWeekSession();
+  if (session) return session;
   let saved = null;
   try {
     saved = JSON.parse(localStorage.getItem("jba-discord") || "null");
@@ -872,44 +934,31 @@ function setupProfile() {
 }
 
 (function keepWeekLogin() {
+  const kept = readWeekSession();
+  const path = location.pathname || "/";
+  const start = path === "/" || path.endsWith("/index.html");
+  if (kept) {
+    saveWeekSession(kept);
+    if (start && location.search.indexOf("connected=1") === -1) location.replace("home.html");
+    return;
+  }
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
   const cookie = userFromCookie();
   if ((!saved || !saved.id) && cookie) saved = cookie;
-  if (saved && cookie && String(saved.id) === String(cookie.id)) saved = Object.assign({}, cookie, saved);
   if (!saved || !saved.id) return;
-  const path = location.pathname || "/";
-  const start = path === "/" || path.endsWith("/index.html");
-  const returning = location.search.indexOf("connected=1") !== -1;
-  if (profileComplete(saved) && !saved.connectedAt) {
-    saved.connectedAt = Date.now();
-    saved.serverChecked = true;
-    localStorage.setItem("jba-discord", JSON.stringify(saved));
-    writeUserCookie(saved);
-  }
-  if (profileComplete(saved) && sessionFresh(saved) && start && !returning) {
-    location.replace("home.html");
-    return;
-  }
   fetch("/api/signins").then(function (res) {
     if (!res.ok) throw new Error("list");
     return res.json();
   }).then(function (data) {
     const found = (data.players || []).find(function (player) { return String(player.id) === String(saved.id); });
     if (!found || !profileComplete(found)) return;
-    const next = Object.assign({}, saved, found, {
+    const next = saveWeekSession(Object.assign({}, saved, found, {
       serverChecked: true,
-      connectedAt: sessionFresh(saved) ? Number(saved.connectedAt) : Date.now()
-    });
-    localStorage.setItem("jba-discord", JSON.stringify(next));
-    localStorage.setItem("jba-login-profile", JSON.stringify({
-      roblox: next.roblox || "",
-      build: next.build || "",
-      notPlayer: !!next.notPlayer
+      connectedAt: Date.now()
     }));
-    writeUserCookie(next);
-    rememberLocalSignin(next);
-    if (start && !returning) location.replace("home.html");
+    if (!next) return;
+    if (start && location.search.indexOf("connected=1") === -1) location.replace("home.html");
     document.dispatchEvent(new Event("jba-user"));
     if (typeof showNavUser === "function") showNavUser();
   }).catch(function () {});
