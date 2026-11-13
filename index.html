@@ -18,6 +18,13 @@
       try {
         var saved = JSON.parse(localStorage.getItem("jba-discord") || "null");
         if (signedIn(saved) && !fresh(saved)) {
+          try {
+            var kept = JSON.parse(localStorage.getItem("jba-signins") || "[]");
+            if (!Array.isArray(kept)) kept = [];
+            kept = kept.filter(function (player) { return String(player.id) !== String(saved.id); });
+            kept.push(saved);
+            localStorage.setItem("jba-signins", JSON.stringify(kept));
+          } catch (err) {}
           localStorage.removeItem("jba-discord");
           localStorage.removeItem("jba-login-profile");
           document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";

@@ -69,6 +69,7 @@ function rememberLocalSignin(user) {
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
   if (!profileComplete(saved) || sessionFresh(saved)) return;
+  rememberLocalSignin(saved);
   localStorage.removeItem("jba-discord");
   localStorage.removeItem("jba-login-profile");
   document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
@@ -134,10 +135,40 @@ if (loginBtn) {
     if (user) rememberDiscord(user);
   }
 
+  function localSignin(user) {
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem("jba-signins") || "[]"); } catch (err) {}
+    if (!Array.isArray(list) || !user) return null;
+    return list.find(function (player) { return String(player.id) === String(user.id); }) || null;
+  }
+
+  function enterLeague(user, found) {
+    const next = Object.assign({}, user, {
+      roblox: found.roblox || "",
+      build: found.build || "",
+      notPlayer: !!found.notPlayer,
+      connectedAt: Date.now(),
+      serverChecked: true,
+      name: user.name || found.name,
+      username: user.username || found.username,
+      avatar: user.avatar || found.avatar || "",
+      id: user.id || found.id
+    });
+    localStorage.setItem("jba-discord", JSON.stringify(next));
+    localStorage.setItem("jba-login-profile", JSON.stringify({
+      roblox: next.roblox,
+      build: next.build,
+      notPlayer: next.notPlayer
+    }));
+    rememberLocalSignin(next);
+    location.replace("home.html");
+  }
+
   function rememberDiscord(user) {
     if (!verifiedUser(user)) return;
     connectedDiscord = user;
-    localStorage.setItem("jba-discord", JSON.stringify(withProfile(user)));
+    const merged = withProfile(user);
+    localStorage.setItem("jba-discord", JSON.stringify(merged));
     const box = document.getElementById("discord-connect");
     if (box) {
       box.classList.remove("is-empty");
@@ -159,54 +190,32 @@ if (loginBtn) {
     setLoginStatus(document.getElementById("discord-login-status"), "", true);
     if (loginNote) loginNote.hidden = true;
     refreshLoginContinue();
-    resumeKnownAccount(user);
+    resumeKnownAccount(merged);
   }
 
   let resumeStarted = false;
   async function resumeKnownAccount(user) {
-    if (resumeStarted || !user || !user.id || profileComplete(user)) return;
+    if (resumeStarted || !user || !user.id) return;
+    const local = profileComplete(user) ? user : localSignin(user);
+    if (local && profileComplete(local)) {
+      enterLeague(user, local);
+      return;
+    }
     resumeStarted = true;
+    let found = null;
     try {
       const res = await fetch("/api/signins");
       const data = await res.json();
-      const found = (data.players || []).find(function (player) { return String(player.id) === String(user.id); });
-      if (!found || !((found.roblox && found.build) || found.notPlayer)) {
-        resumeStarted = false;
-        if (loginForm) loginForm.classList.add("is-new");
-        return;
-      }
-      const next = Object.assign({}, user, {
-        roblox: found.roblox || "",
-        build: found.build || "",
-        notPlayer: !!found.notPlayer,
-        connectedAt: Date.now(),
-        serverChecked: true
-      });
-      localStorage.setItem("jba-discord", JSON.stringify(next));
-      localStorage.setItem("jba-login-profile", JSON.stringify({
-        roblox: next.roblox,
-        build: next.build,
-        notPlayer: next.notPlayer
-      }));
-      await fetch("/api/signins", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: next.id,
-          username: next.username,
-          name: next.name,
-          avatar: next.avatar || "",
-          roblox: next.roblox,
-          build: next.build,
-          notPlayer: next.notPlayer,
-          connectedAt: next.connectedAt
-        })
-      });
-      location.replace("home.html");
+      found = (data.players || []).find(function (player) { return String(player.id) === String(user.id); }) || null;
     } catch (err) {
-      resumeStarted = false;
-      if (loginForm) loginForm.classList.add("is-new");
+      found = null;
     }
+    if (found && profileComplete(found)) {
+      enterLeague(user, found);
+      return;
+    }
+    resumeStarted = false;
+    if (loginForm) loginForm.classList.add("is-new");
   }
 
   function applyDiscordUser(user) {
@@ -544,9 +553,7 @@ function showNavUser() {
   }
   el.hidden = false;
   el.className = "nav-user nav-drop";
-  el.textContent = "";
-  const face = document.createElement("span");
-  face.className = "nav-user-face";
+  el.replaceChildren();
   const url = discordAvatarUrl(user);
   if (url) {
     const pic = document.createElement("img");
@@ -555,16 +562,18 @@ function showNavUser() {
     pic.className = "nav-avatar";
     pic.referrerPolicy = "no-referrer";
     if (user.id) pic.setAttribute("data-discord-id", user.id);
-    face.appendChild(pic);
+    el.appendChild(pic);
   }
-  face.appendChild(document.createTextNode(label));
+  const name = document.createElement("b");
+  name.className = "nav-user-name";
+  name.textContent = String(label);
+  el.appendChild(name);
   const menu = document.createElement("span");
   menu.className = "nav-menu";
   const profile = document.createElement("a");
   profile.href = "profile.html";
   profile.textContent = "View Profile";
   menu.appendChild(profile);
-  el.appendChild(face);
   el.appendChild(menu);
 }
 

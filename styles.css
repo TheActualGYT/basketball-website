@@ -168,21 +168,24 @@ nav {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
+  flex: 0 0 auto;
   color: #fff;
   font-weight: 700;
   font-size: 0.92rem;
   white-space: nowrap;
   line-height: 1;
-  padding: 0.4rem 0.9rem 0.4rem 0.4rem;
+  padding: 0.28rem 0.85rem 0.28rem 0.28rem;
   border-radius: 50px;
   background: linear-gradient(135deg, #c026d3, #ec4899);
   box-shadow: 0 4px 16px rgba(192, 38, 211, 0.4);
 }
 
-.nav-user-face {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
+.nav-user-name {
+  display: inline-block;
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .nav-user .nav-menu {
@@ -1389,6 +1392,22 @@ article h3 {
   display: block;
 }
 
+.login-card .signup-rest > .field-title {
+  margin-top: 1.15rem;
+}
+
+.login-card .not-player {
+  margin-top: 1.25rem;
+}
+
+.login-card .not-player + .login-fine {
+  margin-top: 0.65rem;
+}
+
+.login-card .signup-rest .cta-btn {
+  margin-top: 1.2rem;
+}
+
 .profile-wrap {
   width: min(92vw, 440px);
   margin: 5.5rem auto 3rem;
@@ -1428,6 +1447,8 @@ article h3 {
 .profile-gate a {
   color: #fff;
 }
+
+.login-card > p:first-child {
   text-align: center;
   font-size: 1.15rem;
   font-weight: 700;
