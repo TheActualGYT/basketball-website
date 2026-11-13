@@ -1,7 +1,6 @@
-import { readFileSync } from "fs";
-import { join } from "path";
-
-const STORE = "https://crudcrud.com/api/7466a9c4daf84cda937bb941de0af192/signins";
+const INBOX = "b20203a3-0634-42b2-86e9-ef5b8ac84a40";
+const WEBHOOK = "https://webhook.site/" + INBOX;
+const REQUESTS = "https://webhook.site/token/" + INBOX + "/requests?sorting=newest&per_page=100";
 
 function clean(player) {
   return {
@@ -18,56 +17,56 @@ function clean(player) {
   };
 }
 
-function wait(ms) {
-  return new Promise(function (resolve) { setTimeout(resolve, ms); });
+function isDiscordId(id) {
+  return /^\d{17,20}$/.test(String(id || ""));
 }
 
-async function crud(url, options) {
-  const headers = Object.assign({
-    "Accept": "application/json",
-    "User-Agent": "Mozilla/5.0"
-  }, (options && options.headers) || {});
+async function callJson(url, options) {
   const controller = new AbortController();
-  const timer = setTimeout(function () { controller.abort(); }, 2500);
+  const timer = setTimeout(function () { controller.abort(); }, 6000);
   try {
-    const res = await fetch(url, Object.assign({}, options, { headers: headers, signal: controller.signal }));
-    if (res.ok) return { ok: true, res: res };
-    return { ok: false, res: res, error: "status " + res.status };
+    const res = await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+    const text = await res.text();
+    let data = null;
+    try { data = JSON.parse(text); } catch (err) { data = null; }
+    return { ok: res.ok, status: res.status, data: data, text: text };
   } catch (err) {
-    return { ok: false, res: null, error: err && err.message ? err.message : "fetch failed" };
+    return { ok: false, status: 0, data: null, text: err && err.message ? err.message : "fetch failed" };
   } finally {
     clearTimeout(timer);
   }
 }
 
-function readFilePlayers() {
-  try {
-    const data = JSON.parse(readFileSync(join(process.cwd(), "signins.json"), "utf8"));
-    return Array.isArray(data.players) ? data.players : [];
-  } catch (err) {
-    return [];
-  }
-}
-
-async function readAll() {
-  const result = await crud(STORE);
-  if (!result.ok) return [];
-  try {
-    const data = await result.res.json();
-    return Array.isArray(data) ? data : [];
-  } catch (err) {
-    return [];
-  }
+async function readInbox() {
+  const result = await callJson(REQUESTS, { headers: { "Accept": "application/json" } });
+  const rows = result.data && Array.isArray(result.data.data) ? result.data.data : [];
+  const players = [];
+  const seen = {};
+  rows.forEach(function (row) {
+    let body = null;
+    try { body = JSON.parse(row.content || ""); } catch (err) { body = null; }
+    if (!body || !isDiscordId(body.id) || seen[String(body.id)]) return;
+    seen[String(body.id)] = true;
+    players.push(clean(body));
+  });
+  return players;
 }
 
 export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") {
+    res.status(204).end();
+    return;
+  }
+
   if (req.method === "GET") {
     try {
-      const remote = await readAll();
-      const players = remote.length ? remote : readFilePlayers();
-      res.status(200).json({ players: players.map(clean) });
+      const players = await readInbox();
+      res.status(200).json({ players: players });
     } catch (err) {
-      res.status(200).json({ players: readFilePlayers().map(clean) });
+      res.status(200).json({ players: [] });
     }
     return;
   }
@@ -82,33 +81,19 @@ export default async function handler(req, res) {
     try { body = JSON.parse(body || "{}"); } catch (err) { body = {}; }
   }
   const next = clean(body);
-  if (!next.id || !(next.username || next.name) || !((next.roblox && next.build) || next.notPlayer)) {
+  if (!isDiscordId(next.id) || !(next.username || next.name) || !((next.roblox && next.build) || next.notPlayer)) {
     res.status(400).json({ error: "A finished login needs Discord plus Roblox and build, or Not a Player." });
     return;
   }
 
-  try {
-    const players = await readAll();
-    const existing = players.find(function (player) { return String(player.id) === next.id; });
-    if (existing && existing._id) {
-      next.createdAt = Number(existing.createdAt) || next.createdAt;
-      next.status = existing.status || next.status;
-      const update = await crud(STORE + "/" + existing._id, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(next)
-      });
-      if (!update.ok) throw new Error(update.error || "update failed");
-    } else {
-      const create = await crud(STORE, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(next)
-      });
-      if (!create.ok) throw new Error(create.error || "create failed");
-    }
-    res.status(200).json({ ok: true, player: next });
-  } catch (err) {
-    res.status(500).json({ error: "Could not save that sign-in", detail: String(err && err.message || err) });
+  const saved = await callJson(WEBHOOK, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+    body: JSON.stringify(next)
+  });
+  if (!saved.ok) {
+    res.status(500).json({ error: "Could not save that sign-in", detail: saved.text.slice(0, 140) });
+    return;
   }
+  res.status(200).json({ ok: true, player: next });
 }

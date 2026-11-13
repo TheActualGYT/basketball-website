@@ -82,11 +82,10 @@ function publishSignin(user) {
       notPlayer: !!user.notPlayer,
       connectedAt: Number(user.connectedAt) || Date.now()
     })
-  }).catch(function () {});
-  return Promise.race([
-    save,
-    new Promise(function (resolve) { setTimeout(resolve, 2500); })
-  ]);
+  }).then(function (res) {
+    if (!res.ok) throw new Error("save");
+  });
+  return save;
 }
 
 function rememberLocalSignin(user) {
@@ -209,6 +208,12 @@ if (loginBtn) {
     writeUserCookie(next);
     publishSignin(next).then(function () {
       location.replace("home.html");
+    }).catch(function () {
+      const status = document.getElementById("discord-login-status");
+      if (status) {
+        status.textContent = "Could not save this login. Try again.";
+        status.className = "apply-status bad";
+      }
     });
   }
 
@@ -450,6 +455,9 @@ if (loginBtn) {
       loginContinue.disabled = true;
       publishSignin(user).then(function () {
         location.replace("home.html");
+      }).catch(function () {
+        loginContinue.disabled = false;
+        setLoginStatus(document.getElementById("discord-login-status"), "Could not save this login. Try again.", false);
       });
     });
   }
