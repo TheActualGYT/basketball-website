@@ -74,7 +74,6 @@
       url.searchParams.set("response_type", "code");
       url.searchParams.set("scope", "identify guilds");
       url.searchParams.set("redirect_uri", cfg.redirectUri);
-      url.searchParams.set("prompt", "consent");
       location.href = url.toString();
     });
 

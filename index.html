@@ -32,7 +32,7 @@
       <img src="logo.png" alt="JBA" class="hero-logo">
       <h1 class="league-title">Junior Basketball Association</h1>
       <div class="hero-actions">
-        <button type="button" class="cta-btn" id="login-btn" onclick="var m=document.getElementById('login-modal');m.hidden=false;m.style.display='flex'">Login</button>
+        <button type="button" class="cta-btn" id="login-btn">Login / Sign Up</button>
         <a href="home.html" class="cta-btn">View League</a>
       </div>
       <p class="login-note" id="login-note" hidden></p>
@@ -45,7 +45,7 @@
 
   <div class="role-modal" id="login-modal" hidden>
     <form class="role-card login-card" id="login-form">
-      <p>Login</p>
+      <p id="login-title">Login</p>
       <p class="field-title">Discord</p>
       <button type="button" class="discord-connect is-empty" id="discord-connect">Connect Discord</button>
       <p class="apply-status" id="discord-login-status"></p>

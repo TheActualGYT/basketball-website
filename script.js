@@ -267,7 +267,7 @@ if (loginBtn) {
     }
     resumeStarted = false;
     if (!reachable) {
-      if (loginForm && !profileComplete(user)) loginForm.classList.add("is-new");
+      if (loginForm && !profileComplete(user)) showSignupForm();
       return;
     }
     localStorage.removeItem("jba-login-profile");
@@ -283,7 +283,13 @@ if (loginBtn) {
     };
     localStorage.setItem("jba-discord", JSON.stringify(bare));
     connectedDiscord = bare;
+    showSignupForm();
+  }
+
+  function showSignupForm() {
     if (loginForm) loginForm.classList.add("is-new");
+    const title = document.getElementById("login-title");
+    if (title) title.textContent = "Sign Up";
     if (loginModal) {
       loginModal.hidden = false;
       loginModal.style.display = "flex";
@@ -409,7 +415,6 @@ if (loginBtn) {
     url.searchParams.set("response_type", "code");
     url.searchParams.set("scope", "identify guilds");
     url.searchParams.set("redirect_uri", redirect);
-    url.searchParams.set("prompt", "consent");
     localStorage.removeItem("jba-discord-status");
     sessionStorage.setItem("jba-resume-login", "1");
     location.assign(url.toString());
@@ -519,12 +524,8 @@ if (loginBtn) {
     sessionStorage.removeItem("jba-resume-login");
   }
 
-  loginBtn.addEventListener("click", function () {
-    if (loginModal) {
-      loginModal.hidden = false;
-      loginModal.style.display = "flex";
-    }
-    try { paintIfSaved(); } catch (err) {}
+  loginBtn.addEventListener("click", function (event) {
+    startDiscordLogin(event);
   });
 }
 
