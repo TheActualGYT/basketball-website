@@ -70,32 +70,107 @@
     </nav>
   </header>
 
-  <section class="section">
-    <h2>Featured Players</h2>
-    <div class="players-grid">
-      <div class="player-card">
-        <h3>Player One</h3>
-        <p>Team Alpha</p>
-        <span>Guard</span>
-      </div>
-      <div class="player-card">
-        <h3>Player Two</h3>
-        <p>Team Beta</p>
-        <span>Forward</span>
-      </div>
-      <div class="player-card">
-        <h3>Player Three</h3>
-        <p>Team Gamma</p>
-        <span>Center</span>
-      </div>
-      <div class="player-card">
-        <h3>Player Four</h3>
-        <p>Team Delta</p>
-        <span>Guard</span>
-      </div>
+  <section class="players-page">
+    <h2>Players</h2>
+    <div class="panel players-table-wrap">
+      <table class="players-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Pos</th>
+            <th>Discord</th>
+            <th>Roblox</th>
+            <th>Build</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="players-body"></tbody>
+      </table>
     </div>
   </section>
 
   <script src="script.js"></script>
+  <script>
+    function avatarSrc(player) {
+      if (player.avatar && player.id) return "https://cdn.discordapp.com/avatars/" + player.id + "/" + player.avatar + ".png?size=64";
+      return "https://cdn.discordapp.com/embed/avatars/0.png";
+    }
+    function splitBuild(build) {
+      var text = String(build || "").trim();
+      if (!text) return { pos: "—", build: "—" };
+      var parts = text.split(/\s+[—-]\s+/);
+      if (parts.length > 1) return { pos: parts.slice(1).join(" — "), build: parts[0].toUpperCase() };
+      return { pos: "—", build: text.toUpperCase() };
+    }
+    function paint(players) {
+      var body = document.getElementById("players-body");
+      body.textContent = "";
+      players = players.filter(function (player) { return !player.notPlayer; });
+      players.sort(function (a, b) {
+        return String(a.name || a.username || "").localeCompare(String(b.name || b.username || ""));
+      });
+      if (!players.length) {
+        var empty = document.createElement("tr");
+        var cell = document.createElement("td");
+        cell.colSpan = 6;
+        cell.className = "players-empty";
+        cell.textContent = "No players yet.";
+        empty.appendChild(cell);
+        body.appendChild(empty);
+        return;
+      }
+      players.forEach(function (player, index) {
+        var info = splitBuild(player.build);
+        var row = document.createElement("tr");
+        var number = document.createElement("td");
+        number.textContent = String(index + 1);
+        var pos = document.createElement("td");
+        pos.textContent = info.pos;
+        var discord = document.createElement("td");
+        var person = document.createElement("div");
+        person.className = "player-person";
+        var img = document.createElement("img");
+        img.alt = "";
+        img.referrerPolicy = "no-referrer";
+        img.src = avatarSrc(player);
+        var copy = document.createElement("span");
+        var name = document.createElement("b");
+        name.textContent = player.name || player.username || "Unknown";
+        var tag = document.createElement("small");
+        tag.textContent = player.username ? "@" + player.username : "";
+        copy.append(name, tag);
+        person.append(img, copy);
+        discord.appendChild(person);
+        var roblox = document.createElement("td");
+        roblox.textContent = player.roblox || "—";
+        var build = document.createElement("td");
+        build.textContent = info.build;
+        var status = document.createElement("td");
+        var badge = document.createElement("span");
+        badge.className = "player-status" + ((player.status || "Free Agent") === "Free Agent" ? " is-free" : "");
+        badge.textContent = player.status || "Free Agent";
+        status.appendChild(badge);
+        row.append(number, pos, discord, roblox, build, status);
+        body.appendChild(row);
+      });
+    }
+    var players = [];
+    try {
+      var local = JSON.parse(localStorage.getItem("jba-signins") || "[]");
+      if (Array.isArray(local)) players = local.slice();
+    } catch (err) {}
+    paint(players);
+    fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+      (data.players || []).forEach(function (player) {
+        if (!players.some(function (saved) { return String(saved.id) === String(player.id); })) players.push(player);
+        else {
+          players = players.map(function (saved) {
+            return String(saved.id) === String(player.id) ? Object.assign({}, saved, player) : saved;
+          });
+        }
+      });
+      paint(players);
+    }).catch(function () {});
+  </script>
 </body>
 </html>

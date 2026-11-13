@@ -495,6 +495,116 @@ h2 {
   gap: 1.5rem;
 }
 
+.players-page {
+  width: min(1100px, calc(100% - 3rem));
+  margin: 0 auto;
+  padding: 2.4rem 0 4rem;
+}
+
+.players-page h2 {
+  margin: 0 0 0.9rem;
+  color: #fff;
+  background: none;
+  -webkit-text-fill-color: #fff;
+  font-size: 1.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  animation: titlePulse 3.6s ease-in-out infinite;
+}
+
+.players-table-wrap {
+  overflow-x: auto;
+  padding: 0.4rem 0.35rem;
+}
+
+.players-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.players-table th,
+.players-table td {
+  padding: 0.72rem 0.7rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #eee;
+  font-size: 0.86rem;
+}
+
+.players-table th {
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.players-table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.players-table th:first-child,
+.players-table td:first-child {
+  width: 2.4rem;
+  color: #bdbdbd;
+  text-align: center;
+}
+
+.player-person {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.player-person img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: 0 0 32px;
+}
+
+.player-person span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.player-person b {
+  color: #fff;
+  font-size: 0.9rem;
+  line-height: 1.15;
+}
+
+.player-person small {
+  color: #8d8d8d;
+  font-size: 0.75rem;
+}
+
+.player-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.45rem;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.player-status.is-free {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.players-empty {
+  text-align: center;
+  color: #bdbdbd;
+  padding: 1.4rem 0.7rem;
+}
+
 .team-card, .player-card {
   background: linear-gradient(145deg, #1e1e1e, #252525);
   padding: 2rem;
