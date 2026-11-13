@@ -43,6 +43,19 @@ function verifiedUser(user) {
 }
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const JBA_WIPED_AT = 1794535416056;
+
+function clearStoredLogin() {
+  localStorage.removeItem("jba-session");
+  localStorage.removeItem("jba-discord");
+  localStorage.removeItem("jba-login-profile");
+  localStorage.removeItem("jba-signins");
+  document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
+}
+
+function wipedLogin(user) {
+  return !!(JBA_WIPED_AT && user && user.id && (!user.connectedAt || Number(user.connectedAt) < JBA_WIPED_AT));
+}
 
 function profileComplete(user) {
   return !!((user && user.roblox && user.build) || (user && user.notPlayer));
@@ -62,7 +75,7 @@ function readWeekSession() {
     const cookie = userFromCookie();
     if (cookie && cookie.id && profileComplete(cookie)) session = cookie;
   }
-  if (!session || !session.id || !profileComplete(session)) return null;
+  if (!session || !session.id || !profileComplete(session) || wipedLogin(session)) return null;
   if (!session.connectedAt) session.connectedAt = Date.now();
   if (!sessionFresh(session)) return null;
   session.serverChecked = true;
@@ -156,12 +169,22 @@ function rememberLocalSignin(user) {
 }
 
 (function expireLogin() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem("jba-session") || localStorage.getItem("jba-discord") || "null"); } catch (err) {}
+  const cookie = userFromCookie();
+  if (wipedLogin(saved) || wipedLogin(cookie)) {
+    clearStoredLogin();
+    const path = location.pathname || "/";
+    const start = path === "/" || path.endsWith("/index.html");
+    if (!start) location.replace("/");
+    return;
+  }
   const kept = readWeekSession();
   if (kept) {
     saveWeekSession(kept);
     return;
   }
-  let saved = null;
+  saved = null;
   try { saved = JSON.parse(localStorage.getItem("jba-session") || localStorage.getItem("jba-discord") || "null"); } catch (err) {}
   if (!profileComplete(saved)) return;
   localStorage.removeItem("jba-session");

@@ -13,6 +13,7 @@
         return;
       }
       var WEEK = 7 * 24 * 60 * 60 * 1000;
+      var WIPED_AT = 1794535416056;
       function signedIn(user) {
         return !!(user && user.serverChecked && (user.username || user.name) && ((user.roblox && user.build) || user.notPlayer));
       }
@@ -38,6 +39,14 @@
       }
       try {
         var saved = readSaved();
+        if (saved && (!saved.connectedAt || Number(saved.connectedAt) < WIPED_AT)) {
+          localStorage.removeItem("jba-session");
+          localStorage.removeItem("jba-discord");
+          localStorage.removeItem("jba-login-profile");
+          localStorage.removeItem("jba-signins");
+          document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
+          saved = null;
+        }
         if (saved && signedIn(saved) && !saved.connectedAt) {
           saved.connectedAt = Date.now();
           saved.serverChecked = true;
