@@ -995,3 +995,18 @@ function setupProfile() {
   }).catch(function () {});
 })();
 
+(function gateApplication() {
+  function onApply() {
+    var path = location.pathname || "";
+    return path === "/apply" || path.endsWith("/apply.html");
+  }
+  if (onApply() && !readWeekSession()) location.replace("index.html");
+  document.querySelectorAll('a[href="apply.html"]').forEach(function (link) {
+    link.addEventListener("click", function (event) {
+      if (readWeekSession()) return;
+      event.preventDefault();
+      location.href = "index.html";
+    });
+  });
+})();
+
