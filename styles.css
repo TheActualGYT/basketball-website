@@ -164,6 +164,7 @@ nav {
 }
 
 .nav-user {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -176,6 +177,20 @@ nav {
   border-radius: 50px;
   background: linear-gradient(135deg, #c026d3, #ec4899);
   box-shadow: 0 4px 16px rgba(192, 38, 211, 0.4);
+}
+
+.nav-user-face {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.nav-user .nav-menu {
+  left: auto;
+  right: 0;
+  transform: none;
+  z-index: 80;
+  min-width: 9.5rem;
 }
 
 .nav-user a,
@@ -1358,6 +1373,61 @@ article h3 {
 }
 
 .login-card > p:first-child {
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.login-card .signup-rest {
+  display: none;
+}
+
+.login-card.is-new .signup-rest {
+  display: block;
+}
+
+.profile-wrap {
+  width: min(92vw, 440px);
+  margin: 5.5rem auto 3rem;
+}
+
+.profile-wrap .login-card {
+  width: 100%;
+}
+
+.profile-discord {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: #1a1a1a;
+  text-align: left;
+}
+
+.profile-discord b {
+  display: block;
+  color: #fff;
+  font-size: 0.92rem;
+}
+
+.profile-discord small {
+  color: #8d8d8d;
+  font-size: 0.75rem;
+}
+
+.profile-gate {
+  color: #fff;
+  text-align: center;
+}
+
+.profile-gate a {
+  color: #fff;
+}
   text-align: center;
   font-size: 1.15rem;
   font-weight: 700;

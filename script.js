@@ -172,6 +172,7 @@ if (loginBtn) {
       const found = (data.players || []).find(function (player) { return String(player.id) === String(user.id); });
       if (!found || !((found.roblox && found.build) || found.notPlayer)) {
         resumeStarted = false;
+        if (loginForm) loginForm.classList.add("is-new");
         return;
       }
       const next = Object.assign({}, user, {
@@ -204,6 +205,7 @@ if (loginBtn) {
       location.replace("home.html");
     } catch (err) {
       resumeStarted = false;
+      if (loginForm) loginForm.classList.add("is-new");
     }
   }
 
@@ -451,7 +453,6 @@ if (loginBtn) {
       loginModal.style.display = "flex";
     }
     try { paintIfSaved(); } catch (err) {}
-    if (!connectedDiscord && loginRoblox) loginRoblox.focus();
   });
 }
 
@@ -541,7 +542,11 @@ function showNavUser() {
     el.appendChild(link);
     return;
   }
-  el.className = "nav-user";
+  el.hidden = false;
+  el.className = "nav-user nav-drop";
+  el.textContent = "";
+  const face = document.createElement("span");
+  face.className = "nav-user-face";
   const url = discordAvatarUrl(user);
   if (url) {
     const pic = document.createElement("img");
@@ -550,9 +555,17 @@ function showNavUser() {
     pic.className = "nav-avatar";
     pic.referrerPolicy = "no-referrer";
     if (user.id) pic.setAttribute("data-discord-id", user.id);
-    el.appendChild(pic);
+    face.appendChild(pic);
   }
-  el.appendChild(document.createTextNode(label));
+  face.appendChild(document.createTextNode(label));
+  const menu = document.createElement("span");
+  menu.className = "nav-menu";
+  const profile = document.createElement("a");
+  profile.href = "profile.html";
+  profile.textContent = "View Profile";
+  menu.appendChild(profile);
+  el.appendChild(face);
+  el.appendChild(menu);
 }
 
 function refreshDiscordAvatars() {
@@ -610,4 +623,167 @@ showNavUser();
 fillMoistbagleAvatar();
 refreshDiscordAvatars();
 markNav();
+setupProfile();
+
+function setupProfile() {
+  const form = document.getElementById("profile-form");
+  if (!form) return;
+  const gate = document.getElementById("profile-gate");
+  const user = readDiscordUser();
+  if (!user || !user.serverChecked || !(user.username || user.name)) {
+    form.hidden = true;
+    if (gate) gate.hidden = false;
+    return;
+  }
+  const discord = document.getElementById("profile-discord");
+  const img = document.createElement("img");
+  img.className = "roster-pfp";
+  img.alt = "";
+  img.referrerPolicy = "no-referrer";
+  img.src = discordAvatarUrl(user);
+  const copy = document.createElement("span");
+  const name = document.createElement("b");
+  name.textContent = user.name || user.username;
+  const tag = document.createElement("small");
+  tag.textContent = "@" + (user.username || "");
+  copy.appendChild(name);
+  copy.appendChild(tag);
+  discord.appendChild(img);
+  discord.appendChild(copy);
+
+  const roblox = document.getElementById("profile-roblox");
+  const buildButton = document.getElementById("profile-build-button");
+  const buildPick = document.getElementById("profile-build-pick");
+  const notPlayer = document.getElementById("profile-not-player");
+  const saveStatus = document.getElementById("profile-save-status");
+  let chosenBuild = user.build || "";
+  let robloxReady = !!(user.roblox && user.build) || !!user.notPlayer;
+  const labels = { Guard: "GUARD — PG / SG", Forward: "FORWARD — SF / PF", Big: "BIG — C / PF" };
+
+  if (roblox && user.roblox) roblox.value = user.roblox;
+  if (chosenBuild && buildButton) {
+    buildButton.textContent = labels[chosenBuild] || chosenBuild;
+    buildButton.classList.remove("is-empty");
+  }
+  if (notPlayer && user.notPlayer) {
+    notPlayer.checked = true;
+    form.classList.add("is-bypass");
+  }
+
+  function setStatus(el, message, ok) {
+    if (!el) return;
+    el.textContent = message || "";
+    el.className = "apply-status" + (message ? (ok ? " good" : " bad") : "");
+  }
+
+  function refreshSave() {
+    const skipped = notPlayer && notPlayer.checked;
+    document.getElementById("profile-save").disabled = !(skipped || (robloxReady && chosenBuild && roblox.value.trim()));
+  }
+
+  async function checkRoblox() {
+    const username = roblox.value.trim();
+    robloxReady = false;
+    refreshSave();
+    if (!username) {
+      setStatus(document.getElementById("profile-name-status"), "", false);
+      setStatus(document.getElementById("profile-unique-status"), "", false);
+      return;
+    }
+    if (user.roblox && username.toLowerCase() === String(user.roblox).toLowerCase()) {
+      setStatus(document.getElementById("profile-name-status"), "Roblox account found: " + username, true);
+      setStatus(document.getElementById("profile-unique-status"), "Unique account: Yes", true);
+      robloxReady = true;
+      refreshSave();
+      return;
+    }
+    setStatus(document.getElementById("profile-name-status"), "Checking Roblox…", true);
+    try {
+      const res = await fetch("/api/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: username, checkOnly: true })
+      });
+      const data = await res.json();
+      if (data && data.roblox) {
+        setStatus(document.getElementById("profile-name-status"), "Roblox account found: " + data.roblox.name, true);
+        setStatus(document.getElementById("profile-unique-status"), "Unique account: " + (data.unique ? "Yes" : "No"), !!data.unique);
+        robloxReady = !!(data.ok && data.unique);
+      } else {
+        setStatus(document.getElementById("profile-name-status"), (data && data.error) || "That username could not be checked.", false);
+        setStatus(document.getElementById("profile-unique-status"), "", false);
+      }
+    } catch (err) {
+      setStatus(document.getElementById("profile-name-status"), "Could not check that username.", false);
+    }
+    refreshSave();
+  }
+
+  roblox.addEventListener("input", function () {
+    robloxReady = false;
+    setStatus(document.getElementById("profile-name-status"), "", false);
+    setStatus(document.getElementById("profile-unique-status"), "", false);
+    refreshSave();
+  });
+  roblox.addEventListener("blur", checkRoblox);
+  buildButton.addEventListener("click", function () {
+    buildPick.classList.toggle("is-open");
+  });
+  document.querySelectorAll("#profile-build-menu .pick-option").forEach(function (button) {
+    button.addEventListener("click", function () {
+      chosenBuild = button.dataset.build;
+      buildButton.textContent = button.textContent;
+      buildButton.classList.remove("is-empty");
+      buildPick.classList.remove("is-open");
+      refreshSave();
+    });
+  });
+  document.addEventListener("click", function (event) {
+    if (buildPick && !event.target.closest("#profile-build-pick")) buildPick.classList.remove("is-open");
+  });
+  notPlayer.addEventListener("change", function () {
+    form.classList.toggle("is-bypass", this.checked);
+    refreshSave();
+  });
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    const skipped = notPlayer.checked;
+    if (!skipped && (!robloxReady || !chosenBuild)) return;
+    const next = Object.assign({}, user, {
+      roblox: skipped ? "" : roblox.value.trim(),
+      build: skipped ? "" : chosenBuild,
+      notPlayer: skipped,
+      serverChecked: true,
+      connectedAt: user.connectedAt || Date.now()
+    });
+    localStorage.setItem("jba-discord", JSON.stringify(next));
+    localStorage.setItem("jba-login-profile", JSON.stringify({
+      roblox: next.roblox,
+      build: next.build,
+      notPlayer: next.notPlayer
+    }));
+    rememberLocalSignin(next);
+    setStatus(saveStatus, "Saving…", true);
+    fetch("/api/signins", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: next.id,
+        username: next.username,
+        name: next.name || next.username,
+        avatar: next.avatar || "",
+        roblox: next.roblox,
+        build: next.build,
+        notPlayer: next.notPlayer,
+        connectedAt: next.connectedAt
+      })
+    }).then(function (res) {
+      if (!res.ok) throw new Error("save");
+      setStatus(saveStatus, "Settings saved.", true);
+    }).catch(function () {
+      setStatus(saveStatus, "Saved on this device. The league list will update when the save goes through.", false);
+    });
+  });
+  refreshSave();
+}
 

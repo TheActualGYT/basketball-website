@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile | Junior Basketball Association</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <nav>
+      <div class="brand">
+        <a class="logo" href="home.html">
+          <img src="logo.png" alt="JBA Logo">
+          <span class="logo-name">Junior Basketball<br>Association</span>
+        </a>
+        <div class="nav-social">
+          <a href="https://discord.gg/36FHef566k" target="_blank" rel="noopener" aria-label="Discord"><img src="discord.svg" alt=""></a>
+          <a href="https://www.youtube.com/@PracticaIBasketball" target="_blank" rel="noopener" aria-label="YouTube"><img src="youtube.svg" alt=""></a>
+        </div>
+      </div>
+      <div class="nav-end">
+      <ul>
+        <li class="nav-drop">
+          <a href="rules.html" data-nav="league">League</a>
+          <div class="nav-menu">
+            <a href="rules.html" data-nav="rules">Rules</a>
+            <a href="teams.html" data-nav="teams">Teams</a>
+            <a href="players.html" data-nav="players">Players</a>
+            <a href="staff.html" data-nav="staff">Staff</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="standings.html" data-nav="standings">Standings</a>
+          <div class="nav-menu">
+            <a href="standings.html" data-nav="divisional">Divisional Standings</a>
+            <a href="power-rankings.html" data-nav="power">Power Rankings</a>
+            <a href="playoff.html" data-nav="playoff">Playoff Bracket</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="schedule.html" data-nav="games">Games</a>
+          <div class="nav-menu">
+            <a href="schedule.html" data-nav="schedule">Schedule</a>
+            <a href="scores.html" data-nav="scores">Final Scores</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="player-stats.html" data-nav="statistics">Statistics</a>
+          <div class="nav-menu">
+            <a href="team-stats.html" data-nav="team-stats">Team Stats</a>
+            <a href="player-stats.html" data-nav="player-stats">Player Stats</a>
+            <a href="records.html" data-nav="records">Records</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="mvp.html" data-nav="awards">Awards</a>
+          <div class="nav-menu">
+            <a href="mvp.html" data-nav="mvp">MVP Race</a>
+            <a href="all-stars.html" data-nav="all-stars">All-Stars</a>
+            <a href="hall-of-fame.html" data-nav="hall">Hall of Fame</a>
+          </div>
+        </li>
+        <li><a href="signins.html" data-nav="signins">SIGNIN'S</a></li>
+      </ul>
+      <span class="nav-user" id="nav-user" hidden></span>
+      </div>
+    </nav>
+  </header>
+
+  <main class="profile-wrap">
+    <p class="profile-gate" id="profile-gate" hidden>Sign in to view your profile. <a href="index.html">Log in</a></p>
+    <form class="role-card login-card is-new" id="profile-form">
+      <p>Profile</p>
+      <p class="field-title">Discord</p>
+      <div class="profile-discord" id="profile-discord"></div>
+      <p class="login-fine">Discord is locked to the account you signed in with.</p>
+      <label class="field-title" for="profile-roblox">Roblox Username</label>
+      <div class="player-fields" id="profile-player-fields">
+        <input id="profile-roblox" maxlength="20" autocomplete="off" placeholder="Username">
+        <p class="apply-status" id="profile-name-status"></p>
+        <p class="apply-status" id="profile-unique-status"></p>
+        <p class="login-fine">Submitting a Roblox account that does not belong to you is strictly prohibited and constitutes a major violation of our terms.</p>
+        <p class="field-title">Build</p>
+        <div class="team-pick" id="profile-build-pick">
+          <button type="button" class="pick-button is-empty" id="profile-build-button">Select a build</button>
+          <div class="pick-menu" id="profile-build-menu">
+            <button type="button" class="pick-option" data-build="Guard">GUARD — PG / SG</button>
+            <button type="button" class="pick-option" data-build="Forward">FORWARD — SF / PF</button>
+            <button type="button" class="pick-option" data-build="Big">BIG — C / PF</button>
+          </div>
+        </div>
+        <p class="login-fine">You can only stay on one build for the entire season. This can be changed until you are on an approved roster. Once you are on an approved roster, your build is locked and cannot be changed.</p>
+      </div>
+      <label class="field-title not-player" for="profile-not-player">
+        <input type="checkbox" id="profile-not-player">
+        <span class="not-box" aria-hidden="true"></span>
+        <span>Not a Player?</span>
+      </label>
+      <p class="login-fine">Not participating as a player? No problem. Please note that selecting this option renders you ineligible to play for a team or serve as a head/assistant coach until these fields are completed.</p>
+      <p class="apply-status" id="profile-save-status"></p>
+      <button class="cta-btn" id="profile-save" type="submit">Save settings</button>
+    </form>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
