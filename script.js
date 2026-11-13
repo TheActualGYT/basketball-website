@@ -44,6 +44,51 @@ function profileComplete(user) {
   return !!((user && user.roblox && user.build) || (user && user.notPlayer));
 }
 
+function sessionFresh(user) {
+  return !!(user && user.connectedAt && (Date.now() - Number(user.connectedAt) < WEEK_MS));
+}
+
+function writeUserCookie(user) {
+  if (!user || !user.id) return;
+  const payload = btoa(unescape(encodeURIComponent(JSON.stringify({
+    id: user.id,
+    username: user.username || "",
+    name: user.name || user.username || "",
+    avatar: user.avatar || "",
+    roblox: user.roblox || "",
+    build: user.build || "",
+    notPlayer: !!user.notPlayer,
+    serverChecked: true,
+    connectedAt: Number(user.connectedAt) || Date.now()
+  }))));
+  document.cookie = "jba_user=" + encodeURIComponent(payload) + "; Path=/; Max-Age=2592000; SameSite=Lax";
+}
+
+function publishSignin(user) {
+  if (!user || !user.id) return Promise.resolve();
+  rememberLocalSignin(user);
+  writeUserCookie(user);
+  localStorage.setItem("jba-discord", JSON.stringify(user));
+  const save = fetch("/api/signins", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      id: user.id,
+      username: user.username || "",
+      name: user.name || user.username || "",
+      avatar: user.avatar || "",
+      roblox: user.roblox || "",
+      build: user.build || "",
+      notPlayer: !!user.notPlayer,
+      connectedAt: Number(user.connectedAt) || Date.now()
+    })
+  }).catch(function () {});
+  return Promise.race([
+    save,
+    new Promise(function (resolve) { setTimeout(resolve, 2500); })
+  ]);
+}
+
 function rememberLocalSignin(user) {
   if (!user || !user.id) return;
   let list = [];
@@ -161,7 +206,10 @@ if (loginBtn) {
       notPlayer: next.notPlayer
     }));
     rememberLocalSignin(next);
-    location.replace("home.html");
+    writeUserCookie(next);
+    publishSignin(next).then(function () {
+      location.replace("home.html");
+    });
   }
 
   function rememberDiscord(user) {
@@ -398,21 +446,9 @@ if (loginBtn) {
       localStorage.setItem("jba-discord", JSON.stringify(user));
       localStorage.removeItem("jba-discord-status");
       rememberLocalSignin(user);
+      writeUserCookie(user);
       loginContinue.disabled = true;
-      fetch("/api/signins", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: user.id,
-          username: user.username,
-          name: user.name || user.username,
-          avatar: user.avatar || "",
-          roblox: user.roblox,
-          build: user.build,
-          notPlayer: user.notPlayer,
-          connectedAt: user.connectedAt
-        })
-      }).catch(function () {}).then(function () {
+      publishSignin(user).then(function () {
         location.replace("home.html");
       });
     });
@@ -508,6 +544,10 @@ function mergeUsers(primary, extra) {
     username: base.username || add.username,
     name: base.name || add.name,
     avatar: base.avatar || add.avatar,
+    roblox: base.roblox || add.roblox || "",
+    build: base.build || add.build || "",
+    notPlayer: !!(base.notPlayer || add.notPlayer),
+    connectedAt: base.connectedAt || add.connectedAt || 0,
     serverChecked: base.serverChecked || add.serverChecked,
     checkedAt: base.checkedAt || add.checkedAt
   });
@@ -561,12 +601,16 @@ function showNavUser() {
     pic.alt = "";
     pic.className = "nav-avatar";
     pic.referrerPolicy = "no-referrer";
+    pic.width = 26;
+    pic.height = 26;
+    pic.style.cssText = "width:26px;height:26px;min-width:26px;border-radius:50%;object-fit:cover;display:block;";
     if (user.id) pic.setAttribute("data-discord-id", user.id);
     el.appendChild(pic);
   }
-  const name = document.createElement("b");
+  const name = document.createElement("span");
   name.className = "nav-user-name";
-  name.textContent = String(label);
+  name.textContent = String(user.name || user.username || label);
+  name.style.cssText = "color:#fff;font-size:15px;font-weight:700;line-height:1;display:inline-block;";
   el.appendChild(name);
   const menu = document.createElement("span");
   menu.className = "nav-menu";
@@ -575,6 +619,7 @@ function showNavUser() {
   profile.textContent = "View Profile";
   menu.appendChild(profile);
   el.appendChild(menu);
+  document.dispatchEvent(new Event("jba-user"));
 }
 
 function refreshDiscordAvatars() {

@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-const STORE = "https://crudcrud.com/api/98a06f121f4e4bd185744fb2802c07be/signins";
+const STORE = "https://crudcrud.com/api/7466a9c4daf84cda937bb941de0af192/signins";
 
 function clean(player) {
   return {
@@ -27,19 +27,17 @@ async function crud(url, options) {
     "Accept": "application/json",
     "User-Agent": "Mozilla/5.0"
   }, (options && options.headers) || {});
-  let lastError = "unreachable";
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    try {
-      const res = await fetch(url, Object.assign({}, options, { headers: headers }));
-      if (res.ok) return { ok: true, res: res };
-      lastError = "status " + res.status;
-      if (res.status < 500 && res.status !== 429) return { ok: false, res: res, error: lastError };
-    } catch (err) {
-      lastError = err && err.message ? err.message : "fetch failed";
-    }
-    await wait(250 * (attempt + 1));
+  const controller = new AbortController();
+  const timer = setTimeout(function () { controller.abort(); }, 2500);
+  try {
+    const res = await fetch(url, Object.assign({}, options, { headers: headers, signal: controller.signal }));
+    if (res.ok) return { ok: true, res: res };
+    return { ok: false, res: res, error: "status " + res.status };
+  } catch (err) {
+    return { ok: false, res: null, error: err && err.message ? err.message : "fetch failed" };
+  } finally {
+    clearTimeout(timer);
   }
-  return { ok: false, res: null, error: lastError };
 }
 
 function readFilePlayers() {

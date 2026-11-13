@@ -87,16 +87,8 @@
       if (!time) return "";
       return new Date(time).toLocaleDateString();
     }
-    fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
-      let players = data.players || [];
-      try {
-        const local = JSON.parse(localStorage.getItem("jba-signins") || "[]");
-        if (Array.isArray(local)) {
-          local.forEach(function (player) {
-            if (!players.some(function (saved) { return String(saved.id) === String(player.id); })) players.push(player);
-          });
-        }
-      } catch (err) {}
+    function paint(players) {
+      list.textContent = "";
       players = players.slice().sort(function (a, b) {
         return String(a.name || a.username).localeCompare(String(b.name || b.username));
       });
@@ -129,9 +121,19 @@
         row.appendChild(status);
         list.appendChild(row);
       });
-    }).catch(function () {
-      list.textContent = "Sign-ins could not be loaded.";
-    });
+    }
+    let players = [];
+    try {
+      const local = JSON.parse(localStorage.getItem("jba-signins") || "[]");
+      if (Array.isArray(local)) players = local.slice();
+    } catch (err) {}
+    paint(players);
+    fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+      (data.players || []).forEach(function (player) {
+        if (!players.some(function (saved) { return String(saved.id) === String(player.id); })) players.push(player);
+      });
+      paint(players);
+    }).catch(function () {});
   </script>
 </body>
 </html>
