@@ -1,3 +1,7 @@
+if (location.hostname.endsWith(".vercel.app") && location.hostname !== "basketball-website-psi.vercel.app") {
+  location.replace("https://basketball-website-psi.vercel.app" + location.pathname + location.search + location.hash);
+}
+
 // Smooth scroll for navigation
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function (e) {
