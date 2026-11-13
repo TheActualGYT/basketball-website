@@ -78,7 +78,6 @@
       <div class="section-banner"><h3 class="box-title">Ownership</h3></div>
       <div class="field-label">
         <span>Discord username <i class="req">*</i></span>
-        <button type="button" class="info-tip" aria-label="About Discord username">i<span>This is the Discord account you use to sign in. It has to be in the JBA server, and you cannot type a different name.</span></button>
       </div>
       <div class="discord-lock" id="discord-lock">
         <input id="discord-name" name="discord" readonly tabindex="-1">
@@ -89,7 +88,6 @@
       <div class="apply-rest is-locked" id="apply-rest">
       <div class="field-label">
         <span>Roblox username <i class="req">*</i></span>
-        <button type="button" class="info-tip" aria-label="About Roblox username">i<span>Use the exact username on your Roblox account. It is checked once, and it cannot already belong to another JBA player.</span></button>
       </div>
       <input id="roblox-name" name="username" autocomplete="off" maxlength="20" required placeholder="Username">
       <p class="apply-status" id="name-status"></p>
@@ -168,6 +166,13 @@
         lock.classList.add("is-ready");
         document.getElementById("apply-rest").classList.remove("is-locked");
         document.getElementById("roster-box").classList.remove("is-locked");
+        const roblox = document.getElementById("roblox-name");
+        if (roblox && user.roblox) {
+          roblox.value = user.roblox;
+          roblox.readOnly = true;
+          roblox.classList.add("is-profile");
+          roblox.dispatchEvent(new Event("blur"));
+        }
       } catch (err) {}
     }
     bootDiscord();
@@ -718,6 +723,7 @@
         setStatus(nameStatus, "Could not check that username.", false);
       }
     });
+    if (nameInput && nameInput.value && nameInput.readOnly) nameInput.dispatchEvent(new Event("blur"));
 
     form.addEventListener("submit", async function (event) {
       event.preventDefault();

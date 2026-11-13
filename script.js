@@ -871,25 +871,47 @@ function setupProfile() {
   refreshSave();
 }
 
-(function confirmServerAccount() {
+(function keepWeekLogin() {
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
-  if (!saved || !saved.id || !profileComplete(saved) || !sessionFresh(saved)) return;
+  const cookie = userFromCookie();
+  if ((!saved || !saved.id) && cookie) saved = cookie;
+  if (saved && cookie && String(saved.id) === String(cookie.id)) saved = Object.assign({}, cookie, saved);
+  if (!saved || !saved.id) return;
+  const path = location.pathname || "/";
+  const start = path === "/" || path.endsWith("/index.html");
+  const returning = location.search.indexOf("connected=1") !== -1;
+  if (profileComplete(saved) && !saved.connectedAt) {
+    saved.connectedAt = Date.now();
+    saved.serverChecked = true;
+    localStorage.setItem("jba-discord", JSON.stringify(saved));
+    writeUserCookie(saved);
+  }
+  if (profileComplete(saved) && sessionFresh(saved) && start && !returning) {
+    location.replace("home.html");
+    return;
+  }
   fetch("/api/signins").then(function (res) {
     if (!res.ok) throw new Error("list");
     return res.json();
   }).then(function (data) {
     const found = (data.players || []).find(function (player) { return String(player.id) === String(saved.id); });
-    if (!found) return;
-    const next = Object.assign({}, saved, {
-      username: found.username || saved.username,
-      name: found.name || saved.name,
-      avatar: found.avatar || saved.avatar || "",
-      roblox: found.roblox || saved.roblox || "",
-      build: found.build || saved.build || "",
-      notPlayer: !!found.notPlayer
+    if (!found || !profileComplete(found)) return;
+    const next = Object.assign({}, saved, found, {
+      serverChecked: true,
+      connectedAt: sessionFresh(saved) ? Number(saved.connectedAt) : Date.now()
     });
     localStorage.setItem("jba-discord", JSON.stringify(next));
+    localStorage.setItem("jba-login-profile", JSON.stringify({
+      roblox: next.roblox || "",
+      build: next.build || "",
+      notPlayer: !!next.notPlayer
+    }));
+    writeUserCookie(next);
+    rememberLocalSignin(next);
+    if (start && !returning) location.replace("home.html");
+    document.dispatchEvent(new Event("jba-user"));
+    if (typeof showNavUser === "function") showNavUser();
   }).catch(function () {});
 })();
 

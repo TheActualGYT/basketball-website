@@ -820,7 +820,8 @@ article h3 {
   margin-top: 0.4rem;
 }
 
-.discord-lock input {
+.discord-lock input,
+input.is-profile {
   margin-top: 0;
   background: #0d0d0d;
   color: #8a8a8a;

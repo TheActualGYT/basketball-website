@@ -15,13 +15,31 @@
       function fresh(user) {
         return !!(user && user.connectedAt && (Date.now() - Number(user.connectedAt) < WEEK));
       }
+      function readSaved() {
+        try {
+          var saved = JSON.parse(localStorage.getItem("jba-discord") || "null");
+          if (saved && saved.id) return saved;
+        } catch (err) {}
+        var match = document.cookie.match(/(?:^|; )jba_user=([^;]+)/);
+        if (!match) return null;
+        try {
+          return JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(match[1])))));
+        } catch (err) {
+          return null;
+        }
+      }
       try {
-        var saved = JSON.parse(localStorage.getItem("jba-discord") || "null");
+        var saved = readSaved();
+        if (saved && signedIn(saved) && !saved.connectedAt) {
+          saved.connectedAt = Date.now();
+          saved.serverChecked = true;
+          localStorage.setItem("jba-discord", JSON.stringify(saved));
+        }
         if (signedIn(saved) && fresh(saved) && location.search.indexOf("connected=1") === -1) {
           location.replace("home.html");
           return;
         }
-        if (signedIn(saved) && !fresh(saved)) {
+        if (signedIn(saved) && saved.connectedAt && !fresh(saved)) {
           localStorage.removeItem("jba-discord");
           localStorage.removeItem("jba-login-profile");
           document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
