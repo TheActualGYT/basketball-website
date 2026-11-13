@@ -175,9 +175,6 @@ function rememberLocalSignin(user) {
   const cookie = userFromCookie();
   if (wipedLogin(saved) || wipedLogin(cookie)) {
     clearStoredLogin();
-    const path = location.pathname || "/";
-    const start = path === "/" || path.endsWith("/index.html");
-    if (!start) location.replace("/");
     return;
   }
   const kept = readWeekSession();
@@ -192,9 +189,6 @@ function rememberLocalSignin(user) {
   localStorage.removeItem("jba-discord");
   localStorage.removeItem("jba-login-profile");
   document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
-  const path = location.pathname || "/";
-  const start = path === "/" || path.endsWith("/index.html");
-  if (!start) location.replace("/");
 })();
 
 const KNOWN_PROFILES = {};
