@@ -104,11 +104,15 @@
     }
     function splitBuild(build) {
       var text = String(build || "").trim();
-      var names = { guard: "GUARD", forward: "FORWARD", big: "BIG" };
+      var formats = {
+        guard: "Guard [PG/SG]",
+        forward: "Forward [SF/PF]",
+        big: "Big [C/PF]"
+      };
       if (!text) return "—";
-      if (names[text.toLowerCase()]) return names[text.toLowerCase()];
-      var parts = text.split(/\s+[—-]\s+/);
-      return (names[(parts[0] || "").toLowerCase()] || parts[0] || text).toUpperCase();
+      var key = text.toLowerCase().split(/\s|[—\-[]/)[0];
+      if (formats[key]) return formats[key];
+      return text;
     }
     function liveAccount() {
       var keys = ["jba-session", "jba-discord"];
