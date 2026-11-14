@@ -179,12 +179,22 @@
           fields.innerHTML = '<input class="in-date" aria-label="Date" placeholder="0/0/0000"><input class="in-time" aria-label="Time" placeholder="0:00 PM">';
           card.querySelector(".sched-stamp").after(fields);
           var teams = card.querySelectorAll(".sched-team");
+          var roster = ["Arizona Wildcats", "Baylor Bears", "Duke Blue Devils", "Florida Gators", "Georgia Bulldogs", "Houston Cougars", "Kansas Jayhawks", "Kentucky Wildcats", "LSU Tigers", "Miami Hurricanes", "Michigan Wolverines", "North Carolina Tar Heels", "Ohio State Buckeyes", "Oregon Ducks", "UCLA Bruins", "Virginia Cavaliers"];
           ["in-away", "in-home"].forEach(function (cls, i) {
-            var input = document.createElement("input");
-            input.className = "sched-team-input " + cls;
-            input.setAttribute("aria-label", i === 0 ? "Away team" : "Home team");
-            input.placeholder = "TBD";
-            teams[i].after(input);
+            var select = document.createElement("select");
+            select.className = "sched-team-input " + cls;
+            select.setAttribute("aria-label", i === 0 ? "Away team" : "Home team");
+            var open = document.createElement("option");
+            open.value = "";
+            open.textContent = "TBD";
+            select.appendChild(open);
+            roster.forEach(function (name) {
+              var option = document.createElement("option");
+              option.value = name;
+              option.textContent = name;
+              select.appendChild(option);
+            });
+            teams[i].after(select);
           });
         }
         fields.querySelector(".in-date").value = blank(game.date) ? "" : game.date;

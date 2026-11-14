@@ -1189,6 +1189,8 @@ h2 {
 
 .sched-team-input {
   flex: 1;
+  cursor: pointer;
+  color-scheme: dark;
 }
 
 .sched-game.is-editing .sched-edit {
