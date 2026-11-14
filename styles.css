@@ -984,9 +984,25 @@ h2 {
   height: 26px;
 }
 
+.power-table th:nth-child(1),
+.power-table td:nth-child(1),
 .power-table th:nth-child(2),
 .power-table td:nth-child(2) {
+  width: 3.2rem;
+  min-width: 3.2rem;
+  max-width: 3.2rem;
+  height: 3.2rem;
+  padding: 0 0.12rem;
+  box-sizing: border-box;
   text-align: center;
+}
+
+.power-table td:nth-child(2) {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .power-table th:nth-child(3),
