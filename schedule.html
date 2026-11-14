@@ -144,12 +144,41 @@
         cards.forEach(function (card) { grid.appendChild(card); });
       }
 
+      var LOGOS = {
+        "Arizona Wildcats": "arizona.png",
+        "Baylor Bears": "baylor.png",
+        "Duke Blue Devils": "duke.png",
+        "Florida Gators": "florida.png",
+        "Georgia Bulldogs": "georgia.png",
+        "Houston Cougars": "houston.png",
+        "Kansas Jayhawks": "kansas.png",
+        "Kentucky Wildcats": "kentucky.png",
+        "LSU Tigers": "lsu.png",
+        "Miami Hurricanes": "miami.png",
+        "Michigan Wolverines": "michigan.png",
+        "North Carolina Tar Heels": "unc.png",
+        "Ohio State Buckeyes": "ohiostate.png",
+        "Oregon Ducks": "oregon.png",
+        "UCLA Bruins": "ucla.png",
+        "Virginia Cavaliers": "virginia.png"
+      };
+
+      function setLogo(side, name) {
+        var mark = side.querySelector(".sched-mark");
+        var src = LOGOS[name];
+        mark.classList.toggle("has-logo", !!src);
+        mark.innerHTML = src ? '<img src="' + src + '" alt="">' : "";
+      }
+
       function apply(card, game) {
         card.querySelector(".sched-date").textContent = shown(game.date);
         card.querySelector(".sched-time").textContent = shown(game.time);
         var teams = card.querySelectorAll(".sched-team");
+        var sides = card.querySelectorAll(".sched-side");
         teams[0].textContent = shown(game.away);
         teams[1].textContent = shown(game.home);
+        setLogo(sides[0], teams[0].textContent);
+        setLogo(sides[1], teams[1].textContent);
       }
 
       function current(card) {
@@ -193,6 +222,9 @@
               option.value = name;
               option.textContent = name;
               select.appendChild(option);
+            });
+            select.addEventListener("change", function () {
+              setLogo(teams[i].parentNode, select.value || "TBD");
             });
             teams[i].after(select);
           });
