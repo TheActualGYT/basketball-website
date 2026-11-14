@@ -977,6 +977,32 @@ h2 {
   height: 26px;
 }
 
+.power-table th:nth-child(2),
+.power-table td:nth-child(2) {
+  text-align: center;
+}
+
+.power-table th:nth-child(3),
+.power-table td:nth-child(3) {
+  text-align: left;
+}
+
+.conf-mark {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+.con-name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
 .stat-head {
   display: flex;
   flex-direction: column;
