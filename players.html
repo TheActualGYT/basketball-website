@@ -105,14 +105,14 @@
     function splitBuild(build) {
       var text = String(build || "").trim();
       var formats = {
-        guard: "Guard [PG/SG]",
-        forward: "Forward [SF/PF]",
-        big: "Big [C/PF]"
+        guard: ["Guard", "[PG/SG]"],
+        forward: ["Forward", "[SF/PF]"],
+        big: ["Big", "[C/PF]"]
       };
-      if (!text) return "—";
+      if (!text) return { name: "—", positions: "" };
       var key = text.toLowerCase().split(/\s|[—\-[]/)[0];
-      if (formats[key]) return formats[key];
-      return text;
+      if (formats[key]) return { name: formats[key][0], positions: formats[key][1] };
+      return { name: text, positions: "" };
     }
     function liveAccount() {
       var keys = ["jba-session", "jba-discord"];
@@ -176,7 +176,7 @@
       if (key === "index") return player._order;
       if (key === "discord") return String(player.name || player.username || "").toLowerCase();
       if (key === "roblox") return String(player.roblox || "").toLowerCase();
-      if (key === "build") return splitBuild(player.build).toLowerCase();
+      if (key === "build") return splitBuild(player.build).name.toLowerCase();
       if (key === "status") return teamOf(player) ? "signed player" : "free agent";
       if (key === "registered") return Number(player.createdAt || player.connectedAt) || 0;
       return "";
@@ -236,7 +236,18 @@
         var roblox = document.createElement("td");
         roblox.textContent = player.roblox || "—";
         var build = document.createElement("td");
-        build.textContent = splitBuild(player.build);
+        var built = splitBuild(player.build);
+        var stack = document.createElement("span");
+        stack.className = "build-stack";
+        var buildName = document.createElement("b");
+        buildName.textContent = built.name;
+        stack.appendChild(buildName);
+        if (built.positions) {
+          var positions = document.createElement("small");
+          positions.textContent = built.positions;
+          stack.appendChild(positions);
+        }
+        build.appendChild(stack);
         var status = document.createElement("td");
         var badge = document.createElement("span");
         var team = teamOf(player);
@@ -268,32 +279,29 @@
       });
     }
     try {
-      var local = JSON.parse(localStorage.getItem("jba-signins") || "[]");
-      if (Array.isArray(local)) players = local.slice();
+      var cached = JSON.parse(localStorage.getItem("jba-directory") || "[]");
+      if (Array.isArray(cached) && cached.length) players = cached;
     } catch (err) {}
-    remember(players);
-    paint(players);
-    fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
-      (data.players || []).forEach(function (player) {
-        if (!players.some(function (saved) { return String(saved.id) === String(player.id); })) players.push(player);
-        else {
-          players = players.map(function (saved) {
-            if (String(saved.id) !== String(player.id)) return saved;
-            var next = Object.assign({}, saved, player);
-            next._order = saved._order;
-            return next;
-          });
-        }
-      });
+    if (players.length) {
       remember(players);
       paint(players);
-    }).catch(function () {});
+    }
+    fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+      var next = [];
+      (data.players || []).forEach(function (player) { next.push(player); });
+      if (!next.length) next = players.slice();
+      remember(next);
+      players = next;
+      try { localStorage.setItem("jba-directory", JSON.stringify(players)); } catch (err) {}
+      paint(players);
+    }).catch(function () {
+      if (!players.length) paint(players);
+    });
     document.querySelectorAll(".players-table thead th").forEach(function (th) {
       th.addEventListener("click", function () {
         var key = th.getAttribute("data-sort");
         if (sort.key !== key) sort = { key: key, dir: "asc" };
-        else if (sort.dir === "asc") sort.dir = "desc";
-        else sort = { key: null, dir: null };
+        else sort.dir = sort.dir === "asc" ? "desc" : "asc";
         paint(players);
       });
     });

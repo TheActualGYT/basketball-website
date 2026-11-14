@@ -686,6 +686,23 @@ h2 {
   font-size: 0.75rem;
 }
 
+.build-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+}
+
+.build-stack b {
+  color: #eee;
+  font-weight: 500;
+}
+
+.build-stack small {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.74rem;
+}
+
 .player-status {
   display: inline-flex;
   align-items: center;
