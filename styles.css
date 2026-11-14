@@ -1211,8 +1211,8 @@ h2 {
   font-weight: 600;
 }
 
-.sched-side.home .sched-team::before {
-  content: "(HOME) ";
+.sched-side.home .sched-team::after {
+  content: " (HOME)";
   color: rgba(255, 255, 255, 0.45);
   font-weight: 700;
 }
