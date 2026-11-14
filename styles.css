@@ -1212,7 +1212,9 @@ h2 {
 }
 
 .sched-side.home .sched-team::before {
-  content: "@ ";
+  content: "(HOME) ";
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 700;
 }
 
 .sched-mark {
