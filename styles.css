@@ -833,9 +833,10 @@ h2 {
   z-index: 5;
 }
 
-.division-panel {
+.panel.division-panel {
   padding: 0;
   overflow: visible;
+  border-radius: 16px;
 }
 
 .division-table {
@@ -872,6 +873,14 @@ h2 {
 
 .division-table thead th:last-child {
   border-top-right-radius: 15px;
+}
+
+.division-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 15px;
+}
+
+.division-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 15px;
 }
 
 .division-table thead .col-tip i {
