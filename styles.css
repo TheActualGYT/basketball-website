@@ -865,7 +865,18 @@ h2 {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   border-bottom: 2px solid #ec4899;
+  cursor: pointer;
 }
+
+.division-table thead th.is-asc .col-tip::after,
+.division-table thead th.is-desc .col-tip::after {
+  margin-left: 0.35rem;
+  font-size: 0.68rem;
+  letter-spacing: 0;
+}
+
+.division-table thead th.is-asc .col-tip::after { content: "↑"; }
+.division-table thead th.is-desc .col-tip::after { content: "↓"; }
 
 .division-table thead th:first-child {
   border-top-left-radius: 15px;
