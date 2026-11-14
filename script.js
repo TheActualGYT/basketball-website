@@ -735,14 +735,33 @@ function showNavUser() {
   logout.type = "button";
   logout.className = "nav-logout";
   logout.textContent = "Logout";
-  logout.addEventListener("click", function () {
-    clearStoredLogin();
-    try { sessionStorage.removeItem("jba-resume-login"); } catch (err) {}
-    location.replace("index.html");
+  logout.addEventListener("click", function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    openLogoutConfirm();
   });
   menu.append(profile, logout);
   el.appendChild(menu);
   document.dispatchEvent(new Event("jba-user"));
+}
+
+function openLogoutConfirm() {
+  if (document.getElementById("logout-modal")) return;
+  const modal = document.createElement("div");
+  modal.id = "logout-modal";
+  modal.className = "logout-modal";
+  modal.innerHTML = '<div class="logout-card"><p>Log out?</p><span>You will need to sign in again.</span><div><button type="button" class="cta-btn" id="logout-yes">Log out</button><button type="button" id="logout-no">Cancel</button></div></div>';
+  document.body.appendChild(modal);
+  function close() { modal.remove(); }
+  modal.addEventListener("click", function (event) {
+    if (event.target === modal) close();
+  });
+  document.getElementById("logout-no").addEventListener("click", close);
+  document.getElementById("logout-yes").addEventListener("click", function () {
+    clearStoredLogin();
+    try { sessionStorage.removeItem("jba-resume-login"); } catch (err) {}
+    location.replace("index.html");
+  });
 }
 
 function refreshDiscordAvatars() {

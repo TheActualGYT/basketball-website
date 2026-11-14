@@ -70,18 +70,17 @@
   </header>
 
   <main class="profile-wrap">
+    <h2>Profile</h2>
     <p class="profile-gate" id="profile-gate" hidden>Sign in to view your profile. <a href="index.html">Log in</a></p>
-    <form class="role-card login-card is-new" id="profile-form">
-      <p>Profile</p>
-      <p class="field-title">Discord</p>
+    <form class="panel profile-card" id="profile-form">
       <div class="profile-discord" id="profile-discord"></div>
-      <p class="login-fine">Discord is locked to the account you signed in with.</p>
-      <label class="field-title" for="profile-roblox">Roblox Username</label>
-      <div class="player-fields" id="profile-player-fields">
+      <p class="profile-note">Discord is locked to the account you signed in with.</p>
+      <div id="profile-player-fields">
+        <label class="field-title" for="profile-roblox">Roblox Username</label>
         <input id="profile-roblox" maxlength="20" autocomplete="off" placeholder="Username">
         <p class="apply-status" id="profile-name-status"></p>
         <p class="apply-status" id="profile-unique-status"></p>
-        <p class="login-fine">Submitting a Roblox account that does not belong to you is strictly prohibited and constitutes a major violation of our terms.</p>
+        <p class="profile-note">Submitting a Roblox account that does not belong to you is strictly prohibited and constitutes a major violation of our terms.</p>
         <p class="field-title">Build</p>
         <div class="team-pick" id="profile-build-pick">
           <button type="button" class="pick-button is-empty" id="profile-build-button">Select a build</button>
@@ -91,14 +90,14 @@
             <button type="button" class="pick-option" data-build="Big">BIG — C / PF</button>
           </div>
         </div>
-        <p class="login-fine">You can only stay on one build for the entire season. This can be changed until you are on an approved roster. Once you are on an approved roster, your build is locked and cannot be changed.</p>
+        <p class="profile-note">You can only stay on one build for the entire season. This can be changed until you are on an approved roster. Once you are on an approved roster, your build is locked and cannot be changed.</p>
       </div>
       <label class="field-title not-player" for="profile-not-player">
         <input type="checkbox" id="profile-not-player">
         <span class="not-box" aria-hidden="true"></span>
         <span>Not a Player?</span>
       </label>
-      <p class="login-fine">Not participating as a player? No problem. Please note that selecting this option renders you ineligible to play for a team or serve as a head/assistant coach until these fields are completed.</p>
+      <p class="profile-note">Not participating as a player? No problem. Please note that selecting this option renders you ineligible to play for a team or serve as a head/assistant coach until these fields are completed.</p>
       <p class="apply-status" id="profile-save-status"></p>
       <button class="cta-btn" id="profile-save" type="submit">Save settings</button>
     </form>
