@@ -840,19 +840,31 @@ h2 {
   align-items: center;
   gap: 0.55rem;
   width: fit-content;
-  margin: 0.5rem 0.7rem;
-  padding: 0.28rem 0.6rem;
-  border-radius: 10px;
+  margin: 0.55rem 0.75rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 12px;
   color: #fff;
   font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-align: left;
-  background: rgba(0, 0, 0, 0.28);
-  backdrop-filter: blur(7px);
-  -webkit-backdrop-filter: blur(7px);
+  background: transparent;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
   animation: titlePulse 3.6s ease-in-out infinite;
+}
+
+.division-banner h3::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -6px -18px;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  -webkit-mask-image: radial-gradient(closest-side, #000 42%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 42%, transparent 100%);
+  pointer-events: none;
 }
 
 .division-banner h3 img {
