@@ -2,6 +2,12 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 html, body {
@@ -514,7 +520,7 @@ h2 {
 }
 
 .panel.players-table-wrap {
-  overflow: auto;
+  overflow: visible;
   padding: 0;
   border-radius: 16px;
 }
@@ -531,8 +537,14 @@ h2 {
   padding: 0.72rem 0.7rem;
   text-align: left;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.14);
   color: #eee;
   font-size: 0.86rem;
+}
+
+.players-table th:last-child,
+.players-table td:last-child {
+  border-right: 0;
 }
 
 .players-table thead th {
@@ -545,16 +557,50 @@ h2 {
   border-bottom: 2px solid #ec4899;
 }
 
+.col-tip {
+  position: relative;
+  cursor: help;
+}
+
+.col-tip i {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 0.45rem);
+  transform: translateX(-50%);
+  width: 210px;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  background: #101010;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #eee;
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.35;
+  text-transform: none;
+  text-align: left;
+  z-index: 20;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+.col-tip:hover i,
+.col-tip:focus i {
+  display: block;
+}
+
+.players-table tbody td {
+  height: 3.2rem;
+  background: transparent;
+}
+
 .players-table thead th:first-child {
   border-top-left-radius: 15px;
 }
 
 .players-table thead th:last-child {
   border-top-right-radius: 15px;
-}
-
-.players-table tbody td {
-  background: #141414;
 }
 
 .players-table tbody tr:last-child td {
@@ -592,6 +638,7 @@ h2 {
   border-radius: 50%;
   object-fit: cover;
   flex: 0 0 32px;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.5);
 }
 
 .player-person span {

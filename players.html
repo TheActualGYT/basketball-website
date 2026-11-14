@@ -76,12 +76,12 @@
       <table class="players-table">
         <thead>
           <tr>
-            <th>#</th>
-            <th>Pos</th>
-            <th>Discord</th>
-            <th>Roblox</th>
-            <th>Build</th>
-            <th>Status</th>
+            <th><span class="col-tip" tabindex="0">#<i>The player's place on this list.</i></span></th>
+            <th><span class="col-tip" tabindex="0">Discord<i>The Discord name and tag on their account.</i></span></th>
+            <th><span class="col-tip" tabindex="0">Roblox<i>The Roblox username registered to this account.</i></span></th>
+            <th><span class="col-tip" tabindex="0">Build<i>The build they signed up with for the season.</i></span></th>
+            <th><span class="col-tip" tabindex="0">Status<i>Free agent, or the team they are currently on.</i></span></th>
+            <th><span class="col-tip" tabindex="0">Registration<i>The date they finished signing up on the site.</i></span></th>
           </tr>
         </thead>
         <tbody id="players-body"></tbody>
@@ -97,10 +97,20 @@
     }
     function splitBuild(build) {
       var text = String(build || "").trim();
-      if (!text) return { pos: "—", build: "—" };
+      if (!text) return "—";
       var parts = text.split(/\s+[—-]\s+/);
-      if (parts.length > 1) return { pos: parts.slice(1).join(" — "), build: parts[0].toUpperCase() };
-      return { pos: "—", build: text.toUpperCase() };
+      return (parts[0] || text).toUpperCase();
+    }
+    function registeredOn(player) {
+      var time = Number(player.createdAt || player.connectedAt);
+      if (!time) return "—";
+      return new Date(time).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    }
+    function blankRow() {
+      var row = document.createElement("tr");
+      var i;
+      for (i = 0; i < 6; i += 1) row.appendChild(document.createElement("td"));
+      return row;
     }
     function paint(players) {
       var body = document.getElementById("players-body");
@@ -109,23 +119,10 @@
       players.sort(function (a, b) {
         return String(a.name || a.username || "").localeCompare(String(b.name || b.username || ""));
       });
-      if (!players.length) {
-        var empty = document.createElement("tr");
-        var cell = document.createElement("td");
-        cell.colSpan = 6;
-        cell.className = "players-empty";
-        cell.textContent = "No players yet.";
-        empty.appendChild(cell);
-        body.appendChild(empty);
-        return;
-      }
       players.forEach(function (player, index) {
-        var info = splitBuild(player.build);
         var row = document.createElement("tr");
         var number = document.createElement("td");
         number.textContent = String(index + 1);
-        var pos = document.createElement("td");
-        pos.textContent = info.pos;
         var discord = document.createElement("td");
         var person = document.createElement("div");
         person.className = "player-person";
@@ -144,15 +141,18 @@
         var roblox = document.createElement("td");
         roblox.textContent = player.roblox || "—";
         var build = document.createElement("td");
-        build.textContent = info.build;
+        build.textContent = splitBuild(player.build);
         var status = document.createElement("td");
         var badge = document.createElement("span");
         badge.className = "player-status" + ((player.status || "Free Agent") === "Free Agent" ? " is-free" : "");
         badge.textContent = player.status || "Free Agent";
         status.appendChild(badge);
-        row.append(number, pos, discord, roblox, build, status);
+        var registered = document.createElement("td");
+        registered.textContent = registeredOn(player);
+        row.append(number, discord, roblox, build, status, registered);
         body.appendChild(row);
       });
+      while (body.children.length < 10) body.appendChild(blankRow());
     }
     var players = [];
     try {
