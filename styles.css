@@ -1070,7 +1070,26 @@ h2 {
 }
 
 .sched-game {
-  padding: 0.65rem 0.75rem 0.7rem;
+  position: relative;
+  overflow: hidden;
+  padding: 0.65rem 0.75rem 0.7rem 0.95rem;
+  border-radius: 14px;
+  background-color: #141414;
+  background-image:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 7px),
+    linear-gradient(180deg, #1c1c1c 0%, #101010 100%);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.sched-game::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(192, 132, 252, 0.9), rgba(236, 72, 153, 0.9));
 }
 
 .sched-when {
@@ -1078,8 +1097,8 @@ h2 {
   justify-content: space-between;
   margin: 0 0 0.5rem;
   padding-bottom: 0.4rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.48);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.08em;
