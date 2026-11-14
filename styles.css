@@ -824,9 +824,18 @@ h2 {
   object-fit: contain;
 }
 
+.division-block {
+  position: relative;
+}
+
+.division-block:hover,
+.division-block:focus-within {
+  z-index: 5;
+}
+
 .division-panel {
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .division-table {
@@ -838,13 +847,35 @@ h2 {
 
 .division-table th,
 .division-table td {
-  padding: 0.62rem 0.35rem;
+  padding: 0.72rem 0.45rem;
   text-align: center;
   color: #eee;
   font-size: 0.86rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
   border-right: 1px solid rgba(255, 255, 255, 0.14);
   font-variant-numeric: tabular-nums;
+}
+
+.division-table thead th {
+  background: #09090b;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-bottom: 2px solid #ec4899;
+}
+
+.division-table thead th:first-child {
+  border-top-left-radius: 15px;
+}
+
+.division-table thead th:last-child {
+  border-top-right-radius: 15px;
+}
+
+.division-table thead .col-tip i {
+  z-index: 30;
 }
 
 .division-table th:last-child,
