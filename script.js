@@ -787,8 +787,7 @@ function markNav() {
     "records.html": ["statistics", "records"],
     "mvp.html": ["awards", "mvp"],
     "all-stars.html": ["awards", "all-stars"],
-    "hall-of-fame.html": ["awards", "hall"],
-    "signins.html": ["signins"]
+    "hall-of-fame.html": ["awards", "hall"]
   };
   const keys = groups[file] || (file === "news.html" ? ["news"] : []);
   document.querySelectorAll("[data-nav]").forEach(function (link) {

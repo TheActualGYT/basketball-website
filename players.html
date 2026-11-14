@@ -63,7 +63,6 @@
             <a href="hall-of-fame.html" data-nav="hall">Hall of Fame</a>
           </div>
         </li>
-        <li><a href="signins.html" data-nav="signins">Accounts</a></li>
       </ul>
       <span class="nav-user" id="nav-user" hidden></span>
       </div>
@@ -74,14 +73,22 @@
     <h2>Players</h2>
     <div class="panel players-table-wrap">
       <table class="players-table">
+        <colgroup>
+          <col class="col-num">
+          <col class="col-discord">
+          <col class="col-roblox">
+          <col class="col-even">
+          <col class="col-even">
+          <col class="col-even">
+        </colgroup>
         <thead>
           <tr>
-            <th><span class="col-tip" tabindex="0">#<i>The player's place on this list.</i></span></th>
-            <th><span class="col-tip" tabindex="0">Discord<i>The Discord name and tag on their account.</i></span></th>
-            <th><span class="col-tip" tabindex="0">Roblox<i>The Roblox username registered to this account.</i></span></th>
-            <th><span class="col-tip" tabindex="0">Build<i>The build they signed up with for the season.</i></span></th>
-            <th><span class="col-tip" tabindex="0">Status<i>Free agent, or the team they are currently on.</i></span></th>
-            <th><span class="col-tip" tabindex="0">Registration<i>The date they finished signing up on the site.</i></span></th>
+            <th data-sort="index"><span class="col-tip" tabindex="0">#<i>The player's place on this list.</i></span></th>
+            <th data-sort="discord"><span class="col-tip" tabindex="0">Discord<i>The Discord name and tag on their account.</i></span></th>
+            <th data-sort="roblox"><span class="col-tip" tabindex="0">Roblox<i>The Roblox username registered to this account.</i></span></th>
+            <th data-sort="build"><span class="col-tip" tabindex="0">Build<i>The build they signed up with for the season.</i></span></th>
+            <th data-sort="status"><span class="col-tip" tabindex="0">Status<i>Free Agent, or Signed Player if they are on a team.</i></span></th>
+            <th data-sort="registered"><span class="col-tip" tabindex="0">Registration<i>The date they finished signing up on the site.</i></span></th>
           </tr>
         </thead>
         <tbody id="players-body"></tbody>
@@ -101,6 +108,60 @@
       var parts = text.split(/\s+[—-]\s+/);
       return (parts[0] || text).toUpperCase();
     }
+    var TEAMS = [
+      ["Arizona Wildcats", "arizona.png"],
+      ["Baylor Bears", "baylor.png"],
+      ["Duke Blue Devils", "duke.png"],
+      ["Florida Gators", "florida.png"],
+      ["Georgia Bulldogs", "georgia.png"],
+      ["Houston Cougars", "houston.png"],
+      ["Kansas Jayhawks", "kansas.png"],
+      ["Kentucky Wildcats", "kentucky.png"],
+      ["LSU Tigers", "lsu.png"],
+      ["Miami Hurricanes", "miami.png"],
+      ["Michigan Wolverines", "michigan.png"],
+      ["North Carolina Tar Heels", "unc.png"],
+      ["Ohio State Buckeyes", "ohiostate.png"],
+      ["Oregon Ducks", "oregon.png"],
+      ["UCLA Bruins", "ucla.png"],
+      ["Virginia Cavaliers", "virginia.png"]
+    ];
+    var sort = { key: "discord", dir: "asc" };
+    function teamOf(player) {
+      var name = String(player.team || player.teamName || "").trim();
+      if (!name && player.status && player.status !== "Free Agent" && player.status !== "Signed Player") name = String(player.status).trim();
+      if (!name && player.teamLogo) return { name: "Team", logo: player.teamLogo };
+      if (!name) return null;
+      var found = TEAMS.find(function (team) { return team[0].toLowerCase() === name.toLowerCase(); });
+      if (found) return { name: found[0], logo: found[1] };
+      return { name: name, logo: player.teamLogo || "" };
+    }
+    function sortValue(player, key) {
+      if (key === "index") return player._order;
+      if (key === "discord") return String(player.name || player.username || "").toLowerCase();
+      if (key === "roblox") return String(player.roblox || "").toLowerCase();
+      if (key === "build") return splitBuild(player.build).toLowerCase();
+      if (key === "status") return teamOf(player) ? "signed player" : "free agent";
+      if (key === "registered") return Number(player.createdAt || player.connectedAt) || 0;
+      return "";
+    }
+    function ordered(list) {
+      var copy = list.slice();
+      if (!sort.key) return copy;
+      copy.sort(function (a, b) {
+        var av = sortValue(a, sort.key);
+        var bv = sortValue(b, sort.key);
+        var result = typeof av === "number" && typeof bv === "number" ? av - bv : String(av).localeCompare(String(bv));
+        return sort.dir === "desc" ? -result : result;
+      });
+      return copy;
+    }
+    function markSort() {
+      document.querySelectorAll(".players-table thead th").forEach(function (th) {
+        th.classList.remove("is-asc", "is-desc");
+        if (th.getAttribute("data-sort") === sort.key) th.classList.add(sort.dir === "desc" ? "is-desc" : "is-asc");
+      });
+    }
     function registeredOn(player) {
       var time = Number(player.createdAt || player.connectedAt);
       if (!time) return "—";
@@ -115,10 +176,8 @@
     function paint(players) {
       var body = document.getElementById("players-body");
       body.textContent = "";
-      players = players.filter(function (player) { return !player.notPlayer; });
-      players.sort(function (a, b) {
-        return String(a.name || a.username || "").localeCompare(String(b.name || b.username || ""));
-      });
+      players = ordered(players.filter(function (player) { return !player.notPlayer; }));
+      markSort();
       players.forEach(function (player, index) {
         var row = document.createElement("tr");
         var number = document.createElement("td");
@@ -144,8 +203,20 @@
         build.textContent = splitBuild(player.build);
         var status = document.createElement("td");
         var badge = document.createElement("span");
-        badge.className = "player-status" + ((player.status || "Free Agent") === "Free Agent" ? " is-free" : "");
-        badge.textContent = player.status || "Free Agent";
+        var team = teamOf(player);
+        if (team) {
+          badge.className = "player-status is-signed";
+          badge.textContent = "Signed Player";
+          if (team.logo) {
+            var logo = document.createElement("img");
+            logo.src = team.logo;
+            logo.alt = "";
+            badge.appendChild(logo);
+          }
+        } else {
+          badge.className = "player-status is-free";
+          badge.textContent = "Free Agent";
+        }
         status.appendChild(badge);
         var registered = document.createElement("td");
         registered.textContent = registeredOn(player);
@@ -155,22 +226,43 @@
       while (body.children.length < 10) body.appendChild(blankRow());
     }
     var players = [];
+    function remember(list) {
+      list.forEach(function (player, index) {
+        if (player._order == null) player._order = index;
+      });
+    }
     try {
       var local = JSON.parse(localStorage.getItem("jba-signins") || "[]");
       if (Array.isArray(local)) players = local.slice();
     } catch (err) {}
+    remember(players);
     paint(players);
     fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
       (data.players || []).forEach(function (player) {
         if (!players.some(function (saved) { return String(saved.id) === String(player.id); })) players.push(player);
         else {
           players = players.map(function (saved) {
-            return String(saved.id) === String(player.id) ? Object.assign({}, saved, player) : saved;
+            if (String(saved.id) !== String(player.id)) return saved;
+            var next = Object.assign({}, saved, player);
+            next._order = saved._order;
+            return next;
           });
         }
       });
+      remember(players);
       paint(players);
     }).catch(function () {});
+    document.querySelectorAll(".players-table thead th").forEach(function (th) {
+      th.addEventListener("click", function () {
+        var key = th.getAttribute("data-sort");
+        if (sort.key !== key) sort = { key: key, dir: "asc" };
+        else if (sort.dir === "asc") sort.dir = "desc";
+        else sort = { key: null, dir: null };
+        paint(players);
+      });
+    });
+    var header = document.querySelector("header");
+    if (header) document.documentElement.style.setProperty("--nav-offset", header.offsetHeight + "px");
   </script>
 </body>
 </html>

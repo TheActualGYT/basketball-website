@@ -529,8 +529,14 @@ h2 {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 720px;
+  min-width: 860px;
+  table-layout: fixed;
 }
+
+.players-table .col-num { width: 3.4rem; }
+.players-table .col-discord { width: 28%; }
+.players-table .col-roblox { width: 20%; }
+.players-table .col-even { width: 15%; }
 
 .players-table th,
 .players-table td {
@@ -548,6 +554,9 @@ h2 {
 }
 
 .players-table thead th {
+  position: sticky;
+  top: var(--nav-offset, 84px);
+  z-index: 40;
   background: #09090b;
   color: #fff;
   font-size: 0.72rem;
@@ -555,6 +564,22 @@ h2 {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   border-bottom: 2px solid #ec4899;
+  cursor: pointer;
+}
+
+.players-table thead th.is-asc .col-tip::after,
+.players-table thead th.is-desc .col-tip::after {
+  margin-left: 0.35rem;
+  font-size: 0.68rem;
+  letter-spacing: 0;
+}
+
+.players-table thead th.is-asc .col-tip::after { content: "↑"; }
+.players-table thead th.is-desc .col-tip::after { content: "↓"; }
+
+.players-table th:nth-child(n + 4),
+.players-table td:nth-child(n + 4) {
+  text-align: center;
 }
 
 .col-tip {
@@ -659,6 +684,10 @@ h2 {
 }
 
 .player-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
   color: #eee;
   font-size: inherit;
   font-weight: 500;
@@ -667,6 +696,17 @@ h2 {
 .player-status.is-free {
   color: #f5d76e;
   animation: freeAgentPulse 3.6s ease-in-out infinite;
+}
+
+.player-status.is-signed {
+  color: #7eb6ff;
+}
+
+.player-status img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
 }
 
 @keyframes freeAgentPulse {
