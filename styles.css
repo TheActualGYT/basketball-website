@@ -963,9 +963,16 @@ h2 {
   background: #09090b;
 }
 
-.division-table th:nth-child(2),
-.division-table td:nth-child(2) {
+.division-table:not(.power-table) th:nth-child(2),
+.division-table:not(.power-table) td:nth-child(2),
+.power-table th:nth-child(3),
+.power-table td:nth-child(3) {
+  padding-left: 1.15rem;
   text-align: left;
+}
+
+.division-table .conf-team {
+  gap: 0.9rem;
 }
 
 .division-table tbody tr:hover td {
