@@ -787,6 +787,38 @@ h2 {
   padding: 2.4rem 2rem 4rem;
 }
 
+.power-top {
+  display: flex;
+  justify-content: flex-start;
+  margin: 0 0 0.35rem;
+}
+
+.week-select select {
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #fff;
+  background-color: #121212;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #fff 50%),
+    linear-gradient(135deg, #fff 50%, transparent 50%);
+  background-position: calc(100% - 16px) 54%, calc(100% - 11px) 54%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  padding: 0.55rem 1.8rem 0.55rem 0.8rem;
+  cursor: pointer;
+}
+
+.week-select select:focus {
+  outline: none;
+  border-color: #ec4899;
+}
+
 .division-page > h2 {
   margin: 0 0 1.15rem;
   color: #fff;
