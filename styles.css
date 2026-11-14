@@ -3323,3 +3323,191 @@ input.is-profile {
 .hero-actions [hidden] {
   display: none !important;
 }
+
+.bracket {
+  display: flex;
+  align-items: stretch;
+  min-height: 540px;
+}
+
+.bracket-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.round-label {
+  margin-bottom: 0.45rem;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.bracket-games {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 1.4rem;
+  padding: 0.2rem 0 0.4rem;
+}
+
+.game {
+  background-color: #121212;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(115deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(25deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 14px),
+    linear-gradient(180deg, #1c1c1c 0%, #101010 100%);
+  background-size: 180px 180px, auto, auto, auto;
+  background-blend-mode: overlay, normal, normal, normal;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.game-team {
+  display: grid;
+  grid-template-columns: 1.15rem 22px 1fr auto;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.2rem;
+  padding: 0.32rem 0.55rem;
+  color: #eee;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.game-team + .game-team {
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.game-team:not(:has(.seed)) {
+  grid-template-columns: 22px 1fr auto;
+}
+
+.game-team b {
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 700;
+}
+
+.seed {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.blank-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.slot-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bracket-fork,
+.bracket-link {
+  position: relative;
+  width: 28px;
+  flex: 0 0 28px;
+  margin-top: 1.5rem;
+}
+
+.bracket-fork::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 16%;
+  bottom: 16%;
+  width: 14px;
+  border-top: 2px solid #c084fc;
+  border-right: 2px solid #ec4899;
+  border-bottom: 2px solid #7c3aed;
+  border-radius: 0 12px 12px 0;
+}
+
+.bracket-fork::after,
+.bracket-link::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  height: 2px;
+  background: #ec4899;
+}
+
+.bracket-fork::after {
+  left: 14px;
+  width: 14px;
+}
+
+.bracket-fork.flip::before {
+  left: auto;
+  right: 0;
+  border-right: 0;
+  border-left: 2px solid #ec4899;
+  border-radius: 12px 0 0 12px;
+}
+
+.bracket-fork.flip::after {
+  left: auto;
+  right: 14px;
+}
+
+.bracket-link::before {
+  left: 0;
+  right: 0;
+}
+
+.bracket-link.flip::before {
+  background: #c084fc;
+}
+
+.final-game {
+  box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.35), 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.champion-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  border-top: 2px solid #ec4899;
+  background: #09090b;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.champion-row strong {
+  color: #fff;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  animation: titlePulse 3.6s ease-in-out infinite;
+}
+
+@media (max-width: 980px) {
+  .bracket {
+    flex-direction: column;
+    min-height: 0;
+    gap: 0.85rem;
+  }
+
+  .bracket-fork,
+  .bracket-link {
+    display: none;
+  }
+}
