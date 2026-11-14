@@ -1104,15 +1104,41 @@ h2 {
 
 .sched-when {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.6rem;
   margin: 0 0 0.5rem;
   padding-bottom: 0.4rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   color: #fff;
   font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sched-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+}
+
+.sched-edit svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.sched-edit:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .sched-side {
