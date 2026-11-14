@@ -92,6 +92,7 @@ function saveWeekSession(user) {
     avatar: user.avatar || "",
     roblox: user.roblox || "",
     build: user.build || "",
+    robloxId: user.robloxId ? String(user.robloxId) : "",
     notPlayer: !!user.notPlayer,
     serverChecked: true,
     createdAt: Number(user.createdAt) || Number(user.connectedAt) || Date.now(),
@@ -117,6 +118,7 @@ function writeUserCookie(user) {
     avatar: user.avatar || "",
     roblox: user.roblox || "",
     build: user.build || "",
+    robloxId: user.robloxId ? String(user.robloxId) : "",
     notPlayer: !!user.notPlayer,
     serverChecked: true,
     createdAt: Number(user.createdAt) || Number(user.connectedAt) || Date.now(),
@@ -141,6 +143,7 @@ function publishSignin(user) {
       avatar: user.avatar || "",
       roblox: user.roblox || "",
       build: user.build || "",
+      robloxId: user.robloxId ? String(user.robloxId) : "",
       notPlayer: !!user.notPlayer,
       createdAt: Number(user.createdAt) || Number(user.connectedAt) || Date.now(),
       connectedAt: Number(user.connectedAt) || Date.now()
@@ -163,6 +166,7 @@ function rememberLocalSignin(user) {
     avatar: user.avatar || "",
     roblox: user.roblox || "",
     build: user.build || "",
+    robloxId: user.robloxId ? String(user.robloxId) : "",
     notPlayer: !!user.notPlayer,
     status: user.status || "Free Agent",
     createdAt: Number(user.createdAt) || Number(user.connectedAt) || Date.now(),
@@ -215,6 +219,7 @@ if (loginBtn) {
   if (returning && loginModal) loginModal.hidden = false;
   let chosenBuild = "";
   let robloxReady = false;
+  let loginRobloxId = "";
   let connectedDiscord = null;
 
   function setLoginStatus(el, message, ok) {
@@ -450,6 +455,7 @@ if (loginBtn) {
   async function checkLoginRoblox() {
     const username = loginRoblox.value.trim();
     robloxReady = false;
+    loginRobloxId = "";
     refreshLoginContinue();
     const nameStatus = document.getElementById("login-name-status");
     const uniqueStatus = document.getElementById("login-unique-status");
@@ -468,6 +474,8 @@ if (loginBtn) {
       });
       const data = await res.json();
       if (data && data.roblox) {
+        loginRobloxId = String(data.roblox.id || "");
+        if (data.roblox.name) loginRoblox.value = data.roblox.name;
         setLoginStatus(nameStatus, "Roblox account found: " + data.roblox.name, true);
         setLoginStatus(uniqueStatus, "Unique account: " + (data.unique ? "Yes" : "No"), !!data.unique);
         robloxReady = !!(data.ok && data.unique);
@@ -513,6 +521,7 @@ if (loginBtn) {
   if (loginRoblox) {
     loginRoblox.addEventListener("input", function () {
       robloxReady = false;
+      loginRobloxId = "";
       setLoginStatus(document.getElementById("login-name-status"), "", false);
       setLoginStatus(document.getElementById("login-unique-status"), "", false);
       refreshLoginContinue();
@@ -557,6 +566,7 @@ if (loginBtn) {
       if (!connectedDiscord) return;
       const profile = {
         roblox: skipped ? "" : roblox,
+        robloxId: skipped ? "" : loginRobloxId,
         build: skipped ? "" : chosenBuild,
         notPlayer: !!skipped
       };
@@ -823,6 +833,24 @@ fillMoistbagleAvatar();
 refreshDiscordAvatars();
 markNav();
 setupProfile();
+syncRobloxNames();
+
+function syncRobloxNames() {
+  const user = readDiscordUser();
+  if (!user || !user.id || user.notPlayer) return;
+  fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+    const found = (data.players || []).find(function (player) { return String(player.id) === String(user.id); });
+    if (!found || !found.roblox) return;
+    const sameName = found.roblox === user.roblox;
+    const sameId = String(found.robloxId || "") === String(user.robloxId || "");
+    if (sameName && (sameId || !found.robloxId)) return;
+    const next = Object.assign({}, user, { roblox: found.roblox, robloxId: found.robloxId || user.robloxId || "" });
+    saveWeekSession(next);
+    rememberLocalSignin(next);
+    const input = document.getElementById("profile-roblox");
+    if (input && input.value.trim().toLowerCase() === String(user.roblox || "").toLowerCase()) input.value = next.roblox;
+  }).catch(function () {});
+}
 
 function setupProfile() {
   const form = document.getElementById("profile-form");
@@ -857,6 +885,7 @@ function setupProfile() {
   const saveStatus = document.getElementById("profile-save-status");
   let chosenBuild = user.build || "";
   let robloxReady = !!(user.roblox && user.build) || !!user.notPlayer;
+  let profileRobloxId = user.robloxId ? String(user.robloxId) : "";
   const labels = { Guard: "GUARD — PG / SG", Wing: "WING — SG / SF", Forward: "FORWARD — SF / PF", Big: "BIG — C / PF" };
 
   if (roblox && user.roblox) roblox.value = user.roblox;
@@ -905,6 +934,8 @@ function setupProfile() {
       });
       const data = await res.json();
       if (data && data.roblox) {
+        profileRobloxId = String(data.roblox.id || "");
+        if (data.roblox.name) roblox.value = data.roblox.name;
         setStatus(document.getElementById("profile-name-status"), "Roblox account found: " + data.roblox.name, true);
         setStatus(document.getElementById("profile-unique-status"), "Unique account: " + (data.unique ? "Yes" : "No"), !!data.unique);
         robloxReady = !!(data.ok && data.unique);
@@ -920,6 +951,7 @@ function setupProfile() {
 
   roblox.addEventListener("input", function () {
     robloxReady = false;
+    if (roblox.value.trim().toLowerCase() !== String(user.roblox || "").toLowerCase()) profileRobloxId = "";
     setStatus(document.getElementById("profile-name-status"), "", false);
     setStatus(document.getElementById("profile-unique-status"), "", false);
     refreshSave();
@@ -950,6 +982,7 @@ function setupProfile() {
     if (!skipped && (!robloxReady || !chosenBuild)) return;
     const next = Object.assign({}, user, {
       roblox: skipped ? "" : roblox.value.trim(),
+      robloxId: skipped ? "" : profileRobloxId,
       build: skipped ? "" : chosenBuild,
       notPlayer: skipped,
       serverChecked: true,
@@ -968,6 +1001,7 @@ function setupProfile() {
         name: next.name || next.username,
         avatar: next.avatar || "",
         roblox: next.roblox,
+        robloxId: next.robloxId || "",
         build: next.build,
         notPlayer: next.notPlayer,
         createdAt: next.createdAt,

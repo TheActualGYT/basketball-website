@@ -9,6 +9,7 @@ function clean(player) {
     name: player.name || player.username || "",
     avatar: player.avatar || "",
     roblox: player.roblox || "",
+    robloxId: player.robloxId ? String(player.robloxId) : "",
     build: player.build || "",
     notPlayer: !!player.notPlayer,
     status: player.status || "Free Agent",
@@ -52,6 +53,58 @@ async function readInbox() {
   return players;
 }
 
+async function refreshRoblox(players) {
+  const active = players.filter(function (player) { return player.roblox && !player.notPlayer; });
+  if (!active.length) return players;
+  const missing = active.filter(function (player) { return !player.robloxId; });
+  if (missing.length) {
+    const lookup = await callJson("https://users.roblox.com/v1/usernames/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usernames: missing.map(function (player) { return player.roblox; }), excludeBannedUsers: false })
+    });
+    const rows = lookup.data && Array.isArray(lookup.data.data) ? lookup.data.data : [];
+    missing.forEach(function (player) {
+      const found = rows.find(function (user) {
+        return String(user.requestedUsername || user.name || "").toLowerCase() === player.roblox.toLowerCase();
+      });
+      if (!found || !found.id) return;
+      player.robloxId = String(found.id);
+      if (found.name) player.roblox = found.name;
+      player._robloxChanged = true;
+    });
+  }
+  const ids = active.map(function (player) { return Number(player.robloxId); }).filter(function (id) { return id; });
+  if (ids.length) {
+    const found = await callJson("https://users.roblox.com/v1/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userIds: ids, excludeBannedUsers: false })
+    });
+    const rows = found.data && Array.isArray(found.data.data) ? found.data.data : [];
+    const names = {};
+    rows.forEach(function (user) { names[String(user.id)] = user.name; });
+    active.forEach(function (player) {
+      const name = names[String(player.robloxId)];
+      if (!name || name === player.roblox) return;
+      player.roblox = name;
+      player._robloxChanged = true;
+    });
+  }
+  const changed = active.filter(function (player) { return player._robloxChanged; });
+  await Promise.all(changed.map(function (player) {
+    const next = Object.assign({}, player);
+    delete next._robloxChanged;
+    return callJson(WEBHOOK, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(next)
+    });
+  }));
+  players.forEach(function (player) { delete player._robloxChanged; });
+  return players;
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -63,7 +116,8 @@ export default async function handler(req, res) {
 
   if (req.method === "GET") {
     try {
-      const players = await readInbox();
+      let players = await readInbox();
+      try { players = await refreshRoblox(players); } catch (err) {}
       res.status(200).json({ players: players });
     } catch (err) {
       res.status(200).json({ players: [] });
