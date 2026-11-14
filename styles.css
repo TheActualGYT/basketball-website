@@ -788,7 +788,7 @@ h2 {
 }
 
 .division-page > h2 {
-  margin: 0 0 0.95rem;
+  margin: 0 0 1.15rem;
   color: #fff;
   background: none;
   -webkit-text-fill-color: #fff;
@@ -799,49 +799,98 @@ h2 {
   animation: titlePulse 3.6s ease-in-out infinite;
 }
 
-.division-panel {
-  padding: 0.4rem 0.2rem;
+.division-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.7rem;
 }
 
-.division-board h3 {
-  font-size: 1rem;
-  margin-bottom: 0.55rem;
+.division-block h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 0.5rem;
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-align: left;
+  animation: titlePulse 3.6s ease-in-out infinite;
 }
 
-.division-board h3 img {
+.division-block h3 img {
   width: 34px;
   height: 34px;
+  object-fit: contain;
 }
 
-.division-board .conf-table th,
-.division-board .conf-table td {
-  padding: 0.58rem 0.4rem;
-  font-size: 0.92rem;
+.division-panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.division-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.division-table th,
+.division-table td {
+  padding: 0.62rem 0.35rem;
+  text-align: center;
+  color: #eee;
+  font-size: 0.86rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
   border-right: 1px solid rgba(255, 255, 255, 0.14);
+  font-variant-numeric: tabular-nums;
 }
 
-.division-board .conf-table th:last-child,
-.division-board .conf-table td:last-child {
+.division-table th:last-child,
+.division-table td:last-child {
   border-right: 0;
 }
 
-.division-board .conf-table tr:last-child td {
+.division-table tr:last-child td {
   border-bottom: 0;
 }
 
-.division-board .conf-table th {
+.division-table th {
+  color: #fff;
   font-size: 0.72rem;
-  letter-spacing: 0.06em;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: #09090b;
 }
 
-.division-board .team-logo {
-  width: 28px;
-  height: 28px;
+.division-table th:nth-child(2),
+.division-table td:nth-child(2) {
+  text-align: left;
 }
 
-.division-board .conf-table tbody tr:hover td {
+.division-table tbody tr:hover td {
   background: rgba(255, 255, 255, 0.045);
+}
+
+.division-table .team-logo {
+  width: 26px;
+  height: 26px;
+}
+
+.stat-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+}
+
+.stat-head small {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .news-list {
