@@ -788,9 +788,23 @@ h2 {
 }
 
 .power-top {
-  display: flex;
-  justify-content: flex-start;
-  margin: 0 0 0.35rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  margin: 0 0 1.15rem;
+}
+
+.power-top h2 {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  margin: 0;
+}
+
+.power-top .week-select {
+  grid-column: 1;
+  grid-row: 1;
+  z-index: 1;
+  justify-self: start;
 }
 
 .week-select select {
@@ -819,7 +833,7 @@ h2 {
   border-color: #ec4899;
 }
 
-.division-page > h2 {
+.division-page h2 {
   margin: 0 0 1.15rem;
   color: #fff;
   background: none;
@@ -829,6 +843,10 @@ h2 {
   text-align: center;
   text-transform: uppercase;
   animation: titlePulse 3.6s ease-in-out infinite;
+}
+
+.division-page .power-top h2 {
+  margin: 0;
 }
 
 .division-list {
@@ -1016,6 +1034,8 @@ h2 {
   height: 26px;
 }
 
+.division-table:not(.power-table) th:first-child,
+.division-table:not(.power-table) td:first-child,
 .power-table th:nth-child(1),
 .power-table td:nth-child(1),
 .power-table th:last-child,
