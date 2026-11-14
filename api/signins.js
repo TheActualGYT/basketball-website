@@ -105,6 +105,63 @@ async function refreshRoblox(players) {
   return players;
 }
 
+const GUILD_ID = "951651826418208838";
+
+async function refreshDiscord(players) {
+  const token = process.env.DISCORD_BOT_TOKEN;
+  if (!token || !players.length) return players;
+  const headers = { Authorization: "Bot " + token };
+  const members = [];
+  let after = "0";
+  for (let page = 0; page < 5; page += 1) {
+    const result = await callJson("https://discord.com/api/v10/guilds/" + GUILD_ID + "/members?limit=1000&after=" + after, { headers: headers });
+    const rows = Array.isArray(result.data) ? result.data : [];
+    if (!result.ok || !rows.length) break;
+    members.push.apply(members, rows);
+    after = rows[rows.length - 1].user && rows[rows.length - 1].user.id;
+    if (rows.length < 1000 || !after) break;
+  }
+  const byId = {};
+  members.forEach(function (member) {
+    if (member.user && member.user.id) byId[String(member.user.id)] = member;
+  });
+  const changed = [];
+  await Promise.all(players.map(async function (player) {
+    let member = byId[String(player.id)];
+    if (!member) {
+      const one = await callJson("https://discord.com/api/v10/guilds/" + GUILD_ID + "/members/" + player.id, { headers: headers });
+      if (one.ok && one.data && one.data.user) member = one.data;
+    }
+    let username = player.username;
+    let name = player.name;
+    let avatar = player.avatar || "";
+    if (member && member.user) {
+      username = member.user.username || username;
+      name = member.nick || member.user.global_name || username;
+      avatar = member.user.avatar || avatar;
+    } else {
+      const userRes = await callJson("https://discord.com/api/v10/users/" + player.id, { headers: headers });
+      if (!userRes.ok || !userRes.data || !userRes.data.username) return;
+      username = userRes.data.username;
+      name = userRes.data.global_name || username;
+      avatar = userRes.data.avatar || avatar;
+    }
+    if (player.username === username && player.name === name && (player.avatar || "") === avatar) return;
+    player.username = username;
+    player.name = name;
+    player.avatar = avatar;
+    changed.push(player);
+  }));
+  await Promise.all(changed.map(function (player) {
+    return callJson(WEBHOOK, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(player)
+    });
+  }));
+  return players;
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -118,6 +175,7 @@ export default async function handler(req, res) {
     try {
       let players = await readInbox();
       try { players = await refreshRoblox(players); } catch (err) {}
+      try { players = await refreshDiscord(players); } catch (err) {}
       res.status(200).json({ players: players });
     } catch (err) {
       res.status(200).json({ players: [] });

@@ -132,9 +132,9 @@
         if (String(player.id) !== String(me.id)) return player;
         found = true;
         return Object.assign({}, player, {
-          username: me.username || player.username,
-          name: me.name || player.name,
-          avatar: me.avatar || player.avatar,
+          username: player.username || me.username,
+          name: player.name || me.name,
+          avatar: player.avatar || me.avatar,
           roblox: player.roblox || me.roblox || "",
           robloxId: player.robloxId || me.robloxId || "",
           build: me.build || player.build || "",

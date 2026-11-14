@@ -837,18 +837,30 @@ syncRobloxNames();
 
 function syncRobloxNames() {
   const user = readDiscordUser();
-  if (!user || !user.id || user.notPlayer) return;
+  if (!user || !user.id) return;
   fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
     const found = (data.players || []).find(function (player) { return String(player.id) === String(user.id); });
-    if (!found || !found.roblox) return;
-    const sameName = found.roblox === user.roblox;
-    const sameId = String(found.robloxId || "") === String(user.robloxId || "");
-    if (sameName && (sameId || !found.robloxId)) return;
-    const next = Object.assign({}, user, { roblox: found.roblox, robloxId: found.robloxId || user.robloxId || "" });
+    if (!found) return;
+    const next = Object.assign({}, user, {
+      username: found.username || user.username,
+      name: found.name || user.name,
+      avatar: found.avatar || user.avatar,
+      roblox: found.roblox || user.roblox,
+      robloxId: found.robloxId || user.robloxId || ""
+    });
+    const same = next.username === user.username && next.name === user.name && (next.avatar || "") === (user.avatar || "") && next.roblox === (user.roblox || "") && String(next.robloxId || "") === String(user.robloxId || "");
+    if (same) return;
     saveWeekSession(next);
     rememberLocalSignin(next);
+    showNavUser();
     const input = document.getElementById("profile-roblox");
-    if (input && input.value.trim().toLowerCase() === String(user.roblox || "").toLowerCase()) input.value = next.roblox;
+    if (input && user.roblox && input.value.trim().toLowerCase() === String(user.roblox).toLowerCase()) input.value = next.roblox;
+    const discordName = document.querySelector("#profile-discord b");
+    const discordTag = document.querySelector("#profile-discord small");
+    const discordImg = document.querySelector("#profile-discord img");
+    if (discordName) discordName.textContent = next.name || next.username;
+    if (discordTag) discordTag.textContent = "@" + (next.username || "");
+    if (discordImg) discordImg.src = discordAvatarUrl(next);
   }).catch(function () {});
 }
 
