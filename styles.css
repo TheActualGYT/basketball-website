@@ -805,23 +805,53 @@ h2 {
   gap: 1.7rem;
 }
 
-.division-block h3 {
+.division-banner {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  background: #0c0c0c;
+}
+
+.division-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("logo-strip.png");
+  background-repeat: repeat;
+  background-size: 460px 276px;
+  animation: logoDrift 28s linear infinite;
+  pointer-events: none;
+}
+
+.division-banner h3 {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  margin: 0 0 0.5rem;
+  margin: 0;
+  padding: 0.75rem 0.95rem;
   color: #fff;
   font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-align: left;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
   animation: titlePulse 3.6s ease-in-out infinite;
 }
 
-.division-block h3 img {
+.division-banner h3 img {
   width: 34px;
   height: 34px;
   object-fit: contain;
+}
+
+.division-table thead th:first-child,
+.division-table thead th:last-child {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .division-block {
@@ -878,14 +908,6 @@ h2 {
 
 .division-table thead th.is-asc .col-tip::after { content: "↑"; }
 .division-table thead th.is-desc .col-tip::after { content: "↓"; }
-
-.division-table thead th:first-child {
-  border-top-left-radius: 15px;
-}
-
-.division-table thead th:last-child {
-  border-top-right-radius: 15px;
-}
 
 .division-table tbody tr:last-child td:first-child {
   border-bottom-left-radius: 15px;
