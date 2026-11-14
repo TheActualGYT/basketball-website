@@ -263,12 +263,12 @@ nav a:hover {
   top: calc(100% + 0.55rem);
   left: 50%;
   transform: translateX(-50%);
-  min-width: 11.5rem;
+  min-width: 12.4rem;
   padding: 0.4rem;
-  background: #101010;
-  border: 1px solid #3a3a3a;
-  border-radius: 12px;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 14px;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(236, 72, 153, 0.75);
   z-index: 50;
   opacity: 1;
 }
@@ -289,16 +289,18 @@ nav a:hover {
 }
 
 .nav-menu a {
-  padding: 0.48rem 0.75rem;
-  border-radius: 8px;
+  padding: 0.58rem 0.85rem;
+  border-radius: 9px;
   white-space: nowrap;
+  font-weight: 600;
 }
 
 .nav-menu a:hover,
 .nav-menu a.active,
 .nav-menu button:hover {
-  background: #242424;
+  background: #241824;
   color: #fff;
+  box-shadow: inset 2px 0 0 #ec4899;
 }
 
 .nav-menu button {
@@ -534,15 +536,13 @@ h2 {
 }
 
 .players-table .col-num { width: 3.4rem; }
-.players-table .col-discord { width: 28%; }
-.players-table .col-roblox { width: 20%; }
 .players-table .col-even { width: 15%; }
 
 .players-table th,
 .players-table td {
   padding: 0.72rem 0.7rem;
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
   border-right: 1px solid rgba(255, 255, 255, 0.14);
   color: #eee;
   font-size: 0.86rem;
