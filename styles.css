@@ -1136,9 +1136,67 @@ h2 {
   height: 0.95rem;
 }
 
-.sched-edit:hover {
+.sched-game.is-editing .sched-stamp,
+.sched-game.is-editing .sched-team {
+  display: none;
+}
+
+.sched-fields,
+.sched-team-input {
+  display: none;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 6px;
+  background: #0c0c0c;
   color: #fff;
-  background: rgba(255, 255, 255, 0.1);
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  padding: 0.22rem 0.35rem;
+}
+
+.sched-game.is-editing .sched-fields,
+.sched-game.is-editing .sched-team-input {
+  display: block;
+}
+
+.sched-fields {
+  display: none;
+  flex: 1;
+}
+
+.sched-game.is-editing .sched-fields {
+  display: flex;
+  gap: 0.35rem;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.sched-fields input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 6px;
+  background: #0c0c0c;
+  color: #fff;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.22rem 0.35rem;
+}
+
+.sched-team-input {
+  flex: 1;
+}
+
+.sched-game.is-editing .sched-edit {
+  width: auto;
+  padding: 0 0.4rem;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
 }
 
 .sched-side {
@@ -1151,7 +1209,7 @@ h2 {
   font-weight: 600;
 }
 
-.sched-side.home span:last-child::before {
+.sched-side.home .sched-team::before {
   content: "@ ";
 }
 
