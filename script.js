@@ -94,6 +94,7 @@ function saveWeekSession(user) {
     build: user.build || "",
     notPlayer: !!user.notPlayer,
     serverChecked: true,
+    createdAt: Number(user.createdAt) || Number(user.connectedAt) || Date.now(),
     connectedAt: Number(user.connectedAt) || Date.now()
   };
   localStorage.setItem("jba-session", JSON.stringify(session));
@@ -118,6 +119,7 @@ function writeUserCookie(user) {
     build: user.build || "",
     notPlayer: !!user.notPlayer,
     serverChecked: true,
+    createdAt: Number(user.createdAt) || Number(user.connectedAt) || Date.now(),
     connectedAt: Number(user.connectedAt) || Date.now()
   }))));
   document.cookie = "jba_user=" + encodeURIComponent(payload) + "; Path=/; Max-Age=604800; SameSite=Lax";
@@ -140,6 +142,7 @@ function publishSignin(user) {
       roblox: user.roblox || "",
       build: user.build || "",
       notPlayer: !!user.notPlayer,
+      createdAt: Number(user.createdAt) || Number(user.connectedAt) || Date.now(),
       connectedAt: Number(user.connectedAt) || Date.now()
     })
   }).then(function (res) {
@@ -161,7 +164,8 @@ function rememberLocalSignin(user) {
     roblox: user.roblox || "",
     build: user.build || "",
     notPlayer: !!user.notPlayer,
-    status: "Free Agent",
+    status: user.status || "Free Agent",
+    createdAt: Number(user.createdAt) || Number(user.connectedAt) || Date.now(),
     connectedAt: Number(user.connectedAt) || Date.now()
   };
   list = list.filter(function (player) { return String(player.id) !== record.id; });
@@ -949,14 +953,10 @@ function setupProfile() {
       build: skipped ? "" : chosenBuild,
       notPlayer: skipped,
       serverChecked: true,
+      createdAt: user.createdAt || user.connectedAt || Date.now(),
       connectedAt: user.connectedAt || Date.now()
     });
-    localStorage.setItem("jba-discord", JSON.stringify(next));
-    localStorage.setItem("jba-login-profile", JSON.stringify({
-      roblox: next.roblox,
-      build: next.build,
-      notPlayer: next.notPlayer
-    }));
+    saveWeekSession(next);
     rememberLocalSignin(next);
     setStatus(saveStatus, "Saving…", true);
     fetch("/api/signins", {
@@ -970,6 +970,7 @@ function setupProfile() {
         roblox: next.roblox,
         build: next.build,
         notPlayer: next.notPlayer,
+        createdAt: next.createdAt,
         connectedAt: next.connectedAt
       })
     }).then(function (res) {
@@ -1002,9 +1003,13 @@ function setupProfile() {
   }).then(function (data) {
     const found = (data.players || []).find(function (player) { return String(player.id) === String(saved.id); });
     if (!found || !profileComplete(found)) return;
-    const next = saveWeekSession(Object.assign({}, saved, found, {
+    const next = saveWeekSession(Object.assign({}, found, saved, {
+      roblox: saved.roblox || found.roblox || "",
+      build: saved.build || found.build || "",
+      notPlayer: saved.notPlayer || found.notPlayer,
+      createdAt: saved.createdAt || found.createdAt || saved.connectedAt || found.connectedAt,
       serverChecked: true,
-      connectedAt: Date.now()
+      connectedAt: saved.connectedAt || found.connectedAt || Date.now()
     }));
     if (!next) return;
     if (start) location.replace("home.html");

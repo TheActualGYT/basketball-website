@@ -104,9 +104,41 @@
     }
     function splitBuild(build) {
       var text = String(build || "").trim();
+      var names = { guard: "GUARD", forward: "FORWARD", big: "BIG" };
       if (!text) return "—";
+      if (names[text.toLowerCase()]) return names[text.toLowerCase()];
       var parts = text.split(/\s+[—-]\s+/);
-      return (parts[0] || text).toUpperCase();
+      return (names[(parts[0] || "").toLowerCase()] || parts[0] || text).toUpperCase();
+    }
+    function liveAccount() {
+      var keys = ["jba-session", "jba-discord"];
+      var i, saved;
+      for (i = 0; i < keys.length; i += 1) {
+        try { saved = JSON.parse(localStorage.getItem(keys[i]) || "null"); } catch (err) { saved = null; }
+        if (saved && saved.id && (saved.roblox || saved.build || saved.notPlayer)) return saved;
+      }
+      return null;
+    }
+    function withLiveAccount(list) {
+      var me = liveAccount();
+      if (!me) return list;
+      var found = false;
+      list = list.map(function (player) {
+        if (String(player.id) !== String(me.id)) return player;
+        found = true;
+        return Object.assign({}, player, {
+          username: me.username || player.username,
+          name: me.name || player.name,
+          avatar: me.avatar || player.avatar,
+          roblox: me.roblox || player.roblox || "",
+          build: me.build || player.build || "",
+          notPlayer: !!me.notPlayer,
+          createdAt: me.createdAt || player.createdAt || me.connectedAt || player.connectedAt,
+          connectedAt: me.connectedAt || player.connectedAt
+        });
+      });
+      if (!found) list.push(Object.assign({ status: "Free Agent" }, me));
+      return list;
     }
     var TEAMS = [
       ["Arizona Wildcats", "arizona.png"],
@@ -176,7 +208,7 @@
     function paint(players) {
       var body = document.getElementById("players-body");
       body.textContent = "";
-      players = ordered(players.filter(function (player) { return !player.notPlayer; }));
+      players = ordered(withLiveAccount(players).filter(function (player) { return !player.notPlayer; }));
       markSort();
       players.forEach(function (player, index) {
         var row = document.createElement("tr");
