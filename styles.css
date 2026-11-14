@@ -3347,7 +3347,7 @@ input.is-profile {
 
 .game {
   align-self: center;
-  width: 196px;
+  width: max-content;
   max-width: 100%;
   margin: 0;
   background-color: #121212;
@@ -3369,11 +3369,11 @@ input.is-profile {
 
 .game-team {
   display: grid;
-  grid-template-columns: 0.9rem 16px minmax(0, 1fr);
+  grid-template-columns: auto 16px auto;
   align-items: center;
-  gap: 0.35rem;
-  min-height: 1.65rem;
-  padding: 0.16rem 0.45rem;
+  gap: 0.28rem;
+  min-height: 0;
+  padding: 0.1rem 0.28rem;
   color: #f4f4f4;
   font-size: 0.74rem;
   font-weight: 600;
@@ -3384,8 +3384,8 @@ input.is-profile {
 }
 
 .game-team:not(:has(.seed)) {
-  grid-template-columns: 16px minmax(0, 1fr);
-  padding-left: 0.45rem;
+  grid-template-columns: 16px auto;
+  padding-left: 0.28rem;
 }
 
 .game-team b {
@@ -3411,10 +3411,8 @@ input.is-profile {
 }
 
 .slot-name {
-  overflow: hidden;
   color: rgba(255, 255, 255, 0.82);
   letter-spacing: 0.02em;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -3489,13 +3487,13 @@ input.is-profile {
 
 .final-game {
   justify-self: center;
-  width: 210px;
+  width: max-content;
   border-color: rgba(236, 72, 153, 0.85);
   box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.25), 0 10px 24px rgba(0, 0, 0, 0.35);
 }
 
 .champ-label {
-  padding: 0.28rem 0.45rem 0.1rem;
+  padding: 0.16rem 0.28rem 0;
   color: #f9a8d4;
   font-size: 0.62rem;
   font-weight: 800;
