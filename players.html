@@ -105,9 +105,10 @@
     function splitBuild(build) {
       var text = String(build || "").trim();
       var formats = {
-        guard: ["Guard", "[PG/SG]"],
-        forward: ["Forward", "[SF/PF]"],
-        big: ["Big", "[C/PF]"]
+        guard: ["GUARD", "[PG/SG]"],
+        wing: ["WING", "[SG/SF]"],
+        forward: ["FORWARD", "[SF/PF]"],
+        big: ["BIG", "[C/PF]"]
       };
       if (!text) return { name: "—", positions: "" };
       var key = text.toLowerCase().split(/\s|[—\-[]/)[0];

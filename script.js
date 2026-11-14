@@ -857,7 +857,7 @@ function setupProfile() {
   const saveStatus = document.getElementById("profile-save-status");
   let chosenBuild = user.build || "";
   let robloxReady = !!(user.roblox && user.build) || !!user.notPlayer;
-  const labels = { Guard: "GUARD — PG / SG", Forward: "FORWARD — SF / PF", Big: "BIG — C / PF" };
+  const labels = { Guard: "GUARD — PG / SG", Wing: "WING — SG / SF", Forward: "FORWARD — SF / PF", Big: "BIG — C / PF" };
 
   if (roblox && user.roblox) roblox.value = user.roblox;
   if (chosenBuild && buildButton) {
