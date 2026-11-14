@@ -1213,7 +1213,7 @@ h2 {
 
 .sched-side.home .sched-team::after {
   content: "(HOME)";
-  margin-left: 0.55rem;
+  margin-left: 0.32rem;
   color: rgba(255, 255, 255, 0.45);
   font-size: 0.62rem;
   font-weight: 700;
