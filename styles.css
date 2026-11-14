@@ -3326,52 +3326,70 @@ input.is-profile {
 
 
 
+
 .bracket {
-  display: grid;
-  grid-template-columns: 220px 40px 220px 40px 220px;
-  grid-template-rows: auto repeat(8, 42px);
+  display: flex;
   justify-content: center;
-  width: max-content;
-  max-width: 100%;
-  margin: 0 auto;
+  align-items: flex-start;
 }
 
 .round-label {
-  grid-row: 1;
-  margin: 0 0 0.7rem;
+  height: 24px;
+  margin: 0 0 12px;
   color: #fff;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
+  line-height: 24px;
   text-align: center;
   text-transform: uppercase;
 }
 
-.game {
-  align-self: center;
-  width: 220px;
-  background-color: #121212;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
-    repeating-linear-gradient(115deg, rgba(255,255,255,0.045) 0 1px, transparent 1px 8px),
-    repeating-linear-gradient(25deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 14px),
-    linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
-  background-size: 180px 180px, auto, auto, auto;
-  background-blend-mode: overlay, normal, normal, normal;
-  border: 1px solid rgba(255, 255, 255, 0.42);
-  border-radius: 10px;
+.stack,
+.links {
+  height: 480px;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  width: 36px;
+  margin-top: 36px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 210px;
+}
+
+.match {
+  box-sizing: border-box;
+  height: 58px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+  background-color: #101010;
+  background-image:
+    repeating-linear-gradient(115deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 7px),
+    linear-gradient(180deg, #1b1b1b, #0e0e0e);
+}
+
+.match.is-final {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.35);
 }
 
 .game-team {
-  display: grid;
-  grid-template-columns: 1rem 18px minmax(0, 1fr);
+  box-sizing: border-box;
+  display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.32rem 0.55rem;
-  color: #f3f3f3;
-  font-size: 0.8rem;
+  gap: 8px;
+  height: 28px;
+  padding: 0 8px;
+  color: #f2f2f2;
+  font-size: 0.78rem;
   font-weight: 600;
 }
 
@@ -3379,82 +3397,71 @@ input.is-profile {
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.game-team:not(:has(.seed)) {
-  grid-template-columns: 18px minmax(0, 1fr);
-}
-
 .seed {
-  color: rgba(255, 255, 255, 0.55);
+  width: 12px;
+  flex: 0 0 12px;
+  color: rgba(255, 255, 255, 0.5);
   font-size: 0.68rem;
   font-weight: 700;
   text-align: center;
 }
 
 .blank-logo {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: #070707;
 }
 
 .slot-name {
+  min-width: 0;
   overflow: hidden;
-  color: #eee;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.fork {
+.link {
   position: relative;
-  height: 100%;
+  flex: 1;
 }
 
-.fork i,
-.fork b {
+.link::before {
+  content: "";
   position: absolute;
-  display: block;
-}
-
-.fork i:nth-child(1),
-.fork i:nth-child(2) {
   left: 0;
-  right: 50%;
-  height: 2px;
-  margin-top: -1px;
-  background: #ec4899;
-}
-
-.fork i:nth-child(1) { top: 25%; }
-.fork i:nth-child(2) { top: 75%; background: #a78bfa; }
-
-.fork i:nth-child(3) {
-  left: 50%;
   top: 25%;
   bottom: 25%;
-  width: 2px;
-  margin-left: -1px;
-  background: linear-gradient(180deg, #ec4899, #7c3aed);
+  width: 18px;
+  border-top: 2px solid rgba(255, 255, 255, 0.75);
+  border-right: 2px solid rgba(255, 255, 255, 0.75);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.75);
+  border-radius: 0 8px 8px 0;
 }
 
-.fork b {
-  left: 50%;
+.link::after {
+  content: "";
+  position: absolute;
+  left: 18px;
   right: 0;
   top: 50%;
   height: 2px;
   margin-top: -1px;
-  background: #ec4899;
+  background: rgba(255, 255, 255, 0.75);
 }
 
-@media (max-width: 800px) {
+@media (max-width: 760px) {
   .bracket {
-    display: flex;
     flex-direction: column;
-    width: 100%;
-    gap: 0.7rem;
+    align-items: center;
+    gap: 16px;
   }
 
-  .fork { display: none; }
+  .links { display: none; }
 
-  .game { width: 100%; }
+  .stack {
+    height: auto;
+    gap: 12px;
+  }
 }
