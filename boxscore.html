@@ -422,6 +422,14 @@
             tr.appendChild(who);
             COLS.forEach(function (col) {
               var td = document.createElement("td");
+              if (!player) {
+                var blank = document.createElement("span");
+                blank.className = "gs-blank";
+                blank.textContent = "—";
+                td.appendChild(blank);
+                tr.appendChild(td);
+                return;
+              }
               if (col.calc) {
                 var auto = document.createElement("span");
                 auto.className = "gs-calc";
@@ -465,6 +473,7 @@
         var total = 0;
         var any = false;
         table.querySelectorAll("tbody tr").forEach(function (tr) {
+          if (tr.classList.contains("is-blank") || !tr.querySelector("[data-player]")) return;
           fillCalcs(tr);
           var cell = tr.querySelector('[data-calc="pts"]');
           if (!cell || cell.textContent === "—") return;
@@ -475,31 +484,55 @@
         });
         return any ? total : null;
       }
+      function forfeitOn() {
+        var box = document.getElementById("forfeit-on");
+        return !!(box && box.checked);
+      }
+      function forfeitSide() {
+        var pick = document.getElementById("forfeit-team");
+        return pick && pick.value ? pick.value : "";
+      }
       function paintSubmission() {
         var box = document.getElementById("submission-box");
         if (!box) return;
-        box.innerHTML = [away, home].map(function (name, index) {
-          var side = index === 0 ? "away" : "home";
-          var score = quarterSum(side);
-          var players = sheetPoints(index);
-          var state = "wait";
-          var note = "Enter the score and the shooting stats.";
-          if (score == null) note = "The score at the top is missing.";
-          else if (players == null) note = "Player points are missing.";
-          else if (score === players) {
-            state = "ok";
-            note = "Player points match the score.";
-          } else {
-            state = "bad";
-            note = "Off by " + Math.abs(score - players) + ".";
-          }
-          if (state === "wait" && (score == null || players == null)) state = (score == null && players == null) ? "wait" : "bad";
-          return '<article class="gs-check is-' + state + '">'
-            + '<h4><img src="' + logos[name] + '" alt=""><span>' + name + '</span></h4>'
-            + '<p><b>Score</b><span>' + (score == null ? "—" : score) + '</span></p>'
-            + '<p><b>Players</b><span>' + (players == null ? "—" : players) + '</span></p>'
-            + '<strong>' + note + '</strong></article>';
-        }).join("");
+        if (forfeitOn()) {
+          var loser = forfeitSide();
+          box.innerHTML = [away, home].map(function (name, index) {
+            var side = index === 0 ? "away" : "home";
+            var picked = !!loser;
+            var result = !picked ? "—" : (side === loser ? "Loss" : "Win");
+            var note = picked ? "Win and loss only. No stats are saved." : "Choose the team that forfeited.";
+            return '<article class="gs-check is-' + (picked ? "ok" : "wait") + '">'
+              + '<h4><img src="' + logos[name] + '" alt=""><span>' + name + '</span></h4>'
+              + '<p><b>Result</b><span>' + result + '</span></p>'
+              + '<strong>' + note + '</strong></article>';
+          }).join("");
+        } else {
+          box.innerHTML = [away, home].map(function (name, index) {
+            var side = index === 0 ? "away" : "home";
+            var score = quarterSum(side);
+            var players = sheetPoints(index);
+            var lineup = Object.keys(active[side]).length;
+            var state = "wait";
+            var note = "Enter the score and the shooting stats.";
+            if (!lineup) note = "Move players into the active lineup first.";
+            else if (score == null) note = "The score at the top is missing.";
+            else if (players == null) note = "Player points are missing.";
+            else if (score === players) {
+              state = "ok";
+              note = "Player points match the score.";
+            } else {
+              state = "bad";
+              note = "Off by " + Math.abs(score - players) + ".";
+            }
+            if (state === "wait" && lineup && (score == null || players == null)) state = (score == null && players == null) ? "wait" : "bad";
+            return '<article class="gs-check is-' + state + '">'
+              + '<h4><img src="' + logos[name] + '" alt=""><span>' + name + '</span></h4>'
+              + '<p><b>Score</b><span>' + (score == null ? "—" : score) + '</span></p>'
+              + '<p><b>Players</b><span>' + (players == null ? "—" : players) + '</span></p>'
+              + '<strong>' + note + '</strong></article>';
+          }).join("");
+        }
         var button = document.getElementById("submit-box");
         var ready = readyToSubmit();
         if (button) {
@@ -541,8 +574,14 @@
       function submitReasons() {
         var reasons = [];
         if (!form.date || !String(form.date.value).trim()) reasons.push("Date is required.");
+        if (forfeitOn()) {
+          if (!forfeitSide()) reasons.push("Choose the team that forfeited.");
+          if (!reasons.length && submitted && locked) reasons.push("This box score is already submitted. Change it if you need to update it.");
+          return reasons;
+        }
         ["away", "home"].forEach(function (side, index) {
           var name = side === "away" ? away : home;
+          if (!Object.keys(active[side]).length) reasons.push("Move " + name + " players into the active lineup before stats can count.");
           ["h1", "h2"].forEach(function (q) {
             var input = form.querySelector('[data-side="' + side + '"][data-q="' + q + '"]');
             if (!input || String(input.value).trim() === "" || num(input.value) == null) reasons.push(name + " " + q.toUpperCase() + " is missing.");
@@ -556,7 +595,11 @@
         return reasons;
       }
       function readyToSubmit() {
-        return !!(form.date && String(form.date.value).trim()) && halvesReady() && scoresMatch();
+        if (!form.date || !String(form.date.value).trim()) return false;
+        if (forfeitOn()) return !!forfeitSide();
+        return halvesReady() && scoresMatch() && ["away", "home"].every(function (side) {
+          return Object.keys(active[side]).length > 0;
+        });
       }
       function submitScore() {
         if (!readyToSubmit()) return;
@@ -604,8 +647,15 @@
         var statsPanel = document.querySelector('[data-panel="stats"]');
         statsPanel.id = "stats";
         statsPanel.className = "gs-panel gs-active";
-        document.querySelector('[data-panel="submission"]').innerHTML = '<section class="gs-card"><h3>Submission</h3><div class="gs-submit-row"><div class="gs-submit" id="submission-box"></div><div class="gs-submit-side"><span class="gs-submit-hover"><button type="button" id="submit-box" disabled>Submit Box Score</button><ul class="gs-submit-why" id="submit-why" hidden></ul></span><p>If the player stats do not match the score because of a disconnect, lost stats, or another issue, contact an owner so they can bypass it.</p></div></div></section>';
+        document.querySelector('[data-panel="submission"]').innerHTML = '<section class="gs-card"><h3>Submission</h3><div class="gs-forfeit"><label class="gs-forfeit-check"><input type="checkbox" id="forfeit-on"> Forfeit</label><label class="gs-forfeit-team">Forfeiting team <select id="forfeit-team" disabled><option value="">Select a team</option><option value="away">' + away + '</option><option value="home">' + home + '</option></select></label><p>A forfeit records a win and a loss only. No team or player stats are saved.</p></div><div class="gs-submit-row"><div class="gs-submit" id="submission-box"></div><div class="gs-submit-side"><span class="gs-submit-hover"><button type="button" id="submit-box" disabled>Submit Box Score</button><ul class="gs-submit-why" id="submit-why" hidden></ul></span><p>If the player stats do not match the score because of a disconnect, lost stats, or another issue, contact an owner so they can bypass it.</p></div></div></section>';
         document.getElementById("submit-box").addEventListener("click", submitScore);
+        document.getElementById("forfeit-on").addEventListener("change", function () {
+          var pick = document.getElementById("forfeit-team");
+          pick.disabled = !this.checked;
+          if (!this.checked) pick.value = "";
+          draftChanged();
+        });
+        document.getElementById("forfeit-team").addEventListener("change", draftChanged);
         form.recap.addEventListener("input", function () {
           document.getElementById("recap-count").textContent = form.recap.value.length + " / 500";
         });
@@ -642,6 +692,15 @@
         });
         paintActive();
         paintStatistics();
+        if (saved.forfeit) {
+          var toggle = document.getElementById("forfeit-on");
+          var pick = document.getElementById("forfeit-team");
+          if (toggle) toggle.checked = true;
+          if (pick) {
+            pick.disabled = false;
+            pick.value = saved.forfeitTeam || "";
+          }
+        }
       }
       function best(rows, stat) {
         var leader = null;
@@ -707,54 +766,66 @@
         if (panel && !panel.hidden) paintSubmission();
       }
       function persist() {
-        document.querySelectorAll(".gs-stat tbody tr").forEach(fillCalcs);
-        rememberStats();
         var numbers = allNumbers();
         var number = numbers[key] || "";
         var numberEl = document.getElementById("game-number");
         if (numberEl) numberEl.textContent = number || "—";
-        var awayScore = quarterSum("away");
-        var homeScore = quarterSum("home");
+        var forfeit = forfeitOn();
+        var loser = forfeitSide();
+        var awayScore = null;
+        var homeScore = null;
         var lines = [];
-        ["away","home"].forEach(function (side) {
-          Object.keys(active[side]).forEach(function (id) {
-            var player = active[side][id];
-            var line = { id: id, name: player.name || player.username || "Unknown" };
-            var src = stats[id] || {};
-            INPUT_KEYS.forEach(function (stat) {
-              var value = src[stat];
-              line[stat] = value === "" || value == null ? null : Number(value);
+        var quarters = { away: {}, home: {} };
+        var leaders = { pts: null, ast: null, reb: null };
+        if (forfeit) {
+          awayScore = loser === "away" ? "L" : "W";
+          homeScore = loser === "home" ? "L" : "W";
+        } else {
+          document.querySelectorAll(".gs-stat tbody tr").forEach(fillCalcs);
+          rememberStats();
+          awayScore = quarterSum("away");
+          homeScore = quarterSum("home");
+          awayScore = awayScore == null ? "" : String(awayScore);
+          homeScore = homeScore == null ? "" : String(homeScore);
+          ["away","home"].forEach(function (side) {
+            ["h1","h2"].forEach(function (q) {
+              quarters[side][q] = form.querySelector('[data-side="' + side + '"][data-q="' + q + '"]').value;
             });
-            if (rowHasEntry(src)) {
+            Object.keys(active[side]).forEach(function (id) {
+              var player = active[side][id];
+              var src = stats[id] || {};
+              if (!rowHasEntry(src)) return;
+              var line = { id: id, name: player.name || player.username || "Unknown" };
+              INPUT_KEYS.forEach(function (stat) {
+                var value = src[stat];
+                line[stat] = value === "" || value == null ? null : Number(value);
+              });
               var calc = derived(src);
               line.pts = Number(calc.pts);
               line.reb = Number(calc.reb);
               line.fg2m = Number(calc.fg2m);
               line.fg2a = Number(calc.fg2a);
               line.gmsc = Number(calc.gmsc);
-            } else line.reb = null;
-            lines.push(line);
+              lines.push(line);
+            });
           });
-        });
-        var quarters = { away: {}, home: {} };
-        ["away","home"].forEach(function (side) {
-          ["h1","h2"].forEach(function (q) {
-            quarters[side][q] = form.querySelector('[data-side="' + side + '"][data-q="' + q + '"]').value;
-          });
-        });
+          leaders = { pts: best(lines, "pts"), ast: best(lines, "ast"), reb: best(lines, "reb") };
+        }
         var store = {};
         try { store = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { store = {}; }
         store[key] = {
           awayScore: awayScore == null ? "" : String(awayScore),
           homeScore: homeScore == null ? "" : String(homeScore),
           quarters: quarters,
+          forfeit: forfeit,
+          forfeitTeam: forfeit ? loser : "",
           meta: {
             date: form.date.value, hour: form.hour.value, minute: form.minute.value,
             number: number, location: cities[home], youtube: form.youtube.value,
             twitch: form.twitch.value, recap: form.recap.value
           },
           lines: lines,
-          leaders: { pts: best(lines, "pts"), ast: best(lines, "ast"), reb: best(lines, "reb") },
+          leaders: leaders,
           submitted: true
         };
         Object.keys(numbers).forEach(function (id) {

@@ -183,10 +183,67 @@
     (function () {
       var saved = {};
       try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { saved = {}; }
+
+      function prettyDate(iso) {
+        var parts = String(iso || "").split("-");
+        if (parts.length !== 3) return "";
+        return Number(parts[1]) + "/" + Number(parts[2]) + "/" + parts[0];
+      }
+      function prettyTime(hour, minute) {
+        if (hour == null || String(hour).trim() === "") return "";
+        var h = parseInt(hour, 10);
+        if (!isFinite(h)) return "";
+        var m = parseInt(minute, 10);
+        if (!isFinite(m)) m = 0;
+        var suffix = h >= 12 ? "PM" : "AM";
+        return (h % 12 || 12) + ":" + (m < 10 ? "0" : "") + m + " " + suffix;
+      }
+      function whenLabel(week, meta) {
+        if (!meta || !meta.date) return "Week " + week + ", TBD";
+        var text = "Week " + week + ", " + prettyDate(meta.date);
+        var time = prettyTime(meta.hour, meta.minute);
+        if (time) text += ", @ " + time;
+        return text;
+      }
+      function whenKey(meta) {
+        if (!meta || !meta.date) return "";
+        var h = parseInt(meta.hour, 10);
+        var m = parseInt(meta.minute, 10);
+        if (!isFinite(h)) h = 0;
+        if (!isFinite(m)) m = 0;
+        if (String(meta.hour || "").trim() === "") return meta.date + "T00:00";
+        return meta.date + "T" + (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
+      }
+
+      document.querySelectorAll(".finals-grid").forEach(function (grid) {
+        Array.prototype.forEach.call(grid.children, function (card, index) {
+          card.setAttribute("data-order", String(index));
+        });
+      });
       document.querySelectorAll(".final-card").forEach(function (card) {
-        var game = saved[card.getAttribute("data-game")];
+        var id = card.getAttribute("data-game") || "";
+        var week = id.split("|")[0] || "";
+        var game = saved[id];
         var legacy = game && game.submitted == null && game.awayScore !== "" && game.homeScore !== "" && game.awayScore != null && game.homeScore != null;
-        if (!game || (game.submitted !== true && !legacy)) return;
+        var official = game && (game.submitted === true || legacy);
+        var when = card.querySelector(".final-top > span:last-child");
+        if (official && game.meta) {
+          if (when) when.textContent = whenLabel(week, game.meta);
+          card.setAttribute("data-when", whenKey(game.meta));
+        }
+        if (!official) return;
+        if (game.forfeit) {
+          card.classList.add("is-forfeit");
+          card.querySelector(".final-state").textContent = "FORFEIT";
+          var marks = card.querySelectorAll(".final-club strong");
+          marks[0].textContent = game.awayScore || "—";
+          marks[1].textContent = game.homeScore || "—";
+          card.querySelectorAll(".final-leaders div").forEach(function (row) {
+            row.querySelector("b").textContent = "—";
+            row.querySelector("em").textContent = "—";
+          });
+          return;
+        }
         if (game.awayScore === "" || game.homeScore === "" || game.awayScore == null || game.homeScore == null) return;
         card.classList.add("is-final");
         card.querySelector(".final-state").textContent = "FINAL";
@@ -197,8 +254,21 @@
         ["pts", "ast", "reb"].forEach(function (key, index) {
           var leader = game.leaders && game.leaders[key];
           leaders[index].querySelector("b").textContent = leader ? leader.value : "—";
-          leaders[index].querySelector("em").textContent = leader ? leader.name : "TBD";
+          leaders[index].querySelector("em").textContent = leader ? leader.name : "—";
         });
+      });
+      document.querySelectorAll(".finals-grid").forEach(function (grid) {
+        var cards = Array.prototype.slice.call(grid.children);
+        cards.sort(function (a, b) {
+          var da = a.getAttribute("data-when") || "";
+          var db = b.getAttribute("data-when") || "";
+          if (!da && !db) return Number(a.getAttribute("data-order")) - Number(b.getAttribute("data-order"));
+          if (!da) return 1;
+          if (!db) return -1;
+          if (da !== db) return da < db ? -1 : 1;
+          return Number(a.getAttribute("data-order")) - Number(b.getAttribute("data-order"));
+        });
+        cards.forEach(function (card) { grid.appendChild(card); });
       });
     })();
   </script>
