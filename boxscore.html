@@ -302,6 +302,7 @@
       function rememberStats() {
         document.querySelectorAll("[data-stat]").forEach(function (field) {
           var id = field.getAttribute("data-player");
+          if (!id) return;
           if (!stats[id]) stats[id] = {};
           stats[id][field.getAttribute("data-stat")] = field.value;
         });
@@ -409,17 +410,17 @@
                 input.type = "number";
                 input.min = "0";
                 input.setAttribute("inputmode", "numeric");
+                input.setAttribute("data-stat", col.key);
                 if (player) {
                   input.setAttribute("data-player", playerId(player));
-                  input.setAttribute("data-stat", col.key);
                   var current = stats[playerId(player)] && stats[playerId(player)][col.key];
                   if (current != null && current !== "") input.value = current;
-                  input.addEventListener("input", function () { fillCalcs(tr); });
                 }
                 td.appendChild(input);
               }
               tr.appendChild(td);
             });
+            tr.addEventListener("input", function () { fillCalcs(tr); });
             tr.addEventListener("focusin", function () { tr.classList.add("is-hot"); });
             tr.addEventListener("focusout", function (event) {
               if (!tr.contains(event.relatedTarget)) tr.classList.remove("is-hot");
