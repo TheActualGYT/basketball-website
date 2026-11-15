@@ -76,7 +76,7 @@
       <div class="gs-top">
         <table class="gs-line">
           <thead>
-            <tr><th>Team</th><th>Q1</th><th>Q2</th><th>TOT</th><th>Foul</th></tr>
+            <tr><th>Team</th><th>H1</th><th>H2</th><th>Total</th></tr>
           </thead>
           <tbody id="gs-line-body"></tbody>
         </table>
@@ -152,7 +152,7 @@
       }
       function quarterSum(side) {
         var total = 0, any = false;
-        ["q1","q2"].forEach(function (q) {
+        ["h1","h2"].forEach(function (q) {
           var input = form.querySelector('[data-side="' + side + '"][data-q="' + q + '"]');
           var value = num(input && input.value);
           if (value == null) return;
@@ -174,9 +174,8 @@
         team.className = "gs-team";
         team.innerHTML = '<img src="' + logos[name] + '" alt=""><span>' + name + '</span>';
         tr.appendChild(team);
-        ["q1","q2","foul"].forEach(function (q) {
+        ["h1","h2"].forEach(function (q) {
           var td = document.createElement("td");
-          if (q === "foul") td.className = "is-foul";
           var input = document.createElement("input");
           input.type = "number";
           input.min = "0";
@@ -189,7 +188,7 @@
         var tot = document.createElement("td");
         tot.className = "is-tot";
         tot.innerHTML = '<span class="gs-tot" id="' + side + '-tot"></span>';
-        tr.insertBefore(tot, tr.lastChild);
+        tr.appendChild(tot);
         return tr;
       }
       function showTab(id) {
@@ -398,9 +397,11 @@
         var quarters = saved.quarters || {};
         ["away","home"].forEach(function (side) {
           var row = quarters[side] || {};
-          ["q1","q2","foul"].forEach(function (q) {
+          ["h1","h2"].forEach(function (q) {
             var input = form.querySelector('[data-side="' + side + '"][data-q="' + q + '"]');
-            if (input && row[q] != null) input.value = row[q];
+            var legacy = q === "h1" ? row.q1 : row.q2;
+            var value = row[q] != null ? row[q] : legacy;
+            if (input && value != null) input.value = value;
           });
         });
         ["date","hour","minute","youtube","twitch","recap"].forEach(function (name) {
@@ -496,7 +497,7 @@
         });
         var quarters = { away: {}, home: {} };
         ["away","home"].forEach(function (side) {
-          ["q1","q2","foul"].forEach(function (q) {
+          ["h1","h2"].forEach(function (q) {
             quarters[side][q] = form.querySelector('[data-side="' + side + '"][data-q="' + q + '"]').value;
           });
         });
