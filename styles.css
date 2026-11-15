@@ -4190,9 +4190,9 @@ a.final-edit {
 .gs-sheet {
   width: calc((100% - 0.9rem) / 2);
   overflow: hidden;
-  border: 1px solid rgba(236, 72, 153, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 14px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.38), 0 0 18px rgba(192, 38, 211, 0.12);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.38);
 }
 
 .gs-line {
@@ -4206,7 +4206,7 @@ a.final-edit {
 .gs-line td {
   vertical-align: middle;
   padding: 0.28rem 0.55rem;
-  border-bottom: 1px solid rgba(236, 72, 153, 0.22);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 .gs-line th {
@@ -4265,7 +4265,7 @@ a.final-edit {
 .gs-line input {
   width: 3.2rem;
   height: 1.7rem;
-  border: 1px solid rgba(236, 72, 153, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 12px;
   background: #1a1a1a;
   color: #fff;
@@ -4277,8 +4277,7 @@ a.final-edit {
 
 .gs-line input:focus {
   outline: none;
-  border-color: #ec4899;
-  box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.25);
+  border-color: rgba(255, 255, 255, 0.7);
 }
 
 .gs-tot {
@@ -4289,16 +4288,16 @@ a.final-edit {
   height: 1.7rem;
   padding: 0 0.35rem;
   border-radius: 12px;
-  border: 1px solid #c026d3;
-  background: #2a1524;
-  color: #f3d0e4;
+  border: 1px solid #5a4d68;
+  background: #2c2436;
+  color: #ddd8e4;
   font-weight: 800;
   cursor: not-allowed;
 }
 
 .gs-inline.is-auto {
-  background: #2a1524;
-  border-color: rgba(236, 72, 153, 0.7);
+  background: #2c2436;
+  border-color: #5a4d68;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.28);
 }
 
@@ -4341,7 +4340,7 @@ a.final-edit {
   display: flex;
   align-items: center;
   margin-top: 0.7rem;
-  border: 1px solid rgba(236, 72, 153, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   background: #101010;
 }
 
@@ -4395,14 +4394,14 @@ a.final-edit {
 
 .gs-tabs button.is-on {
   color: #fff;
-  border-color: rgba(236, 72, 153, 0.7);
-  box-shadow: inset 0 -2px 0 #ec4899;
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 -2px 0 #fff;
 }
 
 .gs-card,
 .gs-list {
   overflow: hidden;
-  border: 1px solid rgba(236, 72, 153, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 14px;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.38);
 }
@@ -4445,7 +4444,7 @@ a.final-edit {
 .gs-card,
 .gs-list {
   overflow: hidden;
-  border: 1px solid rgba(236, 72, 153, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 14px;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.38);
 }
@@ -4456,7 +4455,7 @@ a.final-edit {
 .gs-list h3 {
   margin: 0;
   padding: 0.7rem 0.85rem;
-  border-bottom: 1px solid rgba(236, 72, 153, 0.45);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
   color: #fff;
   font-size: 0.95rem;
   letter-spacing: 0.06em;
@@ -4474,7 +4473,7 @@ a.final-edit {
   width: calc(100% - 1.3rem);
   min-height: 0;
   margin: 0.65rem;
-  border: 1px solid rgba(236, 72, 153, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 12px;
   background: #0c0c0c;
   color: #fff;
@@ -4506,7 +4505,7 @@ a.final-edit {
 }
 
 .gs-spot.is-empty { cursor: default; color: rgba(255, 255, 255, 0.35); }
-.gs-spot.is-on { border-color: #ec4899; }
+.gs-spot.is-on { border-color: rgba(255, 255, 255, 0.72); }
 
 .gs-person { display: flex; align-items: center; gap: 0.45rem; min-width: 0; }
 .gs-person img, .gs-person i {
