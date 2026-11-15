@@ -298,8 +298,8 @@
           section.className = "gs-list";
           section.innerHTML = "<h3>" + name + "</h3>";
           var playing = slots[side].filter(function (player) { return player && active[side][playerId(player)]; });
-          var rows = playing.slice(0, 10);
-          while (rows.length < 10) rows.push(null);
+          var rows = playing.slice();
+          while (rows.length < 5) rows.push(null);
           var scroll = document.createElement("div");
           scroll.className = "sheet-scroll";
           var table = document.createElement("table");
