@@ -303,7 +303,7 @@
           var scroll = document.createElement("div");
           scroll.className = "sheet-scroll";
           var table = document.createElement("table");
-          table.className = "box-sheet gs-stats";
+          table.className = "gs-stat";
           var head = document.createElement("tr");
           head.innerHTML = "<th>Player</th>" + SHEET.map(function (col) { return "<th>" + col[1] + "</th>"; }).join("");
           var thead = document.createElement("thead");
@@ -312,25 +312,25 @@
           rows.forEach(function (player) {
             var tr = document.createElement("tr");
             if (!player) tr.className = "is-blank";
-            var who = document.createElement("th");
-            who.className = "sheet-player";
+            var who = document.createElement("td");
+            who.className = "gs-who";
             who.appendChild(person(player));
             tr.appendChild(who);
             SHEET.forEach(function (col) {
               var td = document.createElement("td");
-              var input = document.createElement("input");
-              input.type = "number";
-              input.min = "0";
               if (!player) {
-                input.disabled = true;
-                input.tabIndex = -1;
+                td.className = "gs-dash";
+                td.textContent = "—";
               } else {
+                var input = document.createElement("input");
+                input.type = "number";
+                input.min = "0";
                 input.setAttribute("data-player", playerId(player));
                 input.setAttribute("data-stat", col[0]);
                 var current = stats[playerId(player)] && stats[playerId(player)][col[0]];
                 if (current != null && current !== "") input.value = current;
+                td.appendChild(input);
               }
-              td.appendChild(input);
               tr.appendChild(td);
             });
             tbody.appendChild(tr);
