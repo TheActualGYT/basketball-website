@@ -74,21 +74,9 @@
     <p class="box-lead" id="box-lead">Loading game…</p>
     <form id="box-form" hidden>
       <div class="gs-top">
-        <div>
-          <button class="gs-save" type="submit">Save and go back to schedule</button>
-          <label class="gs-inline">
-            <span>Quarters played :</span>
-            <select name="quarters" id="quarters-played">
-              <option>Q1</option>
-              <option>Q2</option>
-              <option>Q3</option>
-              <option selected>Q4</option>
-            </select>
-          </label>
-        </div>
         <table class="gs-line">
           <thead>
-            <tr><th>Team</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>TOT</th><th>Foul</th></tr>
+            <tr><th>Team</th><th>Q1</th><th>Q2</th><th>TOT</th><th>Foul</th></tr>
           </thead>
           <tbody id="gs-line-body"></tbody>
         </table>
@@ -113,6 +101,15 @@
         "Ohio State Buckeyes": "ohiostate.png", "Oregon Ducks": "oregon.png", "UCLA Bruins": "ucla.png",
         "Virginia Cavaliers": "virginia.png"
       };
+      var cities = {
+        "Arizona Wildcats": "Tucson, Arizona", "Baylor Bears": "Waco, Texas", "Duke Blue Devils": "Durham, North Carolina",
+        "Florida Gators": "Gainesville, Florida", "Georgia Bulldogs": "Athens, Georgia", "Houston Cougars": "Houston, Texas",
+        "Kansas Jayhawks": "Lawrence, Kansas", "Kentucky Wildcats": "Lexington, Kentucky", "LSU Tigers": "Baton Rouge, Louisiana",
+        "Miami Hurricanes": "Coral Gables, Florida", "Michigan Wolverines": "Ann Arbor, Michigan", "North Carolina Tar Heels": "Chapel Hill, North Carolina",
+        "Ohio State Buckeyes": "Columbus, Ohio", "Oregon Ducks": "Eugene, Oregon", "UCLA Bruins": "Los Angeles, California",
+        "Virginia Cavaliers": "Charlottesville, Virginia"
+      };
+      var ORDER = [["1","Miami Hurricanes","Duke Blue Devils"],["1","Virginia Cavaliers","North Carolina Tar Heels"],["1","Georgia Bulldogs","Florida Gators"],["1","LSU Tigers","Kentucky Wildcats"],["1","Ohio State Buckeyes","Michigan Wolverines"],["1","UCLA Bruins","Oregon Ducks"],["1","Baylor Bears","Arizona Wildcats"],["1","Kansas Jayhawks","Houston Cougars"],["1","Duke Blue Devils","LSU Tigers"],["1","Florida Gators","Miami Hurricanes"],["1","North Carolina Tar Heels","Georgia Bulldogs"],["1","Kentucky Wildcats","Virginia Cavaliers"],["1","Michigan Wolverines","Kansas Jayhawks"],["1","Arizona Wildcats","Ohio State Buckeyes"],["1","Oregon Ducks","Baylor Bears"],["1","Houston Cougars","UCLA Bruins"],["2","Georgia Bulldogs","Duke Blue Devils"],["2","Miami Hurricanes","Kentucky Wildcats"],["2","LSU Tigers","North Carolina Tar Heels"],["2","Virginia Cavaliers","Florida Gators"],["2","Baylor Bears","Michigan Wolverines"],["2","Ohio State Buckeyes","Houston Cougars"],["2","Kansas Jayhawks","Oregon Ducks"],["2","UCLA Bruins","Arizona Wildcats"],["2","Duke Blue Devils","Miami Hurricanes"],["2","North Carolina Tar Heels","Virginia Cavaliers"],["2","Florida Gators","Georgia Bulldogs"],["2","Kentucky Wildcats","LSU Tigers"],["2","Michigan Wolverines","Ohio State Buckeyes"],["2","Oregon Ducks","UCLA Bruins"],["2","Arizona Wildcats","Baylor Bears"],["2","Houston Cougars","Kansas Jayhawks"],["3","North Carolina Tar Heels","Duke Blue Devils"],["3","Virginia Cavaliers","Miami Hurricanes"],["3","Kentucky Wildcats","Florida Gators"],["3","LSU Tigers","Georgia Bulldogs"],["3","Oregon Ducks","Michigan Wolverines"],["3","UCLA Bruins","Ohio State Buckeyes"],["3","Houston Cougars","Arizona Wildcats"],["3","Kansas Jayhawks","Baylor Bears"],["3","Duke Blue Devils","Virginia Cavaliers"],["3","Miami Hurricanes","North Carolina Tar Heels"],["3","Florida Gators","LSU Tigers"],["3","Georgia Bulldogs","Kentucky Wildcats"],["3","Michigan Wolverines","UCLA Bruins"],["3","Ohio State Buckeyes","Oregon Ducks"],["3","Arizona Wildcats","Kansas Jayhawks"],["3","Baylor Bears","Houston Cougars"],["4","Virginia Cavaliers","Duke Blue Devils"],["4","North Carolina Tar Heels","Miami Hurricanes"],["4","LSU Tigers","Florida Gators"],["4","Kentucky Wildcats","Georgia Bulldogs"],["4","UCLA Bruins","Michigan Wolverines"],["4","Oregon Ducks","Ohio State Buckeyes"],["4","Kansas Jayhawks","Arizona Wildcats"],["4","Houston Cougars","Baylor Bears"],["4","Duke Blue Devils","North Carolina Tar Heels"],["4","Miami Hurricanes","Virginia Cavaliers"],["4","Florida Gators","Kentucky Wildcats"],["4","Georgia Bulldogs","LSU Tigers"],["4","Michigan Wolverines","Oregon Ducks"],["4","Ohio State Buckeyes","UCLA Bruins"],["4","Arizona Wildcats","Houston Cougars"],["4","Baylor Bears","Kansas Jayhawks"],["5","Florida Gators","Duke Blue Devils"],["5","Miami Hurricanes","Georgia Bulldogs"],["5","Kentucky Wildcats","North Carolina Tar Heels"],["5","Virginia Cavaliers","LSU Tigers"],["5","Arizona Wildcats","Michigan Wolverines"],["5","Ohio State Buckeyes","Baylor Bears"],["5","Houston Cougars","Oregon Ducks"],["5","UCLA Bruins","Kansas Jayhawks"],["5","Duke Blue Devils","Kentucky Wildcats"],["5","LSU Tigers","Miami Hurricanes"],["5","North Carolina Tar Heels","Florida Gators"],["5","Georgia Bulldogs","Virginia Cavaliers"],["5","Michigan Wolverines","Houston Cougars"],["5","Kansas Jayhawks","Ohio State Buckeyes"],["5","Oregon Ducks","Arizona Wildcats"],["5","Baylor Bears","UCLA Bruins"]];
       var abbrs = {
         "Arizona Wildcats": "ARIZ", "Baylor Bears": "BAY", "Duke Blue Devils": "DUKE", "Florida Gators": "FLA",
         "Georgia Bulldogs": "UGA", "Houston Cougars": "HOU", "Kansas Jayhawks": "KU", "Kentucky Wildcats": "UK",
@@ -155,7 +152,7 @@
       }
       function quarterSum(side) {
         var total = 0, any = false;
-        ["q1","q2","q3","q4"].forEach(function (q) {
+        ["q1","q2"].forEach(function (q) {
           var input = form.querySelector('[data-side="' + side + '"][data-q="' + q + '"]');
           var value = num(input && input.value);
           if (value == null) return;
@@ -176,7 +173,7 @@
         var team = document.createElement("td");
         team.textContent = name;
         tr.appendChild(team);
-        ["q1","q2","q3","q4","foul"].forEach(function (q) {
+        ["q1","q2","foul"].forEach(function (q) {
           var td = document.createElement("td");
           if (q === "foul") td.className = "is-foul";
           var input = document.createElement("input");
@@ -235,45 +232,53 @@
         var id = playerId(player);
         if (active[side][id]) delete active[side][id];
         else active[side][id] = player;
-        paintAlignment(side);
+        paintActive();
         paintStatistics(side);
+        persist();
       }
-      function paintAlignment(side) {
-        var box = document.getElementById("align-" + side);
+      function paintActive() {
+        var box = document.getElementById("active-players");
+        if (!box) return;
         box.textContent = "";
-        var rosterCol = document.createElement("div");
-        rosterCol.className = "gs-list";
-        rosterCol.innerHTML = "<h3>Team roster</h3>";
-        slots[side].forEach(function (player) {
-          var row = document.createElement("button");
-          row.type = "button";
-          row.className = "gs-spot";
-          if (!player) row.classList.add("is-empty");
-          else if (active[side][playerId(player)]) row.classList.add("is-on");
-          row.disabled = !player;
-          row.appendChild(person(player));
-          if (player) row.addEventListener("click", function () { togglePlayer(side, player); });
-          rosterCol.appendChild(row);
+        ["away", "home"].forEach(function (side) {
+          var name = side === "away" ? away : home;
+          var pair = document.createElement("div");
+          pair.className = "gs-align";
+          var rosterCol = document.createElement("div");
+          rosterCol.className = "gs-list";
+          rosterCol.innerHTML = "<h3>" + name + "</h3>";
+          slots[side].forEach(function (player) {
+            var row = document.createElement("button");
+            row.type = "button";
+            row.className = "gs-spot";
+            if (!player) row.classList.add("is-empty");
+            else if (active[side][playerId(player)]) row.classList.add("is-on");
+            row.disabled = !player;
+            row.appendChild(person(player));
+            if (player) row.addEventListener("click", function () { togglePlayer(side, player); });
+            rosterCol.appendChild(row);
+          });
+          var activeCol = document.createElement("div");
+          activeCol.className = "gs-list";
+          activeCol.innerHTML = "<h3>In this game</h3>";
+          var playing = slots[side].filter(function (player) { return player && active[side][playerId(player)]; });
+          if (!playing.length) {
+            var empty = document.createElement("p");
+            empty.className = "gs-note";
+            empty.textContent = "Select a player from the roster.";
+            activeCol.appendChild(empty);
+          }
+          playing.forEach(function (player) {
+            var row = document.createElement("button");
+            row.type = "button";
+            row.className = "gs-spot is-on";
+            row.appendChild(person(player));
+            row.addEventListener("click", function () { togglePlayer(side, player); });
+            activeCol.appendChild(row);
+          });
+          pair.append(rosterCol, activeCol);
+          box.appendChild(pair);
         });
-        var activeCol = document.createElement("div");
-        activeCol.className = "gs-list";
-        activeCol.innerHTML = "<h3>In this game</h3>";
-        var playing = slots[side].filter(function (player) { return player && active[side][playerId(player)]; });
-        if (!playing.length) {
-          var empty = document.createElement("p");
-          empty.className = "gs-note";
-          empty.textContent = "Select a player from the roster.";
-          activeCol.appendChild(empty);
-        }
-        playing.forEach(function (player) {
-          var row = document.createElement("button");
-          row.type = "button";
-          row.className = "gs-spot is-on";
-          row.appendChild(person(player));
-          row.addEventListener("click", function () { togglePlayer(side, player); });
-          activeCol.appendChild(row);
-        });
-        box.append(rosterCol, activeCol);
       }
       function paintStatistics(side) {
         var box = document.getElementById("stats-" + side);
@@ -333,7 +338,7 @@
         var node = document.createElement("div");
         node.className = "gs-panel";
         node.setAttribute("data-panel", id);
-        node.hidden = id !== "info";
+        node.hidden = id !== "details";
         return node;
       }
       function build() {
@@ -341,9 +346,8 @@
         body.appendChild(lineRow("away", away));
         body.appendChild(lineRow("home", home));
         var tabs = [
-          ["info", "Info"],
-          ["align-away", "Alignment - " + abbrs[away]],
-          ["align-home", "Alignment - " + abbrs[home]],
+          ["details", "Details"],
+          ["active", "Active Players"],
           ["stats-away", "Statistics - " + abbrs[away]],
           ["stats-home", "Statistics - " + abbrs[home]],
           ["validation", "Validation"],
@@ -356,27 +360,25 @@
           button.type = "button";
           button.setAttribute("data-tab", tab[0]);
           button.textContent = tab[1];
-          if (tab[0] === "info") button.classList.add("is-on");
+          if (tab[0] === "details") button.classList.add("is-on");
           button.addEventListener("click", function () { showTab(tab[0]); });
           tabBar.appendChild(button);
           panels.appendChild(panel(tab[0]));
         });
-        document.querySelector('[data-panel="info"]').innerHTML = ''
+        document.querySelector('[data-panel="details"]').innerHTML = ''
           + '<div class="gs-info">'
           + '<section class="gs-card"><h3>Details</h3>'
-          + '<label class="gs-inline"><span>Date / Time :</span><input type="date" name="date"><input name="hour" inputmode="numeric" maxlength="2" placeholder="HH"><b>:</b><input name="minute" inputmode="numeric" maxlength="2" placeholder="MM"></label>'
-          + '<label class="gs-inline"><span>Game number :</span><input name="number" value="' + week + '"></label>'
-          + '<label class="gs-inline"><span>Location :</span><input name="location" placeholder="TBD"></label>'
-          + '<div class="gs-pair"><label class="gs-inline"><span>Status :</span><select name="status"><option>Incomplete</option><option>Final</option><option>Forfeit</option></select></label>'
-          + '<label class="gs-inline"><span>Game Result :</span><select name="result"><option>Based on game score</option><option>Away forfeit</option><option>Home forfeit</option></select></label></div>'
-          + '<label class="gs-inline"><span>Game URL :</span><input name="url" placeholder="Optional"></label>'
-          + '<p class="gs-note">You may optionally enter a URL for this game.</p></section>'
+          + '<label class="gs-inline"><span>Date / Time :</span><input type="date" name="date" required><input name="hour" inputmode="numeric" maxlength="2" placeholder="HH"><b>:</b><input name="minute" inputmode="numeric" maxlength="2" placeholder="MM"></label>'
+          + '<p class="gs-note">Date is required. Time is optional.</p>'
+          + '<label class="gs-inline"><span>Game number :</span><b class="gs-lock" id="game-number">—</b></label>'
+          + '<label class="gs-inline"><span>Location :</span><input name="location" readonly value="' + cities[home] + '"></label>'
+          + '<label class="gs-inline"><span>YouTube :</span><input name="youtube" placeholder="Optional"></label>'
+          + '<label class="gs-inline"><span>Twitch :</span><input name="twitch" placeholder="Optional"></label></section>'
           + '<section class="gs-card"><h3>Game recap</h3><textarea name="recap" maxlength="500"></textarea><p class="gs-count" id="recap-count">0 / 500</p></section>'
           + '</div>';
-        document.querySelector('[data-panel="align-away"]').id = "align-away";
-        document.querySelector('[data-panel="align-away"]').classList.add("gs-align");
-        document.querySelector('[data-panel="align-home"]').id = "align-home";
-        document.querySelector('[data-panel="align-home"]').classList.add("gs-align");
+        var activePanel = document.querySelector('[data-panel="active"]');
+        activePanel.id = "active-players";
+        activePanel.className = "gs-panel gs-active";
         document.querySelector('[data-panel="stats-away"]').id = "stats-away";
         document.querySelector('[data-panel="stats-home"]').id = "stats-home";
         document.querySelector('[data-panel="validation"]').innerHTML = '<section class="gs-card"><h3>Validation</h3><div id="validation-box"></div></section>';
@@ -386,8 +388,7 @@
         form.recap.addEventListener("input", function () {
           document.getElementById("recap-count").textContent = form.recap.value.length + " / 500";
         });
-        paintAlignment("away");
-        paintAlignment("home");
+        paintActive();
         paintStatistics("away");
         paintStatistics("home");
       }
@@ -396,12 +397,12 @@
         var quarters = saved.quarters || {};
         ["away","home"].forEach(function (side) {
           var row = quarters[side] || {};
-          ["q1","q2","q3","q4","foul"].forEach(function (q) {
+          ["q1","q2","foul"].forEach(function (q) {
             var input = form.querySelector('[data-side="' + side + '"][data-q="' + q + '"]');
             if (input && row[q] != null) input.value = row[q];
           });
         });
-        ["date","hour","minute","number","location","status","result","url","recap","quarters"].forEach(function (name) {
+        ["date","hour","minute","youtube","twitch","recap"].forEach(function (name) {
           if (meta[name] != null && form.elements[name]) form.elements[name].value = meta[name];
         });
         if (saved.awayPoints != null) form.elements["away-points"].value = saved.awayPoints;
@@ -417,8 +418,7 @@
             });
           });
         });
-        paintAlignment("away");
-        paintAlignment("home");
+        paintActive();
         paintStatistics("away");
         paintStatistics("home");
       }
@@ -436,23 +436,51 @@
         try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}")[key] || {}; } catch (err) { saved = {}; }
         build();
         restore();
+        persist();
+        form.addEventListener("input", persist);
+        form.addEventListener("change", persist);
+        form.addEventListener("submit", function (event) { event.preventDefault(); persist(); });
         lead.hidden = true;
         form.hidden = false;
       }).catch(function () {
         lead.textContent = "The rosters could not be loaded.";
       });
-      form.addEventListener("submit", function (event) {
-        event.preventDefault();
+      function renumber() {
+        var store = {};
+        try { store = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { store = {}; }
+        var dated = [];
+        ORDER.forEach(function (game, index) {
+          var id = game[0] + "|" + game[1] + "|" + game[2];
+          var meta = id === key ? { date: form.date.value, hour: form.hour.value, minute: form.minute.value } : ((store[id] && store[id].meta) || {});
+          if (!meta.date) return;
+          dated.push({ id: id, index: index, date: meta.date, hour: meta.hour || "", minute: meta.minute || "" });
+        });
+        dated.sort(function (a, b) {
+          if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+          if (a.hour && b.hour && (a.hour !== b.hour || a.minute !== b.minute)) {
+            var at = a.hour + ":" + (a.minute || "00");
+            var bt = b.hour + ":" + (b.minute || "00");
+            if (at !== bt) return at < bt ? -1 : 1;
+          }
+          return a.index - b.index;
+        });
+        var numbers = {};
+        dated.forEach(function (game, index) { numbers[game.id] = String(index + 1); });
+        Object.keys(store).forEach(function (id) {
+          if (!store[id].meta) store[id].meta = {};
+          store[id].meta.number = numbers[id] || "";
+        });
+        localStorage.setItem("jba-boxscores", JSON.stringify(store));
+        return numbers[key] || "";
+      }
+      function persist() {
         rememberStats();
+        var number = renumber();
+        var numberEl = document.getElementById("game-number");
+        if (numberEl) numberEl.textContent = number || "—";
+        lead.hidden = true;
         var awayScore = quarterSum("away");
         var homeScore = quarterSum("home");
-        if (awayScore == null || homeScore == null) {
-          showTab("info");
-          lead.hidden = false;
-          lead.textContent = "Enter the quarter scores for both teams.";
-          return;
-        }
-        lead.hidden = true;
         var lines = [];
         ["away","home"].forEach(function (side) {
           Object.keys(active[side]).forEach(function (id) {
@@ -467,30 +495,28 @@
         });
         var quarters = { away: {}, home: {} };
         ["away","home"].forEach(function (side) {
-          ["q1","q2","q3","q4","foul"].forEach(function (q) {
+          ["q1","q2","foul"].forEach(function (q) {
             quarters[side][q] = form.querySelector('[data-side="' + side + '"][data-q="' + q + '"]').value;
           });
         });
         var store = {};
         try { store = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { store = {}; }
         store[key] = {
-          awayScore: String(awayScore),
-          homeScore: String(homeScore),
-          status: form.status.value,
+          awayScore: awayScore == null ? "" : String(awayScore),
+          homeScore: homeScore == null ? "" : String(homeScore),
           quarters: quarters,
           awayPoints: form.elements["away-points"].value,
           homePoints: form.elements["home-points"].value,
           meta: {
             date: form.date.value, hour: form.hour.value, minute: form.minute.value,
-            number: form.number.value, location: form.location.value, status: form.status.value,
-            result: form.result.value, url: form.url.value, recap: form.recap.value, quarters: form.quarters.value
+            number: number, location: cities[home], youtube: form.youtube.value,
+            twitch: form.twitch.value, recap: form.recap.value
           },
           lines: lines,
           leaders: { pts: best(lines, "pts"), ast: best(lines, "ast"), reb: best(lines, "reb") }
         };
         localStorage.setItem("jba-boxscores", JSON.stringify(store));
-        location.href = "scores.html";
-      });
+      }
     })();
   </script>
   <script src="script.js"></script>
