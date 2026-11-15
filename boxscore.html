@@ -85,7 +85,10 @@
       </div>
       <div class="gs-tabbar">
         <div class="gs-tabs" id="gs-tabs"></div>
-        <button type="button" class="gs-save" id="gs-save" hidden>Save</button>
+        <div class="gs-actions" id="gs-actions" hidden>
+          <button type="button" class="gs-cancel" id="gs-cancel">Cancel</button>
+          <button type="button" class="gs-save" id="gs-save">Save</button>
+        </div>
       </div>
       <div id="gs-panels"></div>
     </form>
@@ -562,11 +565,7 @@
           button.disabled = !ready || submitted;
           button.textContent = submitted ? "Submitted" : "Submit Box Score";
         }
-        var saveBtn = document.getElementById("gs-save");
-        if (saveBtn) {
-          saveBtn.hidden = !submitted;
-          saveBtn.disabled = !ready;
-        }
+        syncSave(ready);
         var why = document.getElementById("submit-why");
         var reasons = submitReasons();
         if (why) {
@@ -636,6 +635,12 @@
         persist();
         location.href = "scores.html";
       }
+      function syncSave(ready) {
+        var actions = document.getElementById("gs-actions");
+        var saveBtn = document.getElementById("gs-save");
+        if (actions) actions.hidden = !submitted;
+        if (saveBtn) saveBtn.disabled = !ready;
+      }
       function saveScore() {
         if (!submitted || !readyToSubmit()) return;
         persist();
@@ -683,6 +688,9 @@
         document.querySelector('[data-panel="submission"]').innerHTML = '<section class="gs-card"><h3>Submission</h3><div class="gs-forfeit"><label class="gs-forfeit-check"><input type="checkbox" id="forfeit-on"> Forfeit</label><label class="gs-forfeit-team">Forfeiting team <select id="forfeit-team" disabled><option value="">Select a team</option><option value="away">' + away + '</option><option value="home">' + home + '</option></select></label><p>A forfeit records a win and a loss only. No team or player stats are saved.</p></div><div class="gs-submit-row"><div class="gs-submit" id="submission-box"></div><div class="gs-submit-side"><span class="gs-submit-hover"><button type="button" id="submit-box" disabled>Submit Box Score</button><ul class="gs-submit-why" id="submit-why" hidden></ul></span><p>If the player stats do not match the score because of a disconnect, lost stats, or another issue, contact an owner so they can bypass it.</p></div></div></section>';
         document.getElementById("submit-box").addEventListener("click", submitScore);
         document.getElementById("gs-save").addEventListener("click", saveScore);
+        document.getElementById("gs-cancel").addEventListener("click", function () {
+          location.href = "scores.html";
+        });
         document.getElementById("forfeit-on").addEventListener("change", function () {
           var pick = document.getElementById("forfeit-team");
           pick.disabled = !this.checked;
@@ -736,6 +744,7 @@
           }
         }
         paintSubmission();
+        syncSave(readyToSubmit());
       }
       function best(rows, stat) {
         var leader = null;
@@ -798,13 +807,7 @@
         if (numberEl) numberEl.textContent = renumber() || "—";
         var panel = document.querySelector('[data-panel="submission"]');
         if (panel && !panel.hidden) paintSubmission();
-        else {
-          var saveBtn = document.getElementById("gs-save");
-          if (saveBtn) {
-            saveBtn.hidden = !submitted;
-            saveBtn.disabled = !readyToSubmit();
-          }
-        }
+        else syncSave(readyToSubmit());
       }
       function persist() {
         var numbers = allNumbers();

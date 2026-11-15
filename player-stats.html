@@ -69,10 +69,187 @@
     </nav>
   </header>
 
-  <section class="section">
+  <section class="players-page">
     <h2>Player Stats</h2>
+    <div class="panel players-table-wrap stats-scroll">
+      <table class="players-table stats-table">
+        <thead>
+          <tr id="stats-head"></tr>
+        </thead>
+        <tbody id="stats-body"></tbody>
+      </table>
+    </div>
   </section>
 
   <script src="script.js"></script>
+  <script>
+    var COLS = [
+      ["player", "Player", "The player, from submitted box scores."],
+      ["pts", "PTS", "Points per game."],
+      ["ast", "AST", "Assists per game."],
+      ["reb", "REB", "Rebounds per game. Offensive and defensive combined."],
+      ["dreb", "DREB", "Defensive rebounds per game."],
+      ["oreb", "OREB", "Offensive rebounds per game."],
+      ["stl", "STL", "Steals per game."],
+      ["blk", "BLK", "Blocks per game."],
+      ["tov", "TO", "Turnovers per game."],
+      ["pf", "PF", "Personal fouls per game."],
+      ["fgm", "FGM", "Field goals made per game."],
+      ["fga", "FGA", "Field goals attempted per game."],
+      ["fgp", "FG%", "Field goal percentage for the season."],
+      ["tpm", "3PM", "Three-pointers made per game."],
+      ["tpa", "3PA", "Three-pointers attempted per game."],
+      ["tpp", "3P%", "Three-point percentage for the season."],
+      ["ftm", "FTM", "Free throws made per game."],
+      ["fta", "FTA", "Free throws attempted per game."],
+      ["ftp", "FT%", "Free throw percentage for the season."],
+      ["fg2m", "2PM", "Two-pointers made per game."],
+      ["fg2a", "2PA", "Two-pointers attempted per game."],
+      ["fg2p", "2P%", "Two-point percentage for the season."],
+      ["gmsc", "GmSc", "Average game score."]
+    ];
+    var SUMS = ["pts", "ast", "reb", "dreb", "oreb", "stl", "blk", "tov", "pf", "fgm", "fga", "tpm", "tpa", "ftm", "fta", "fg2m", "fg2a", "gmsc"];
+    var sort = { key: "pts", dir: "desc" };
+    var rows = [];
+
+    function blank() {
+      var row = { id: "", name: "Unknown", games: 0 };
+      SUMS.forEach(function (key) { row[key] = 0; });
+      return row;
+    }
+    function isForfeit(game) {
+      if (!game || game.forfeit) return true;
+      return [game.awayScore, game.homeScore].some(function (score) {
+        return score === "FFW" || score === "FFL" || score === "W" || score === "L";
+      });
+    }
+    function pct(made, att) {
+      if (!att) return null;
+      return made / att;
+    }
+    function pctText(value) {
+      if (value == null) return "—";
+      if (value === 1) return "1.000";
+      return value.toFixed(3).replace(/^0/, "");
+    }
+    function rate(row, key) {
+      if (!row.games) return null;
+      if (key === "fgp") return pct(row.fgm, row.fga);
+      if (key === "tpp") return pct(row.tpm, row.tpa);
+      if (key === "ftp") return pct(row.ftm, row.fta);
+      if (key === "fg2p") return pct(row.fg2m, row.fg2a);
+      return row[key] / row.games;
+    }
+    function show(row, key) {
+      var value = rate(row, key);
+      if (value == null) return "—";
+      if (key === "fgp" || key === "tpp" || key === "ftp" || key === "fg2p") return pctText(value);
+      return value.toFixed(1);
+    }
+    function avatarSrc(player) {
+      if (player && player.avatar && player.id) return "https://cdn.discordapp.com/avatars/" + player.id + "/" + player.avatar + ".png?size=64";
+      return "https://cdn.discordapp.com/embed/avatars/0.png";
+    }
+    function collect() {
+      var saved = {};
+      try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { saved = {}; }
+      var bag = {};
+      Object.keys(saved).forEach(function (id) {
+        var game = saved[id];
+        if (!game || game.submitted !== true || isForfeit(game)) return;
+        (game.lines || []).forEach(function (line) {
+          if (!line || !line.id) return;
+          var row = bag[line.id] || blank();
+          row.id = String(line.id);
+          row.name = line.name || row.name;
+          row.games += 1;
+          SUMS.forEach(function (key) { row[key] += Number(line[key]) || 0; });
+          bag[line.id] = row;
+        });
+      });
+      return Object.keys(bag).map(function (id) { return bag[id]; });
+    }
+    function ordered() {
+      var copy = rows.slice();
+      copy.sort(function (a, b) {
+        if (sort.key === "player") {
+          var result = a.name.localeCompare(b.name);
+          return sort.dir === "desc" ? -result : result;
+        }
+        var av = rate(a, sort.key);
+        var bv = rate(b, sort.key);
+        if (av == null && bv == null) return a.name.localeCompare(b.name);
+        if (av == null) return 1;
+        if (bv == null) return -1;
+        if (av === bv) return a.name.localeCompare(b.name);
+        return sort.dir === "desc" ? bv - av : av - bv;
+      });
+      return copy;
+    }
+    function markSort() {
+      document.querySelectorAll(".stats-table thead th").forEach(function (th) {
+        th.classList.remove("is-asc", "is-desc");
+        if (th.getAttribute("data-sort") === sort.key) th.classList.add(sort.dir === "desc" ? "is-desc" : "is-asc");
+      });
+    }
+    function paint() {
+      var body = document.getElementById("stats-body");
+      body.textContent = "";
+      markSort();
+      ordered().forEach(function (row) {
+        var tr = document.createElement("tr");
+        var player = document.createElement("td");
+        var person = document.createElement("div");
+        person.className = "player-person";
+        var img = document.createElement("img");
+        img.alt = "";
+        img.referrerPolicy = "no-referrer";
+        img.src = avatarSrc(row.account);
+        var copy = document.createElement("span");
+        var name = document.createElement("b");
+        name.textContent = (row.account && (row.account.name || row.account.username)) || row.name;
+        var tag = document.createElement("small");
+        tag.textContent = row.account && row.account.username ? "@" + row.account.username : "";
+        copy.append(name, tag);
+        person.append(img, copy);
+        player.appendChild(person);
+        tr.appendChild(player);
+        COLS.slice(1).forEach(function (col) {
+          var cell = document.createElement("td");
+          cell.textContent = show(row, col[0]);
+          tr.appendChild(cell);
+        });
+        body.appendChild(tr);
+      });
+      while (body.children.length < 10) {
+        var empty = document.createElement("tr");
+        var i;
+        for (i = 0; i < COLS.length; i += 1) empty.appendChild(document.createElement("td"));
+        body.appendChild(empty);
+      }
+    }
+    var head = document.getElementById("stats-head");
+    COLS.forEach(function (col) {
+      var th = document.createElement("th");
+      th.setAttribute("data-sort", col[0]);
+      th.innerHTML = '<span class="col-tip" tabindex="0">' + col[1] + "<i>" + col[2] + "</i></span>";
+      th.addEventListener("click", function () {
+        if (sort.key !== col[0]) sort = { key: col[0], dir: col[0] === "player" ? "asc" : "desc" };
+        else sort.dir = sort.dir === "asc" ? "desc" : "asc";
+        paint();
+      });
+      head.appendChild(th);
+    });
+    rows = collect();
+    paint();
+    fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+      var byId = {};
+      (data.players || []).forEach(function (player) { if (player && player.id) byId[String(player.id)] = player; });
+      rows.forEach(function (row) { row.account = byId[row.id] || null; });
+      paint();
+    }).catch(function () {});
+    var header = document.querySelector("header");
+    if (header) document.documentElement.style.setProperty("--nav-offset", header.offsetHeight + "px");
+  </script>
 </body>
 </html>

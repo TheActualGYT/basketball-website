@@ -1239,30 +1239,38 @@ function setupProfile() {
     };
   }
   function rankNames(names) {
+    function bucket(team) {
+      var games = team.w + team.l;
+      if (!games) return 1;
+      return team.w / games >= 0.5 ? 0 : 2;
+    }
+    function rate(team) {
+      var games = team.w + team.l;
+      return games ? team.w / games : 0;
+    }
     var ranked = names.slice().sort(function (a, b) {
       var ta = teams[a];
       var tb = teams[b];
-      var aPlayed = ta.w + ta.l > 0;
-      var bPlayed = tb.w + tb.l > 0;
-      if (aPlayed !== bPlayed) return aPlayed ? -1 : 1;
-      var pa = pct(ta.w, ta.l);
-      var pb = pct(tb.w, tb.l);
-      if (pa != null && pb != null && pa !== pb) return pb - pa;
+      var ba = bucket(ta);
+      var bb = bucket(tb);
+      if (ba !== bb) return ba - bb;
+      var pa = rate(ta);
+      var pb = rate(tb);
+      if (pa !== pb) return pb - pa;
       if (ta.w !== tb.w) return tb.w - ta.w;
+      if (ta.l !== tb.l) return ta.l - tb.l;
       var da = ta.scored ? ta.pf - ta.pa : 0;
       var db = tb.scored ? tb.pf - tb.pa : 0;
       if (da !== db) return db - da;
       return a.localeCompare(b);
     });
     var leader = teams[ranked[0]];
-    var played = leader.w + leader.l > 0;
     return ranked.map(function (name, index) {
       var team = teams[name];
-      var raw = ((leader.w - team.w) + (team.l - leader.l)) / 2;
-      var behind = raw < 0 ? 0 : raw;
+      var behind = ((leader.w - team.w) + (team.l - leader.l)) / 2;
       var row = line(name);
       row.rk = String(index + 1);
-      row.gb = !played || raw === 0 ? "-" : behind.toFixed(1);
+      row.gb = behind <= 0 ? "-" : behind.toFixed(1);
       return row;
     });
   }
@@ -1433,15 +1441,16 @@ function setupProfile() {
     card.innerHTML = "";
     var head = document.createElement("span");
     head.className = "final";
+    var copy = document.createElement("span");
+    copy.className = "final-copy";
     var word = document.createElement("b");
     word.className = "final-word";
     word.textContent = label;
-    var end = document.createElement("span");
-    end.className = "final-end";
     var metaEl = document.createElement("span");
     metaEl.className = "final-meta";
     metaEl.textContent = detail;
-    end.appendChild(metaEl);
+    copy.append(word, metaEl);
+    head.appendChild(copy);
     var links = document.createElement("span");
     links.className = "stream-links";
     [["youtube", "youtube.svg", "YouTube"], ["twitch", "twitch.svg", "Twitch"]].forEach(function (entry) {
@@ -1455,8 +1464,12 @@ function setupProfile() {
       link.innerHTML = '<img src="' + entry[1] + '" alt="">';
       links.appendChild(link);
     });
-    if (links.childNodes.length) end.appendChild(links);
-    head.append(word, end);
+    if (links.childNodes.length) {
+      var end = document.createElement("span");
+      end.className = "final-end";
+      end.appendChild(links);
+      head.appendChild(end);
+    }
     card.appendChild(head);
     [["away", item.away], ["home", item.home]].forEach(function (side) {
       var name = document.createElement("span");
@@ -1473,6 +1486,41 @@ function setupProfile() {
       if (kind) score.className = kind;
       card.append(name, score);
     });
+  });
+})();
+
+(function markRivalries() {
+  var games = document.querySelectorAll(".sched-game");
+  if (!games.length) return;
+  var conf = {
+    "Duke Blue Devils": "ACC",
+    "Miami Hurricanes": "ACC",
+    "North Carolina Tar Heels": "ACC",
+    "Virginia Cavaliers": "ACC",
+    "Florida Gators": "SEC",
+    "Georgia Bulldogs": "SEC",
+    "Kentucky Wildcats": "SEC",
+    "LSU Tigers": "SEC",
+    "Michigan Wolverines": "BIG-10",
+    "Ohio State Buckeyes": "BIG-10",
+    "Oregon Ducks": "BIG-10",
+    "UCLA Bruins": "BIG-10",
+    "Arizona Wildcats": "BIG-12",
+    "Baylor Bears": "BIG-12",
+    "Houston Cougars": "BIG-12",
+    "Kansas Jayhawks": "BIG-12"
+  };
+  var marks = { ACC: "acc.png", SEC: "sec.png", "BIG-10": "big10.png", "BIG-12": "big12.png" };
+  games.forEach(function (game) {
+    var away = game.getAttribute("data-away");
+    var home = game.getAttribute("data-home");
+    if (!conf[away] || conf[away] !== conf[home]) return;
+    var when = game.querySelector(".sched-when");
+    if (!when || when.querySelector(".sched-rival")) return;
+    var badge = document.createElement("span");
+    badge.className = "sched-rival";
+    badge.innerHTML = '<img src="' + marks[conf[away]] + '" alt="">RIVALRY';
+    when.appendChild(badge);
   });
 })();
 

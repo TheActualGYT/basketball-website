@@ -656,6 +656,47 @@ h2 {
   text-align: center;
 }
 
+.stats-scroll {
+  overflow-x: auto;
+  border-radius: 16px;
+}
+
+.players-table.stats-table {
+  min-width: 1680px;
+  table-layout: auto;
+}
+
+.players-table.stats-table th,
+.players-table.stats-table td {
+  text-align: center;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  padding: 0.62rem 0.45rem;
+}
+
+.players-table.stats-table th:first-child,
+.players-table.stats-table td:first-child {
+  width: 220px;
+  min-width: 220px;
+  text-align: left;
+  position: sticky;
+  left: 0;
+}
+
+.players-table.stats-table thead th:first-child {
+  z-index: 42;
+  background: #09090b;
+}
+
+.players-table.stats-table tbody td:first-child {
+  z-index: 2;
+  background: #121212;
+}
+
+.players-table.stats-table tbody tr:hover td:first-child {
+  background: #1a1a1a;
+}
+
 .player-person {
   display: flex;
   align-items: center;
@@ -1095,6 +1136,24 @@ h2 {
 .sched-slot {
   color: rgba(255, 255, 255, 0.48);
   letter-spacing: 0.02em;
+}
+
+.sched-rival {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  margin-left: auto;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.sched-rival img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
 }
 
 .sched-grid {
@@ -3467,6 +3526,13 @@ input.is-profile {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 16px rgba(255, 255, 255, 0.1);
 }
 
+.score-game .final-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
 .score-game .final-end {
   display: inline-flex;
   align-items: center;
@@ -3691,7 +3757,8 @@ input.is-profile {
 .final-status {
   display: inline-flex;
   align-items: center;
-  gap: 0.08rem;
+  gap: 0;
+  transform: translateY(-2px);
 }
 
 .final-state {
@@ -3711,25 +3778,28 @@ input.is-profile {
   50% { color: #bbf7d0; text-shadow: 0 0 18px rgba(134, 239, 172, 0.95); }
 }
 
-.final-edit {
+.final-edit,
+.final-reset {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.15rem;
-  height: 1.15rem;
+  width: 0.92rem;
+  height: 0.92rem;
   padding: 0;
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.72);
   cursor: pointer;
 }
 
+.final-edit { color: rgba(255, 255, 255, 0.72); }
+
 .final-edit svg,
 .final-reset svg {
-  width: 0.85rem;
-  height: 0.85rem;
+  width: 0.72rem;
+  height: 0.72rem;
   display: block;
+  transform: translateY(-1px);
 }
 
 .final-edit:hover {
@@ -3745,8 +3815,8 @@ a.final-edit {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.15rem;
-  height: 1.15rem;
+  width: 0.92rem;
+  height: 0.92rem;
   padding: 0;
   border: 0;
   border-radius: 6px;
@@ -3756,10 +3826,10 @@ a.final-edit {
 }
 
 .final-reset svg {
-  width: 0.85rem;
-  height: 0.85rem;
+  width: 0.72rem;
+  height: 0.72rem;
   display: block;
-  transform: translateY(1px);
+  transform: translateY(-1px);
 }
 
 .final-reset:hover {
@@ -4757,22 +4827,37 @@ a.final-edit {
 
 .gs-tabbar .gs-tabs { grid-column: 2; }
 
-.gs-save {
+.gs-actions {
   grid-column: 3;
   justify-self: end;
-  margin: 0 0 0.2rem 0.75rem;
+  align-self: end;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.28rem;
+  margin: 0 0 0.22rem 0.75rem;
+}
+
+.gs-actions[hidden] { display: none !important; }
+
+.gs-save,
+.gs-cancel {
+  width: 5.4rem;
   border: 0;
-  border-radius: 10px;
-  background: #16a34a;
+  border-radius: 8px;
   color: #fff;
   font: inherit;
-  font-size: 0.78rem;
+  font-size: 0.62rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 0.62rem 1.15rem;
+  padding: 0.32rem 0.55rem;
   cursor: pointer;
-  box-shadow: 0 0 14px rgba(34, 197, 94, 0.35);
+}
+
+.gs-save {
+  background: #16a34a;
+  animation: savePulse 2.2s ease-in-out infinite;
 }
 
 .gs-save:hover { background: #22c55e; }
@@ -4780,9 +4865,16 @@ a.final-edit {
 .gs-save:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+  animation: none;
 }
 
-.gs-save[hidden] { display: none !important; }
+.gs-cancel { background: #dc2626; }
+.gs-cancel:hover { background: #ef4444; }
+
+@keyframes savePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.2); }
+  50% { box-shadow: 0 0 12px 2px rgba(34, 197, 94, 0.7); }
+}
 
 .gs-inline input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
