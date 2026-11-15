@@ -1305,3 +1305,140 @@ function setupProfile() {
   Array.prototype.forEach.call(homeTables, writeHome);
 })();
 
+(function paintHomeFinals() {
+  var list = document.querySelector(".home-board .score-list");
+  if (!list) return;
+  var slots = Array.prototype.slice.call(list.querySelectorAll(".score-game"));
+  if (!slots.length) return;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { saved = {}; }
+
+  function prettyDate(iso) {
+    var parts = String(iso || "").split("-");
+    if (parts.length !== 3) return "";
+    return Number(parts[1]) + "/" + Number(parts[2]) + "/" + parts[0];
+  }
+  function prettyTime(hour, minute) {
+    if (hour == null || String(hour).trim() === "") return "";
+    var h = parseInt(hour, 10);
+    if (!isFinite(h)) return "";
+    var m = parseInt(minute, 10);
+    if (!isFinite(m)) m = 0;
+    var suffix = h >= 12 ? "PM" : "AM";
+    return (h % 12 || 12) + ":" + (m < 10 ? "0" : "") + m + " " + suffix;
+  }
+  function whenKey(meta) {
+    if (!meta || !meta.date) return "";
+    var h = parseInt(meta.hour, 10);
+    var m = parseInt(meta.minute, 10);
+    if (!isFinite(h)) h = 0;
+    if (!isFinite(m)) m = 0;
+    if (String(meta.hour || "").trim() === "") return meta.date + "T00:00";
+    return meta.date + "T" + (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
+  }
+  function streamHref(value) {
+    var raw = String(value || "").trim();
+    if (!raw) return "";
+    if (!/^https?:\/\//i.test(raw)) raw = "https://" + raw;
+    try {
+      var url = new URL(raw);
+      if (url.protocol !== "http:" && url.protocol !== "https:") return "";
+      return url.href;
+    } catch (err) {
+      return "";
+    }
+  }
+  function isForfeit(game) {
+    if (!game) return false;
+    if (game.forfeit) return true;
+    return [game.awayScore, game.homeScore].some(function (score) {
+      return score === "W" || score === "L" || score === "FFW" || score === "FFL";
+    });
+  }
+  function sideMark(game, side) {
+    var score = side === "away" ? game.awayScore : game.homeScore;
+    var other = side === "away" ? game.homeScore : game.awayScore;
+    if (isForfeit(game)) {
+      if (game.forfeitTeam === side || score === "L" || score === "FFL") return "FFL";
+      return "FFW";
+    }
+    return score == null || score === "" ? "—" : String(score);
+  }
+  function sideKind(game, side) {
+    if (isForfeit(game)) return sideMark(game, side) === "FFL" ? "is-loss" : "is-win";
+    var away = Number(game.awayScore);
+    var home = Number(game.homeScore);
+    if (!isFinite(away) || !isFinite(home) || away === home) return "";
+    var win = side === "away" ? away > home : home > away;
+    return win ? "is-win" : "is-loss";
+  }
+
+  var games = [];
+  Object.keys(saved).forEach(function (id) {
+    var game = saved[id];
+    if (!game) return;
+    var legacy = game.submitted == null && game.awayScore !== "" && game.homeScore !== "" && game.awayScore != null && game.homeScore != null;
+    if (!(game.submitted === true || legacy)) return;
+    var parts = String(id).split("|");
+    if (parts.length < 3) return;
+    games.push({ id: id, week: parts[0], away: parts[1], home: parts[2], game: game, when: whenKey(game.meta) });
+  });
+  games.sort(function (a, b) {
+    if (a.when !== b.when) {
+      if (!a.when) return 1;
+      if (!b.when) return -1;
+      return a.when < b.when ? 1 : -1;
+    }
+    return Number(b.week) - Number(a.week);
+  });
+
+  slots.forEach(function (card, index) {
+    var item = games[index];
+    if (!item) return;
+    var game = item.game;
+    var meta = game.meta || {};
+    var label = isForfeit(game) ? "FORFEIT" : "FINAL";
+    var detail = "— Week " + item.week + ", " + (meta.date ? prettyDate(meta.date) : "TBD");
+    var time = prettyTime(meta.hour, meta.minute);
+    if (time) detail += ", @ " + time;
+    card.className = "score-game is-posted";
+    card.innerHTML = "";
+    var head = document.createElement("span");
+    head.className = "final";
+    var copy = document.createElement("span");
+    copy.className = "final-copy";
+    var word = document.createElement("b");
+    word.className = "final-word";
+    word.textContent = label;
+    var metaEl = document.createElement("span");
+    metaEl.className = "final-meta";
+    metaEl.textContent = " " + detail;
+    copy.append(word, metaEl);
+    head.appendChild(copy);
+    var links = document.createElement("span");
+    links.className = "stream-links";
+    [["youtube", "youtube.svg", "YouTube"], ["twitch", "twitch.svg", "Twitch"]].forEach(function (entry) {
+      var href = streamHref(meta[entry[0]]);
+      if (!href) return;
+      var link = document.createElement("a");
+      link.href = href;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.setAttribute("aria-label", entry[2]);
+      link.innerHTML = '<img src="' + entry[1] + '" alt="">';
+      links.appendChild(link);
+    });
+    if (links.childNodes.length) head.appendChild(links);
+    card.appendChild(head);
+    [["away", item.away], ["home", item.home]].forEach(function (side) {
+      var name = document.createElement("span");
+      name.textContent = side[1];
+      var score = document.createElement("strong");
+      score.textContent = sideMark(game, side[0]);
+      var kind = sideKind(game, side[0]);
+      if (kind) score.className = kind;
+      card.append(name, score);
+    });
+  });
+})();
+

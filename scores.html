@@ -224,13 +224,96 @@
         el.classList.toggle("is-win", kind === "win");
         el.classList.toggle("is-loss", kind === "loss");
       }
+      function streamHref(value) {
+        var raw = String(value || "").trim();
+        if (!raw) return "";
+        if (!/^https?:\/\//i.test(raw)) raw = "https://" + raw;
+        try {
+          var url = new URL(raw);
+          if (url.protocol !== "http:" && url.protocol !== "https:") return "";
+          return url.href;
+        } catch (err) {
+          return "";
+        }
+      }
+      function ensureWhen(card) {
+        var existing = card.querySelector(".final-when");
+        if (existing) return existing;
+        var when = card.querySelector(".final-top > span:last-child");
+        if (!when) return null;
+        var wrap = document.createElement("span");
+        wrap.className = "final-when-wrap";
+        var links = document.createElement("span");
+        links.className = "stream-links";
+        when.parentNode.insertBefore(wrap, when);
+        when.classList.add("final-when");
+        wrap.appendChild(when);
+        wrap.appendChild(links);
+        return when;
+      }
+      function paintStreams(card, meta) {
+        var box = card.querySelector(".stream-links");
+        if (!box) return;
+        box.innerHTML = "";
+        [["youtube", "youtube.svg", "YouTube"], ["twitch", "twitch.svg", "Twitch"]].forEach(function (item) {
+          var href = streamHref(meta && meta[item[0]]);
+          if (!href) return;
+          var link = document.createElement("a");
+          link.href = href;
+          link.target = "_blank";
+          link.rel = "noopener";
+          link.setAttribute("aria-label", item[2]);
+          link.innerHTML = '<img src="' + item[1] + '" alt="">';
+          box.appendChild(link);
+        });
+      }
+      function openReset(id) {
+        var old = document.getElementById("reset-modal");
+        if (old) old.remove();
+        var modal = document.createElement("div");
+        modal.id = "reset-modal";
+        modal.className = "logout-modal";
+        modal.innerHTML = '<div class="logout-card"><p>Reset box score?</p><span>This clears the score, stats, and date for this game.</span><div><button type="button" class="reset-confirm" id="reset-yes">Reset</button><button type="button" id="reset-no">Cancel</button></div></div>';
+        document.body.appendChild(modal);
+        function close() { modal.remove(); }
+        modal.addEventListener("click", function (event) {
+          if (event.target === modal) close();
+        });
+        modal.querySelector("#reset-no").addEventListener("click", close);
+        modal.querySelector("#reset-yes").addEventListener("click", function () {
+          try {
+            var all = JSON.parse(localStorage.getItem("jba-boxscores") || "{}");
+            delete all[id];
+            localStorage.setItem("jba-boxscores", JSON.stringify(all));
+          } catch (err) {}
+          location.reload();
+        });
+      }
+      function ensureReset(card, id) {
+        if (!id || card.querySelector(".final-reset")) return;
+        var edit = card.querySelector(".final-edit");
+        if (!edit) return;
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "final-reset";
+        button.setAttribute("aria-label", "Reset box score");
+        button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M20 4.2V9h-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        button.addEventListener("click", function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          openReset(id);
+        });
+        edit.insertAdjacentElement("afterend", button);
+      }
       document.querySelectorAll(".final-card").forEach(function (card) {
         var id = card.getAttribute("data-game") || "";
         var week = id.split("|")[0] || "";
         var game = saved[id];
         var legacy = game && game.submitted == null && game.awayScore !== "" && game.homeScore !== "" && game.awayScore != null && game.homeScore != null;
         var official = game && (game.submitted === true || legacy);
-        var when = card.querySelector(".final-top > span:last-child");
+        var when = ensureWhen(card);
+        if (game) ensureReset(card, id);
+        paintStreams(card, official && game.meta ? game.meta : null);
         if (official && game.meta) {
           if (when) when.textContent = whenLabel(week, game.meta);
           card.setAttribute("data-when", whenKey(game.meta));

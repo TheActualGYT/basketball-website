@@ -111,47 +111,10 @@
       <p class="backup-note">If both teams are unavailable before your application is approved, a staff member will contact you about the next team you would like. You will have priority on that choice.</p>
       </div>
     </form>
-    <aside class="panel roster-box is-locked" id="roster-box">
-      <div class="section-banner"><h3 class="box-title">Roster Construction</h3></div>
-      <label class="field-label" for="player-search">Search free agents <i class="req">*</i></label>
-      <div class="player-search">
-        <input id="player-search" type="search" placeholder="Search players" autocomplete="off">
-        <div class="player-results" id="player-results"></div>
-      </div>
-      <p class="roster-count" id="roster-count">Teams must include at least 5 active players, coaches are optional. Owners can be a player themselves, or team staff.</p>
-      <div class="roster-layout">
-        <p class="slot-title players-title">Players</p>
-        <p class="slot-title staff-title">Staff</p>
-        <div class="roster-divider" aria-hidden="true"></div>
-        <ol class="roster-list roster-players" id="roster-list"></ol>
-        <ol class="roster-list roster-staff" id="staff-list"></ol>
-      </div>
-      <p class="roster-count roster-after">Additional players and staff can be added to the roster once your application is initially approved by staff. If you run into any bugs or concerns, please make a ticket in our server.</p>
-    </aside>
     </div>
     <button class="cta-btn apply-submit" id="apply-submit" type="submit" form="apply-form" disabled>Submit application</button>
     <p class="apply-status" id="form-status"></p>
   </section>
-    <div class="role-modal" id="role-modal" hidden>
-      <div class="role-card">
-        <p id="role-title">How should this player be listed?</p>
-        <strong id="role-player"></strong>
-        <div class="role-actions" id="role-actions">
-          <button type="button" data-role="Player">Player</button>
-          <button type="button" data-role="Head Coach">Head Coach</button>
-          <button type="button" data-role="Assistant Coach">Assistant Coach</button>
-          <button type="button" data-role="Owner ONLY" id="owner-only-choice" class="owner-only-btn">
-            <span>Owner ONLY</span>
-            <span class="inline-info">i<span>Owner only keeps this account on the roster for team transactions and management. They cannot play or coach.</span></span>
-          </button>
-        </div>
-        <div class="role-footer">
-          <button type="button" class="role-remove" data-role="remove" hidden>Remove</button>
-          <button type="button" class="role-cancel" data-role="cancel">Cancel</button>
-        </div>
-        <p class="role-later">These roles can be changed even after registration. Players and coaching staff can also be added after registration.</p>
-      </div>
-    </div>
   <script src="discord-config.js"></script>
   <script src="script.js"></script>
   <script>
@@ -167,7 +130,6 @@
         input.value = display + " (@" + tag + ")";
         lock.classList.add("is-ready");
         document.getElementById("apply-rest").classList.remove("is-locked");
-        document.getElementById("roster-box").classList.remove("is-locked");
         const roblox = document.getElementById("roblox-name");
         if (roblox && user.roblox) {
           roblox.value = user.roblox;
@@ -209,273 +171,6 @@
     const discordStatus = document.getElementById("discord-status");
     const applyRest = document.getElementById("apply-rest");
     let claimed = [];
-    const freeAgents = [];
-    let signedPlayers = freeAgents.slice();
-    let roster = [];
-    let robloxReady = false;
-    let ownerRole = "Player";
-
-    function displayName(player) {
-      return player.name || player.username || "Player";
-    }
-
-    function tagName(player) {
-      return player.username || player.name || "";
-    }
-
-    function renderRoster() {
-      const players = document.getElementById("roster-list");
-      const staff = document.getElementById("staff-list");
-      const count = document.getElementById("roster-count");
-      const owner = signedInUser();
-      const ownerEntry = { owner: true, role: ownerRole, name: owner ? displayName(owner) : "Owner", username: owner ? tagName(owner) : "", id: owner && owner.id, avatar: owner && owner.avatar };
-      const playerRows = [];
-      if (ownerRole === "Player") playerRows.push(ownerEntry);
-      roster.forEach(function (player) {
-        if (player.role === "Player") playerRows.push(player);
-      });
-      while (playerRows.length < 10) playerRows.push(null);
-      const staffRoles = ["Head Coach", "Assistant Coach", "Owner ONLY"];
-      const staffAssigned = {};
-      if (ownerRole !== "Player") staffAssigned[ownerRole] = ownerEntry;
-      roster.forEach(function (player) {
-        if (player.role !== "Player") staffAssigned[player.role] = player;
-      });
-      fillSlots(players, playerRows.slice(0, 10), true);
-      fillSlots(staff, staffRoles.map(function (role) { return staffAssigned[role] || null; }), false);
-      count.textContent = "Teams must include at least 5 active players, coaches are optional. Owners can be a player themselves, or team staff.";
-      refreshSubmit();
-    }
-
-    function fillSlots(list, rows, players) {
-      const staffLabels = ["HEAD COACH — Empty", "ASSISTANT COACH — Empty", "OWNER ONLY — Empty"];
-      list.innerHTML = "";
-      rows.forEach(function (player, index) {
-        const item = document.createElement("li");
-        if (!player) {
-          item.className = "is-empty";
-          const pic = document.createElement("span");
-          pic.className = "roster-pfp empty-pfp";
-          item.appendChild(pic);
-          const label = document.createElement("span");
-          label.textContent = players ? "PLAYER — Empty" : staffLabels[index];
-          item.appendChild(label);
-          if (players && index < 5) {
-            const star = document.createElement("span");
-            star.className = "slot-star";
-            star.textContent = " *";
-            item.appendChild(star);
-          }
-          list.appendChild(item);
-          return;
-        }
-        const person = player.owner ? (signedInUser() || { name: "Owner", username: "" }) : player;
-        item.appendChild(nameNode(person, true));
-        const side = document.createElement("div");
-        side.className = "roster-side";
-        const stack = document.createElement("span");
-        stack.className = "role-stack";
-        if (player.owner) {
-          const ownerTag = document.createElement("span");
-          ownerTag.className = "owner-tag";
-          ownerTag.textContent = "(OWNER)";
-          stack.appendChild(ownerTag);
-        }
-        const roleRow = document.createElement("span");
-        roleRow.className = "role-row";
-        const role = document.createElement("span");
-        role.className = "role-label " + roleClass(player.role);
-        role.textContent = player.role;
-        roleRow.appendChild(role);
-        stack.appendChild(roleRow);
-        side.appendChild(stack);
-        if (players && index < 5) {
-          const star = document.createElement("i");
-          star.className = "req";
-          star.textContent = "*";
-          side.appendChild(star);
-        }
-        side.appendChild(editButton(player.owner ? null : player));
-        item.appendChild(side);
-        list.appendChild(item);
-      });
-    }
-
-    function avatarUrl(player) {
-      if (!player) return "";
-      if (typeof discordAvatarUrl === "function" && player.id) return discordAvatarUrl(player);
-      return "";
-    }
-
-    function nameNode(player, withPhoto) {
-      const wrap = document.createElement("span");
-      wrap.className = "person-name";
-      if (withPhoto) {
-        const img = document.createElement("img");
-        img.className = "roster-pfp";
-        img.alt = "";
-        img.referrerPolicy = "no-referrer";
-        const src = avatarUrl(player);
-        if (src) img.src = src;
-        wrap.appendChild(img);
-      }
-      const copy = document.createElement("span");
-      copy.className = "person-copy";
-      const display = document.createElement("b");
-      display.textContent = displayName(player);
-      const tag = document.createElement("small");
-      if (tagName(player)) tag.textContent = "@" + tagName(player);
-      copy.appendChild(display);
-      if (tagName(player)) copy.appendChild(tag);
-      wrap.appendChild(copy);
-      return wrap;
-    }
-
-    let searchOpen = false;
-    let pendingPlayer = null;
-    let pendingMode = "add";
-
-    function roleClass(role) {
-      if (role === "Head Coach" || role === "Assistant Coach") return "is-coach";
-      if (role === "Owner ONLY" || role === "Owner only") return "is-owner-only";
-      return "is-player";
-    }
-
-    function roleTaken(role) {
-      if (role !== "Head Coach" && role !== "Assistant Coach") return false;
-      if (pendingMode !== "owner" && ownerRole === role) return true;
-      return roster.some(function (picked) {
-        return picked.role === role && (!pendingPlayer || picked.id !== pendingPlayer.id);
-      });
-    }
-
-    function editButton(player) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "role-edit";
-      button.setAttribute("aria-label", "Edit role");
-      button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>';
-      button.addEventListener("click", function () {
-        pendingPlayer = player;
-        pendingMode = player ? "edit" : "owner";
-        openRoleModal(player || signedInUser() || { name: "Owner", username: "" });
-      });
-      return button;
-    }
-
-    function renderPlayerResults() {
-      const box = document.getElementById("player-results");
-      const query = document.getElementById("player-search").value.trim().toLowerCase();
-      const owner = signedInUser();
-      box.innerHTML = "";
-      if (!searchOpen) return;
-      const matches = signedPlayers.filter(function (player) {
-        if (owner && (String(player.id) === String(owner.id) || player.username === owner.username)) return false;
-        if (roster.some(function (picked) { return String(picked.id) === String(player.id); })) return false;
-        return true;
-      }).map(function (player) {
-        const name = displayName(player).toLowerCase();
-        const tag = tagName(player).toLowerCase();
-        let rank = 0;
-        if (query) {
-          if (name.indexOf(query) === 0 || tag.indexOf(query) === 0) rank = 0;
-          else if (name.indexOf(query) !== -1 || tag.indexOf(query) !== -1) rank = 1;
-          else return null;
-        }
-        return { player: player, rank: rank };
-      }).filter(Boolean).sort(function (a, b) {
-        if (a.rank !== b.rank) return a.rank - b.rank;
-        return displayName(a.player).localeCompare(displayName(b.player));
-      });
-      matches.forEach(function (match) {
-        const player = match.player;
-        const button = document.createElement("button");
-        button.type = "button";
-        button.appendChild(nameNode(player, true));
-        button.addEventListener("mousedown", function (event) {
-          event.preventDefault();
-          pendingPlayer = player;
-          pendingMode = "add";
-          openRoleModal(player);
-        });
-        box.appendChild(button);
-      });
-    }
-
-    function openRoleModal(player) {
-      const modal = document.getElementById("role-modal");
-      const actions = document.getElementById("role-actions");
-      const remove = modal.querySelector('[data-role="remove"]');
-      document.getElementById("role-title").textContent = "How should this player be listed?";
-      document.getElementById("role-player").textContent = displayName(player) + (tagName(player) ? " (@" + tagName(player) + ")" : "");
-      const current = pendingMode === "owner" ? ownerRole : (pendingMode === "edit" && pendingPlayer ? pendingPlayer.role : "");
-      const ownerOnly = document.getElementById("owner-only-choice");
-      actions.hidden = false;
-      ownerOnly.hidden = pendingMode !== "owner";
-      const playersFull = (ownerRole === "Player" ? 1 : 0) + roster.filter(function (picked) { return picked.role === "Player"; }).length >= 10;
-      const staffFull = (ownerRole === "Player" ? 0 : 1) + roster.filter(function (picked) { return picked.role !== "Player"; }).length >= 3;
-      modal.querySelector('[data-role="Player"]').disabled = pendingMode === "add" && playersFull;
-      modal.querySelector('[data-role="Head Coach"]').disabled = (roleTaken("Head Coach") && current !== "Head Coach") || (pendingMode === "add" && staffFull);
-      modal.querySelector('[data-role="Assistant Coach"]').disabled = (roleTaken("Assistant Coach") && current !== "Assistant Coach") || (pendingMode === "add" && staffFull);
-      remove.hidden = pendingMode !== "edit";
-      modal.hidden = false;
-    }
-
-    document.querySelector(".role-card").addEventListener("click", function (event) {
-      event.stopPropagation();
-      if (event.target.closest(".inline-info")) return;
-      const choice = event.target.closest("[data-role]");
-      const role = choice ? choice.getAttribute("data-role") : "";
-      if (!role) return;
-      const modal = document.getElementById("role-modal");
-      if (role === "cancel") {
-        pendingPlayer = null;
-        modal.hidden = true;
-        return;
-      }
-      if (role === "remove" && pendingMode === "edit" && pendingPlayer) {
-        roster = roster.filter(function (picked) { return picked.id !== pendingPlayer.id; });
-      } else if (role !== "remove" && pendingMode === "owner") {
-        ownerRole = role;
-      } else if (role !== "remove" && pendingMode === "add" && pendingPlayer && roster.length < 10) {
-        roster.push({
-          id: pendingPlayer.id,
-          username: pendingPlayer.username,
-          name: pendingPlayer.name,
-          avatar: pendingPlayer.avatar || "",
-          role: role
-        });
-        document.getElementById("player-search").value = "";
-        searchOpen = false;
-        document.getElementById("player-search").parentElement.classList.remove("is-open");
-      } else if (role !== "remove" && pendingMode === "edit" && pendingPlayer) {
-        pendingPlayer.role = role;
-      }
-      pendingPlayer = null;
-      modal.hidden = true;
-      renderRoster();
-      renderPlayerResults();
-    });
-
-    const searchBox = document.getElementById("player-search");
-    searchBox.addEventListener("focus", function () {
-      searchOpen = true;
-      searchBox.parentElement.classList.add("is-open");
-      renderPlayerResults();
-    });
-    searchBox.addEventListener("input", renderPlayerResults);
-    document.addEventListener("click", function (event) {
-      if (!event.target.closest(".player-search")) {
-        searchOpen = false;
-        searchBox.parentElement.classList.remove("is-open");
-      }
-    });
-    fetch("/api/players").then(function (res) { return res.json(); }).then(function (data) {
-      if (data.players && data.players.length) signedPlayers = data.players;
-      if (searchOpen) renderPlayerResults();
-    }).catch(function () {});
-    renderRoster();
-
     function signedInUser() {
       let saved = null;
       try { saved = JSON.parse(localStorage.getItem("jba-discord") || "null"); } catch (err) {}
@@ -493,18 +188,14 @@
       discordName.value = display + " (@" + tag + ")";
       discordLock.classList.add("is-ready");
       applyRest.classList.remove("is-locked");
-      document.getElementById("roster-box").classList.remove("is-locked");
       setStatus(discordStatus, "", true);
-      if (typeof renderRoster === "function") renderRoster();
     }
 
     function unlockDiscord(message) {
       discordName.value = "";
       discordLock.classList.remove("is-ready");
       applyRest.classList.add("is-locked");
-      document.getElementById("roster-box").classList.add("is-locked");
       setStatus(discordStatus, message || "", false);
-      if (typeof renderRoster === "function") renderRoster();
     }
 
     function openDiscordSignup() {
@@ -688,8 +379,7 @@
       const first = document.getElementById("first-team").value;
       const second = document.getElementById("second-team").value;
       const teamsOk = first && second && first !== second;
-      const active = roster.filter(function (player) { return player.role === "Player"; }).length + (ownerRole === "Player" ? 1 : 0);
-      button.disabled = !(signedInUser() && robloxReady && teamsOk && active >= 5 && roster.length <= 10);
+      button.disabled = !(signedInUser() && robloxReady && teamsOk);
     }
 
     nameInput.addEventListener("input", function () {
@@ -737,10 +427,6 @@
         unlockDiscord("Sign up with Discord and join the server before registering.");
         return;
       }
-      if (roster.length < 4) {
-        setStatus(formStatus, "Add at least 4 players besides the owner.", false);
-        return;
-      }
       setStatus(formStatus, "Checking application…", true);
       try {
         const data = await checkApplication(false);
@@ -748,9 +434,7 @@
         if (data && data.ok) {
           setStatus(formStatus, "Application accepted for " + data.roblox.displayName + ". This draft does not lock the team yet.", true);
           form.reset();
-          roster = [];
           robloxReady = false;
-          renderRoster();
           refreshDiscordGate();
           refreshSubmit();
           document.querySelectorAll(".team-pick").forEach(function (pick) {

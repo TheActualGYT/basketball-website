@@ -3006,6 +3006,10 @@ input.is-profile {
 
 .score-game .final {
   grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
   color: #fff;
   font-size: 0.68rem;
   font-weight: 700;
@@ -3403,8 +3407,8 @@ input.is-profile {
 .conf-table td:nth-child(n + 3) {
   width: 1%;
   white-space: nowrap;
-  padding-left: 0.28rem;
-  padding-right: 0.12rem;
+  padding-left: 0.72rem;
+  padding-right: 0.28rem;
 }
 
 .conf-table td:first-child,
@@ -3451,6 +3455,39 @@ input.is-profile {
 .score-game {
   padding: 0.6rem 0.75rem 0.6rem 0.9rem;
   gap: 0.28rem 0.7rem;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.score-game:hover {
+  border-color: rgba(255, 255, 255, 0.55);
+  background-color: #1c1c1c;
+  background-image:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 7px),
+    linear-gradient(180deg, #262626 0%, #161616 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 16px rgba(255, 255, 255, 0.1);
+}
+
+.score-game > span:not(.final) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score-game strong.is-win {
+  color: #86efac;
+  text-shadow: 0 0 10px rgba(134, 239, 172, 0.45);
+}
+
+.score-game strong.is-loss {
+  color: #f87171;
+  text-shadow: 0 0 10px rgba(248, 113, 113, 0.45);
+}
+
+.score-game.is-posted .final-word {
+  color: #86efac;
+  font-weight: 800;
+  animation: finalPulse 3.6s ease-in-out infinite;
 }
 
 .news-secondary {
@@ -3597,6 +3634,12 @@ input.is-profile {
   background: #09090b;
   border: 1px solid rgba(255, 255, 255, 0.5);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 6px 14px rgba(0, 0, 0, 0.32);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.final-card:hover {
+  background: #121214;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 6px 14px rgba(0, 0, 0, 0.32), 0 0 16px rgba(255, 255, 255, 0.08);
 }
 
 .final-card::before {
@@ -3634,19 +3677,10 @@ input.is-profile {
   letter-spacing: 0.08em;
 }
 
-.final-card.is-final .final-state {
+.final-card.is-final .final-state,
+.final-card.is-forfeit .final-state {
   color: #86efac;
   animation: finalPulse 3.6s ease-in-out infinite;
-}
-
-.final-card.is-forfeit .final-state {
-  color: #fff;
-  animation: forfeitPulse 3.6s ease-in-out infinite;
-}
-
-@keyframes forfeitPulse {
-  0%, 100% { color: #fff; text-shadow: 0 0 4px rgba(255, 255, 255, 0.2); }
-  50% { color: #fff; text-shadow: 0 0 14px rgba(255, 255, 255, 0.85); }
 }
 
 @keyframes finalPulse {
@@ -3680,6 +3714,87 @@ input.is-profile {
 
 a.final-edit {
   text-decoration: none;
+}
+
+.final-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #f87171;
+  cursor: pointer;
+}
+
+.final-reset svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.final-reset:hover {
+  color: #fecaca;
+  background: rgba(248, 113, 113, 0.16);
+}
+
+.final-when-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+
+.stream-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  flex: 0 0 auto;
+}
+
+.stream-links a {
+  display: block;
+  line-height: 0;
+  border-radius: 6px;
+}
+
+.stream-links img {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: block;
+}
+
+.stream-links a:hover img {
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.55);
+}
+
+.reset-confirm {
+  border: 0;
+  border-radius: 50px;
+  background: #e11d48;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.7rem 1.45rem;
+  cursor: pointer;
+}
+
+.reset-confirm:hover {
+  background: #f43f5e;
+}
+
+.logout-card #reset-no {
+  border: 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 650;
+  cursor: pointer;
 }
 
 .final-side {
