@@ -4210,16 +4210,16 @@ a.final-edit {
 }
 
 .gs-line th {
-  background: #09090b;
+  background: transparent;
   color: #fff;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   text-align: center;
-  padding-top: 0.42rem;
-  padding-bottom: 0.42rem;
-  border-bottom: 2px solid #ec4899;
+  padding: 0.7rem 0.7rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  animation: titlePulse 3.6s ease-in-out infinite;
 }
 
 .gs-line th:first-child,
