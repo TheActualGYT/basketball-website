@@ -3903,10 +3903,76 @@ a.final-edit {
 }
 
 .box-layout {
+  display: block;
+}
+
+.mso-team {
+  overflow: hidden;
+  border-radius: 14px;
+  background: #09090b;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.32);
+}
+
+.mso-team > header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.8rem 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.mso-team > header img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.mso-team > header h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.mso-team > header span {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mso-split {
   display: grid;
-  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
-  gap: 1rem;
-  align-items: start;
+  grid-template-columns: 250px minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.mso-roster {
+  padding: 0.55rem;
+  background: #121212;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.mso-roster p {
+  margin: 0 0 0.35rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sheet-empty {
+  padding: 1rem 0.8rem !important;
+  text-align: left !important;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .mso-split { grid-template-columns: 1fr; }
+  .mso-roster { border-right: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
 }
 
 .box-rosters {

@@ -314,17 +314,119 @@
         return section;
       }
 
+      function teamEditor(name, sideName) {
+        var section = document.createElement("section");
+        section.className = "mso-team";
+        var head = document.createElement("header");
+        head.innerHTML = '<img src="' + logos[name] + '" alt=""><div><h3>' + name + '</h3><span>' + (sideName === "home" ? "Home" : "Away") + '</span></div>';
+        var score = document.createElement("label");
+        score.className = "box-score";
+        score.appendChild(document.createTextNode("Score"));
+        var input = document.createElement("input");
+        input.type = "number";
+        input.min = "0";
+        input.inputMode = "numeric";
+        input.name = sideName + "-score";
+        input.setAttribute("aria-label", name + " score");
+        if (stats[sideName + "-score"] != null) input.value = stats[sideName + "-score"];
+        input.addEventListener("input", function () { stats[sideName + "-score"] = input.value; });
+        score.appendChild(input);
+        head.appendChild(score);
+        section.appendChild(head);
+        var split = document.createElement("div");
+        split.className = "mso-split";
+        var roster = document.createElement("div");
+        roster.className = "mso-roster";
+        var rosterLabel = document.createElement("p");
+        rosterLabel.textContent = "Team roster";
+        roster.appendChild(rosterLabel);
+        slots[sideName].forEach(function (player, index) {
+          roster.appendChild(spotButton(player, sideName, index));
+        });
+        split.appendChild(roster);
+        var playing = slots[sideName].filter(function (player) { return player && active[sideName][playerId(player)]; });
+        var scroll = document.createElement("div");
+        scroll.className = "sheet-scroll";
+        var table = document.createElement("table");
+        table.className = "box-sheet";
+        var thead = document.createElement("thead");
+        var headRow = document.createElement("tr");
+        var playerHead = document.createElement("th");
+        playerHead.textContent = "Player";
+        headRow.appendChild(playerHead);
+        SHEET.forEach(function (col) {
+          var th = document.createElement("th");
+          th.textContent = col[1];
+          headRow.appendChild(th);
+        });
+        thead.appendChild(headRow);
+        var tbody = document.createElement("tbody");
+        if (!playing.length) {
+          var blank = document.createElement("tr");
+          var cell = document.createElement("td");
+          cell.colSpan = SHEET.length + 1;
+          cell.className = "sheet-empty";
+          cell.textContent = "Select a player from the roster.";
+          blank.appendChild(cell);
+          tbody.appendChild(blank);
+        } else {
+          playing.forEach(function (player) {
+            var row = document.createElement("tr");
+            var who = document.createElement("th");
+            who.className = "sheet-player";
+            var img = document.createElement("img");
+            img.alt = "";
+            img.referrerPolicy = "no-referrer";
+            img.src = avatar(player);
+            var copy = document.createElement("span");
+            var title = document.createElement("b");
+            title.textContent = player.name || player.username || "Unknown";
+            var tag = document.createElement("small");
+            tag.textContent = player.username ? "@" + player.username : "";
+            copy.append(title, tag);
+            who.append(img, copy);
+            row.appendChild(who);
+            SHEET.forEach(function (col) {
+              var statCell = document.createElement("td");
+              statCell.appendChild(statInput(player, sideName, col[0]));
+              row.appendChild(statCell);
+            });
+            tbody.appendChild(row);
+          });
+        }
+        var tfoot = document.createElement("tfoot");
+        var total = document.createElement("tr");
+        var totalLabel = document.createElement("th");
+        totalLabel.textContent = "Total";
+        total.appendChild(totalLabel);
+        SHEET.forEach(function (col) {
+          var totalCell = document.createElement("td");
+          var sum = 0;
+          var any = false;
+          playing.forEach(function (player) {
+            var saved = stats[playerId(player)] && stats[playerId(player)][col[0]];
+            if (saved === "" || saved == null) return;
+            var value = Number(saved);
+            if (!Number.isFinite(value)) return;
+            sum += value;
+            any = true;
+          });
+          totalCell.textContent = any ? String(sum) : "—";
+          total.appendChild(totalCell);
+        });
+        tfoot.appendChild(total);
+        table.append(thead, tbody, tfoot);
+        scroll.appendChild(table);
+        split.appendChild(scroll);
+        section.appendChild(split);
+        return section;
+      }
+
       function paint() {
-        rosters.textContent = "";
+        rosters.hidden = true;
         activeBox.textContent = "";
-        var label = document.createElement("h3");
-        label.className = "roster-title";
-        label.textContent = "Team Rosters";
-        rosters.appendChild(label);
-        rosters.appendChild(rosterBlock(away, "away"));
-        rosters.appendChild(rosterBlock(home, "home"));
-        activeBox.appendChild(activeTeam(away, "away"));
-        activeBox.appendChild(activeTeam(home, "home"));
+        activeBox.appendChild(teamEditor(away, "away"));
+        activeBox.appendChild(teamEditor(home, "home"));
       }
 
       fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
