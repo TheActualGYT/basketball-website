@@ -4168,7 +4168,7 @@ a.final-edit {
   width: 100%;
   min-width: 1080px;
   border-collapse: collapse;
-  background: #101010;
+  background: transparent;
 }
 
 .gs-stat th,
@@ -4181,6 +4181,17 @@ a.final-edit {
   color: #eee;
   font-size: 0.78rem;
   font-weight: 600;
+}
+
+.gs-stat tbody td {
+  background-color: #121212;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(115deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(25deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 14px),
+    linear-gradient(180deg, #1c1c1c 0%, #101010 100%);
+  background-size: 180px 180px, auto, auto, auto;
+  background-blend-mode: overlay, normal, normal, normal;
 }
 
 .gs-stat th:last-child,
@@ -4206,7 +4217,6 @@ a.final-edit {
   position: sticky;
   left: 0;
   z-index: 1;
-  background: #101010;
 }
 
 .gs-stat thead th:first-child {
@@ -4220,8 +4230,6 @@ a.final-edit {
 
 .gs-stat .gs-person { gap: 0.55rem; }
 .gs-stat .gs-person b { font-size: 0.82rem; font-weight: 700; color: #fff; }
-.gs-stat tr.is-blank .gs-person b { color: rgba(255, 255, 255, 0.35); font-weight: 600; }
-.gs-stat .gs-dash { color: rgba(255, 255, 255, 0.28); }
 
 .gs-stat input {
   width: 2.8rem;
@@ -4244,14 +4252,13 @@ a.final-edit {
   margin: 0;
 }
 
-.gs-stat tbody tr:hover td { background: rgba(255, 255, 255, 0.035); }
-.gs-stat tbody tr:hover .gs-who { background: #161616; }
+.gs-stat tbody tr:hover td { background-color: #1a1a1a; }
 
 .game-score h2 { margin-bottom: 1rem; }
 
 .gs-top {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   margin-bottom: 1rem;
 }
 
