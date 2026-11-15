@@ -4210,16 +4210,15 @@ a.final-edit {
 }
 
 .gs-line th {
-  background: transparent;
+  background: #09090b;
   color: #fff;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   text-align: center;
-  padding: 0.7rem 0.7rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
-  animation: titlePulse 3.6s ease-in-out infinite;
+  padding: 0.42rem 0.55rem;
+  border-bottom: 2px solid #ec4899;
 }
 
 .gs-line th:first-child,
@@ -4419,13 +4418,14 @@ a.final-edit {
 .gs-card h3,
 .gs-list h3 {
   margin: 0;
-  padding: 0.7rem 0.85rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 0.55rem 0.75rem;
+  background: #09090b;
+  border-bottom: 2px solid #ec4899;
   color: #fff;
-  font-size: 0.95rem;
-  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  animation: titlePulse 3.6s ease-in-out infinite;
 }
 
 .gs-panel { margin-top: 0.85rem; }
@@ -4464,13 +4464,14 @@ a.final-edit {
 .gs-card h3,
 .gs-list h3 {
   margin: 0;
-  padding: 0.7rem 0.85rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 0.55rem 0.75rem;
+  background: #09090b;
+  border-bottom: 2px solid #ec4899;
   color: #fff;
-  font-size: 0.95rem;
-  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  animation: titlePulse 3.6s ease-in-out infinite;
 }
 
 .gs-card .gs-inline { margin: 0 0.75rem; }
