@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="logo.png" type="image/png">
+  <title>Submit Box Score | Junior Basketball Association</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <nav>
+      <div class="brand">
+        <a class="logo" href="home.html">
+          <img src="logo.png" alt="JBA Logo">
+          <span class="logo-name">Junior Basketball<br>Association</span>
+        </a>
+        <div class="nav-social">
+          <a href="https://discord.gg/36FHef566k" target="_blank" rel="noopener" aria-label="Discord"><img src="discord.svg" alt=""></a>
+          <a href="https://www.youtube.com/@PracticaIBasketball" target="_blank" rel="noopener" aria-label="YouTube"><img src="youtube.svg" alt=""></a>
+        </div>
+      </div>
+      <div class="nav-end">
+      <ul>
+        <li class="nav-drop">
+          <a href="rules.html" data-nav="league">League</a>
+          <div class="nav-menu">
+            <a href="rules.html" data-nav="rules">Rules</a>
+            <a href="teams.html" data-nav="teams">Teams</a>
+            <a href="players.html" data-nav="players">Players</a>
+            <a href="staff.html" data-nav="staff">Staff</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="standings.html" data-nav="standings">Standings</a>
+          <div class="nav-menu">
+            <a href="standings.html" data-nav="divisional">Divisional Standings</a>
+            <a href="power-rankings.html" data-nav="power">Power Rankings</a>
+            <a href="playoff.html" data-nav="playoff">Playoff Bracket</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="schedule.html" data-nav="games">Games</a>
+          <div class="nav-menu">
+            <a href="schedule.html" data-nav="schedule">Schedule</a>
+            <a href="scores.html" data-nav="scores">Final Scores</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="player-stats.html" data-nav="statistics">Statistics</a>
+          <div class="nav-menu">
+            <a href="team-stats.html" data-nav="team-stats">Team Stats</a>
+            <a href="player-stats.html" data-nav="player-stats">Player Stats</a>
+            <a href="records.html" data-nav="records">Records</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="mvp.html" data-nav="awards">Awards</a>
+          <div class="nav-menu">
+            <a href="mvp.html" data-nav="mvp">MVP Race</a>
+            <a href="all-stars.html" data-nav="all-stars">All-Stars</a>
+            <a href="hall-of-fame.html" data-nav="hall">Hall of Fame</a>
+          </div>
+        </li>
+      </ul>
+      <span class="nav-user" id="nav-user" hidden></span>
+      </div>
+    </nav>
+  </header>
+
+  <section class="division-page boxscore-page">
+    <h2>Submit Box Score</h2>
+    <p class="box-lead" id="box-lead">Loading game…</p>
+    <form id="box-form" hidden>
+      <div class="box-grid" id="box-grid"></div>
+      <p class="box-error" id="box-error" hidden></p>
+      <div class="box-submit"><button class="cta-btn" type="submit">Submit box score</button></div>
+    </form>
+  </section>
+
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var week = params.get("week") || "";
+      var away = params.get("away") || "";
+      var home = params.get("home") || "";
+      var lead = document.getElementById("box-lead");
+      var form = document.getElementById("box-form");
+      var grid = document.getElementById("box-grid");
+      var error = document.getElementById("box-error");
+      var logos = {
+        "Arizona Wildcats": "arizona.png",
+        "Baylor Bears": "baylor.png",
+        "Duke Blue Devils": "duke.png",
+        "Florida Gators": "florida.png",
+        "Georgia Bulldogs": "georgia.png",
+        "Houston Cougars": "houston.png",
+        "Kansas Jayhawks": "kansas.png",
+        "Kentucky Wildcats": "kentucky.png",
+        "LSU Tigers": "lsu.png",
+        "Miami Hurricanes": "miami.png",
+        "Michigan Wolverines": "michigan.png",
+        "North Carolina Tar Heels": "unc.png",
+        "Ohio State Buckeyes": "ohiostate.png",
+        "Oregon Ducks": "oregon.png",
+        "UCLA Bruins": "ucla.png",
+        "Virginia Cavaliers": "virginia.png"
+      };
+      var key = week + "|" + away + "|" + home;
+      if (!week || !logos[away] || !logos[home]) {
+        lead.textContent = "That game could not be found.";
+        return;
+      }
+      lead.textContent = "Week " + week + " · " + away + " at " + home;
+
+      function teamName(player) {
+        return String(player.team || player.teamName || "").trim();
+      }
+
+      function avatar(player) {
+        if (player.avatar && player.id) return "https://cdn.discordapp.com/avatars/" + player.id + "/" + player.avatar + ".png?size=64";
+        return "https://cdn.discordapp.com/embed/avatars/0.png";
+      }
+
+      function roster(players, name) {
+        return players.filter(function (player) {
+          if (player.notPlayer) return false;
+          return teamName(player).toLowerCase() === name.toLowerCase();
+        }).sort(function (a, b) {
+          return String(a.name || a.username || "").localeCompare(String(b.name || b.username || ""));
+        });
+      }
+
+      function side(name, mark, players) {
+        var section = document.createElement("section");
+        section.className = "box-team";
+        var head = document.createElement("header");
+        head.innerHTML = '<img src="' + logos[name] + '" alt=""><div><h3>' + name + '</h3><span>' + (mark === "home" ? "Home" : "Away") + '</span></div>';
+        var score = document.createElement("label");
+        score.className = "box-score";
+        score.innerHTML = "Score";
+        var input = document.createElement("input");
+        input.type = "number";
+        input.min = "0";
+        input.inputMode = "numeric";
+        input.name = mark + "-score";
+        input.setAttribute("aria-label", name + " score");
+        score.appendChild(input);
+        head.appendChild(score);
+        section.appendChild(head);
+        var list = document.createElement("div");
+        list.className = "box-roster";
+        if (!players.length) {
+          var empty = document.createElement("p");
+          empty.className = "box-empty";
+          empty.textContent = "No signed players on this roster yet.";
+          list.appendChild(empty);
+        } else {
+          var labels = document.createElement("div");
+          labels.className = "box-row box-labels";
+          labels.innerHTML = "<span>Player</span><span>PTS</span><span>REB</span><span>AST</span>";
+          list.appendChild(labels);
+          players.forEach(function (player) {
+            var row = document.createElement("div");
+            row.className = "box-row";
+            var who = document.createElement("div");
+            who.className = "box-player";
+            var img = document.createElement("img");
+            img.alt = "";
+            img.referrerPolicy = "no-referrer";
+            img.src = avatar(player);
+            var copy = document.createElement("span");
+            var title = document.createElement("b");
+            title.textContent = player.name || player.username || "Unknown";
+            var tag = document.createElement("small");
+            tag.textContent = player.username ? "@" + player.username : "";
+            copy.append(title, tag);
+            who.append(img, copy);
+            row.appendChild(who);
+            ["pts", "reb", "ast"].forEach(function (stat) {
+              var field = document.createElement("input");
+              field.type = "number";
+              field.min = "0";
+              field.inputMode = "numeric";
+              field.name = mark + "-" + (player.id || player.username) + "-" + stat;
+              field.setAttribute("data-player", player.id || player.username || "");
+              field.setAttribute("data-name", player.name || player.username || "Unknown");
+              field.setAttribute("data-stat", stat);
+              field.setAttribute("data-side", mark);
+              field.setAttribute("aria-label", (player.name || "Player") + " " + stat.toUpperCase());
+              row.appendChild(field);
+            });
+            list.appendChild(row);
+          });
+        }
+        section.appendChild(list);
+        return section;
+      }
+
+      function numberValue(input) {
+        if (!input || input.value.trim() === "") return null;
+        var value = Number(input.value);
+        return Number.isFinite(value) && value >= 0 ? value : null;
+      }
+
+      function best(rows, stat) {
+        var leader = null;
+        rows.forEach(function (row) {
+          if (row[stat] == null) return;
+          if (!leader || row[stat] > leader.value) leader = { name: row.name, value: String(row[stat]) };
+        });
+        return leader && Number(leader.value) > 0 ? leader : null;
+      }
+
+      fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+        var players = data.players || [];
+        grid.appendChild(side(away, "away", roster(players, away)));
+        grid.appendChild(side(home, "home", roster(players, home)));
+        form.hidden = false;
+        var saved = {};
+        try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}")[key] || {}; } catch (err) { saved = {}; }
+        if (saved.awayScore != null) form.elements["away-score"].value = saved.awayScore;
+        if (saved.homeScore != null) form.elements["home-score"].value = saved.homeScore;
+        (saved.lines || []).forEach(function (line) {
+          ["pts", "reb", "ast"].forEach(function (stat) {
+            var field = form.querySelector('[data-player="' + line.id + '"][data-stat="' + stat + '"]');
+            if (field && line[stat] != null) field.value = line[stat];
+          });
+        });
+      }).catch(function () {
+        lead.textContent = "The rosters could not be loaded.";
+      });
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        error.hidden = true;
+        var awayScore = numberValue(form.elements["away-score"]);
+        var homeScore = numberValue(form.elements["home-score"]);
+        if (awayScore == null || homeScore == null) {
+          error.textContent = "Enter a score for both teams.";
+          error.hidden = false;
+          return;
+        }
+        var lines = [];
+        var grouped = {};
+        Array.prototype.forEach.call(form.querySelectorAll("[data-stat]"), function (field) {
+          var id = field.getAttribute("data-player");
+          if (!grouped[id]) grouped[id] = { id: id, name: field.getAttribute("data-name"), pts: null, reb: null, ast: null };
+          grouped[id][field.getAttribute("data-stat")] = numberValue(field);
+        });
+        Object.keys(grouped).forEach(function (id) { lines.push(grouped[id]); });
+        var store = {};
+        try { store = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { store = {}; }
+        store[key] = {
+          awayScore: String(awayScore),
+          homeScore: String(homeScore),
+          lines: lines,
+          leaders: { pts: best(lines, "pts"), ast: best(lines, "ast"), reb: best(lines, "reb") }
+        };
+        localStorage.setItem("jba-boxscores", JSON.stringify(store));
+        location.href = "scores.html";
+      });
+    })();
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>
