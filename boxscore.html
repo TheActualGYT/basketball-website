@@ -288,17 +288,33 @@
         return INPUT_KEYS.some(function (key) { return statNum(row[key]) != null; });
       }
       function fillCalcs(tr) {
+        if (!tr) return;
         var row = {};
-        tr.querySelectorAll("[data-stat]").forEach(function (input) {
-          row[input.getAttribute("data-stat")] = input.value;
-        });
-        var ready = rowHasEntry(row);
-        var values = ready ? derived(row) : {};
-        tr.querySelectorAll("[data-calc]").forEach(function (cell) {
-          var value = values[cell.getAttribute("data-calc")];
-          cell.textContent = ready && value != null && value !== "" ? value : "—";
-        });
+        var fields = tr.getElementsByTagName("input");
+        for (var i = 0; i < fields.length; i++) {
+          var stat = fields[i].getAttribute("data-stat");
+          if (stat) row[stat] = fields[i].value;
+        }
+        var ready = false;
+        for (var name in row) {
+          if (statNum(row[name]) != null) ready = true;
+        }
+        var values = ready ? derived(row) : null;
+        var cells = tr.querySelectorAll("[data-calc]");
+        for (var c = 0; c < cells.length; c++) {
+          var key = cells[c].getAttribute("data-calc");
+          var value = values ? values[key] : "";
+          var shown = value != null && value !== "" ? String(value) : "—";
+          if (cells[c].tagName === "INPUT") cells[c].value = shown;
+          else cells[c].textContent = shown;
+        }
       }
+      form.addEventListener("input", function (event) {
+        var el = event.target;
+        if (!el || !el.getAttribute || !el.getAttribute("data-stat")) return;
+        var tr = el.closest("tr");
+        fillCalcs(tr);
+      }, true);
       function rememberStats() {
         document.querySelectorAll("[data-stat]").forEach(function (field) {
           var id = field.getAttribute("data-player");
@@ -417,6 +433,8 @@
                   if (current != null && current !== "") input.value = current;
                 }
                 td.appendChild(input);
+                input.addEventListener("input", function () { fillCalcs(tr); });
+                input.addEventListener("change", function () { fillCalcs(tr); });
               }
               tr.appendChild(td);
             });
@@ -586,6 +604,7 @@
         return numbers[key] || "";
       }
       function persist() {
+        document.querySelectorAll(".gs-stat tbody tr").forEach(fillCalcs);
         rememberStats();
         var number = renumber();
         var numberEl = document.getElementById("game-number");
