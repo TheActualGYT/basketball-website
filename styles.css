@@ -4159,11 +4159,41 @@ a.final-edit {
   font-weight: 600;
 }
 
-.box-sheet input {
-  width: 3rem;
-  padding: 0.28rem 0.15rem;
-  font-size: 0.78rem;
+.gs-stats thead th {
+  background: #09090b;
+  color: #fff;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  border-bottom: 2px solid #ec4899;
 }
+
+.gs-stats tbody th,
+.gs-stats tbody td { background: transparent; }
+
+.gs-stats .sheet-player,
+.gs-stats thead th:first-child {
+  background: #09090b;
+}
+
+.gs-stats tbody .sheet-player { background: transparent; }
+
+.gs-stats tr.is-blank { color: rgba(255, 255, 255, 0.35); }
+
+.gs-stats input {
+  width: 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  background: #0c0c0c;
+  color: #fff;
+  text-align: center;
+}
+
+.gs-stats input:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.gs-list .sheet-scroll { padding-bottom: 0.15rem; }
 
 .game-score h2 { margin-bottom: 1rem; }
 

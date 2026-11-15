@@ -235,7 +235,7 @@
         if (active[side][id]) delete active[side][id];
         else active[side][id] = player;
         paintActive();
-        paintStatistics(side);
+        paintStatistics();
         persist();
       }
       function paintActive() {
@@ -288,47 +288,58 @@
           box.appendChild(pair);
         });
       }
-      function paintStatistics(side) {
-        var box = document.getElementById("stats-" + side);
+      function paintStatistics() {
+        var box = document.getElementById("stats");
+        if (!box) return;
         box.textContent = "";
-        var playing = slots[side].filter(function (player) { return player && active[side][playerId(player)]; });
-        var scroll = document.createElement("div");
-        scroll.className = "sheet-scroll";
-        var table = document.createElement("table");
-        table.className = "box-sheet";
-        var head = document.createElement("tr");
-        head.innerHTML = "<th>Player</th>" + SHEET.map(function (col) { return "<th>" + col[1] + "</th>"; }).join("");
-        var thead = document.createElement("thead");
-        thead.appendChild(head);
-        var tbody = document.createElement("tbody");
-        if (!playing.length) {
-          var blank = document.createElement("tr");
-          blank.innerHTML = '<td class="sheet-empty" colspan="' + (SHEET.length + 1) + '">Add players from the Alignment tab first.</td>';
-          tbody.appendChild(blank);
-        }
-        playing.forEach(function (player) {
-          var tr = document.createElement("tr");
-          var who = document.createElement("th");
-          who.className = "sheet-player";
-          who.appendChild(person(player));
-          tr.appendChild(who);
-          SHEET.forEach(function (col) {
-            var td = document.createElement("td");
-            var input = document.createElement("input");
-            input.type = "number";
-            input.min = "0";
-            input.setAttribute("data-player", playerId(player));
-            input.setAttribute("data-stat", col[0]);
-            var current = stats[playerId(player)] && stats[playerId(player)][col[0]];
-            if (current != null && current !== "") input.value = current;
-            td.appendChild(input);
-            tr.appendChild(td);
+        ["away", "home"].forEach(function (side) {
+          var name = side === "away" ? away : home;
+          var section = document.createElement("section");
+          section.className = "gs-list";
+          section.innerHTML = "<h3>" + name + "</h3>";
+          var playing = slots[side].filter(function (player) { return player && active[side][playerId(player)]; });
+          var rows = playing.slice(0, 10);
+          while (rows.length < 10) rows.push(null);
+          var scroll = document.createElement("div");
+          scroll.className = "sheet-scroll";
+          var table = document.createElement("table");
+          table.className = "box-sheet gs-stats";
+          var head = document.createElement("tr");
+          head.innerHTML = "<th>Player</th>" + SHEET.map(function (col) { return "<th>" + col[1] + "</th>"; }).join("");
+          var thead = document.createElement("thead");
+          thead.appendChild(head);
+          var tbody = document.createElement("tbody");
+          rows.forEach(function (player) {
+            var tr = document.createElement("tr");
+            if (!player) tr.className = "is-blank";
+            var who = document.createElement("th");
+            who.className = "sheet-player";
+            who.appendChild(person(player));
+            tr.appendChild(who);
+            SHEET.forEach(function (col) {
+              var td = document.createElement("td");
+              var input = document.createElement("input");
+              input.type = "number";
+              input.min = "0";
+              if (!player) {
+                input.disabled = true;
+                input.tabIndex = -1;
+              } else {
+                input.setAttribute("data-player", playerId(player));
+                input.setAttribute("data-stat", col[0]);
+                var current = stats[playerId(player)] && stats[playerId(player)][col[0]];
+                if (current != null && current !== "") input.value = current;
+              }
+              td.appendChild(input);
+              tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
           });
-          tbody.appendChild(tr);
+          table.append(thead, tbody);
+          scroll.appendChild(table);
+          section.appendChild(scroll);
+          box.appendChild(section);
         });
-        table.append(thead, tbody);
-        scroll.appendChild(table);
-        box.appendChild(scroll);
       }
       function paintValidation() {
         var box = document.getElementById("validation-box");
@@ -356,8 +367,7 @@
         var tabs = [
           ["details", "Details"],
           ["active", "Active Players"],
-          ["stats-away", "Statistics - " + abbrs[away]],
-          ["stats-home", "Statistics - " + abbrs[home]],
+          ["stats", "Statistics"],
           ["validation", "Validation"],
           ["points", "Manage Points"]
         ];
@@ -387,8 +397,9 @@
         var activePanel = document.querySelector('[data-panel="active"]');
         activePanel.id = "active-players";
         activePanel.className = "gs-panel gs-active";
-        document.querySelector('[data-panel="stats-away"]').id = "stats-away";
-        document.querySelector('[data-panel="stats-home"]').id = "stats-home";
+        var statsPanel = document.querySelector('[data-panel="stats"]');
+        statsPanel.id = "stats";
+        statsPanel.className = "gs-panel gs-active";
         document.querySelector('[data-panel="validation"]').innerHTML = '<section class="gs-card"><h3>Validation</h3><div id="validation-box"></div></section>';
         document.querySelector('[data-panel="points"]').innerHTML = '<section class="gs-card"><h3>Manage Points</h3>'
           + '<label class="gs-inline"><span>' + away + ' :</span><input type="number" name="away-points" min="0"></label>'
@@ -397,8 +408,7 @@
           document.getElementById("recap-count").textContent = form.recap.value.length + " / 500";
         });
         paintActive();
-        paintStatistics("away");
-        paintStatistics("home");
+        paintStatistics();
       }
       function restore() {
         var meta = saved.meta || {};
@@ -429,8 +439,7 @@
           });
         });
         paintActive();
-        paintStatistics("away");
-        paintStatistics("home");
+        paintStatistics();
       }
       function best(rows, stat) {
         var leader = null;
