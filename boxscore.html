@@ -73,7 +73,10 @@
     <h2>Submit Box Score</h2>
     <p class="box-lead" id="box-lead">Loading game…</p>
     <form id="box-form" hidden>
-      <div class="box-grid" id="box-grid"></div>
+      <div class="box-layout">
+        <aside class="box-rosters" id="box-rosters"></aside>
+        <div class="box-active" id="box-active"></div>
+      </div>
       <p class="box-error" id="box-error" hidden></p>
       <div class="box-submit"><button class="cta-btn" type="submit">Submit box score</button></div>
     </form>
@@ -87,7 +90,8 @@
       var home = params.get("home") || "";
       var lead = document.getElementById("box-lead");
       var form = document.getElementById("box-form");
-      var grid = document.getElementById("box-grid");
+      var rosters = document.getElementById("box-rosters");
+      var activeBox = document.getElementById("box-active");
       var error = document.getElementById("box-error");
       var logos = {
         "Arizona Wildcats": "arizona.png",
@@ -132,36 +136,119 @@
         });
       }
 
-      function side(name, mark, players) {
+      var slots = { away: [], home: [] };
+      var active = { away: {}, home: {} };
+      var stats = {};
+
+      function playerId(player) {
+        return String(player.id || player.username || "");
+      }
+
+      function pad(list) {
+        var spots = list.slice(0, 10);
+        while (spots.length < 10) spots.push(null);
+        return spots;
+      }
+
+      function rememberStats() {
+        Array.prototype.forEach.call(form.querySelectorAll("[data-stat]"), function (field) {
+          var id = field.getAttribute("data-player");
+          if (!stats[id]) stats[id] = {};
+          stats[id][field.getAttribute("data-stat")] = field.value;
+        });
+      }
+
+      function spotButton(player, sideName, index) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "roster-spot";
+        if (!player) {
+          button.classList.add("is-empty");
+          button.disabled = true;
+          button.innerHTML = '<span class="spot-mark"></span><span><b>Empty</b></span>';
+          return button;
+        }
+        var id = playerId(player);
+        if (active[sideName][id]) button.classList.add("is-active");
+        var img = document.createElement("img");
+        img.alt = "";
+        img.referrerPolicy = "no-referrer";
+        img.src = avatar(player);
+        var copy = document.createElement("span");
+        var title = document.createElement("b");
+        title.textContent = player.name || player.username || "Unknown";
+        var tag = document.createElement("small");
+        tag.textContent = player.username ? "@" + player.username : "";
+        copy.append(title, tag);
+        button.append(img, copy);
+        button.addEventListener("click", function () {
+          rememberStats();
+          if (active[sideName][id]) delete active[sideName][id];
+          else active[sideName][id] = player;
+          paint();
+        });
+        return button;
+      }
+
+      function rosterBlock(name, sideName) {
+        var block = document.createElement("section");
+        block.className = "roster-block";
+        var head = document.createElement("header");
+        head.innerHTML = '<img src="' + logos[name] + '" alt=""><div><h3>' + name + '</h3><span>' + (sideName === "home" ? "Home" : "Away") + '</span></div>';
+        block.appendChild(head);
+        slots[sideName].forEach(function (player, index) {
+          block.appendChild(spotButton(player, sideName, index));
+        });
+        return block;
+      }
+
+      function statInput(player, sideName, stat) {
+        var id = playerId(player);
+        var field = document.createElement("input");
+        field.type = "number";
+        field.min = "0";
+        field.inputMode = "numeric";
+        field.setAttribute("data-player", id);
+        field.setAttribute("data-name", player.name || player.username || "Unknown");
+        field.setAttribute("data-stat", stat);
+        field.setAttribute("data-side", sideName);
+        field.setAttribute("aria-label", (player.name || "Player") + " " + stat.toUpperCase());
+        if (stats[id] && stats[id][stat] != null) field.value = stats[id][stat];
+        return field;
+      }
+
+      function activeTeam(name, sideName) {
         var section = document.createElement("section");
         section.className = "box-team";
         var head = document.createElement("header");
-        head.innerHTML = '<img src="' + logos[name] + '" alt=""><div><h3>' + name + '</h3><span>' + (mark === "home" ? "Home" : "Away") + '</span></div>';
+        head.innerHTML = '<img src="' + logos[name] + '" alt=""><div><h3>' + name + '</h3><span>Active</span></div>';
         var score = document.createElement("label");
         score.className = "box-score";
-        score.innerHTML = "Score";
+        score.appendChild(document.createTextNode("Score"));
         var input = document.createElement("input");
         input.type = "number";
         input.min = "0";
         input.inputMode = "numeric";
-        input.name = mark + "-score";
+        input.name = sideName + "-score";
         input.setAttribute("aria-label", name + " score");
+        if (stats[sideName + "-score"] != null) input.value = stats[sideName + "-score"];
+        input.addEventListener("input", function () { stats[sideName + "-score"] = input.value; });
         score.appendChild(input);
         head.appendChild(score);
         section.appendChild(head);
         var list = document.createElement("div");
-        list.className = "box-roster";
-        if (!players.length) {
+        var playing = slots[sideName].filter(function (player) { return player && active[sideName][playerId(player)]; });
+        if (!playing.length) {
           var empty = document.createElement("p");
           empty.className = "box-empty";
-          empty.textContent = "No signed players on this roster yet.";
+          empty.textContent = "Click a player on the roster to mark them active.";
           list.appendChild(empty);
         } else {
           var labels = document.createElement("div");
           labels.className = "box-row box-labels";
           labels.innerHTML = "<span>Player</span><span>PTS</span><span>REB</span><span>AST</span>";
           list.appendChild(labels);
-          players.forEach(function (player) {
+          playing.forEach(function (player) {
             var row = document.createElement("div");
             row.className = "box-row";
             var who = document.createElement("div");
@@ -178,19 +265,7 @@
             copy.append(title, tag);
             who.append(img, copy);
             row.appendChild(who);
-            ["pts", "reb", "ast"].forEach(function (stat) {
-              var field = document.createElement("input");
-              field.type = "number";
-              field.min = "0";
-              field.inputMode = "numeric";
-              field.name = mark + "-" + (player.id || player.username) + "-" + stat;
-              field.setAttribute("data-player", player.id || player.username || "");
-              field.setAttribute("data-name", player.name || player.username || "Unknown");
-              field.setAttribute("data-stat", stat);
-              field.setAttribute("data-side", mark);
-              field.setAttribute("aria-label", (player.name || "Player") + " " + stat.toUpperCase());
-              row.appendChild(field);
-            });
+            ["pts", "reb", "ast"].forEach(function (stat) { row.appendChild(statInput(player, sideName, stat)); });
             list.appendChild(row);
           });
         }
@@ -198,8 +273,42 @@
         return section;
       }
 
+      function paint() {
+        rosters.textContent = "";
+        activeBox.textContent = "";
+        var label = document.createElement("h3");
+        label.className = "roster-title";
+        label.textContent = "Rosters";
+        rosters.appendChild(label);
+        rosters.appendChild(rosterBlock(away, "away"));
+        rosters.appendChild(rosterBlock(home, "home"));
+        activeBox.appendChild(activeTeam(away, "away"));
+        activeBox.appendChild(activeTeam(home, "home"));
+      }
+
+      fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+        slots.away = pad(roster(data.players || [], away));
+        slots.home = pad(roster(data.players || [], home));
+        var saved = {};
+        try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}")[key] || {}; } catch (err) { saved = {}; }
+        if (saved.awayScore != null) stats["away-score"] = saved.awayScore;
+        if (saved.homeScore != null) stats["home-score"] = saved.homeScore;
+        (saved.lines || []).forEach(function (line) {
+          if (!line || !line.id) return;
+          stats[line.id] = { pts: line.pts, reb: line.reb, ast: line.ast };
+          ["away", "home"].forEach(function (sideName) {
+            slots[sideName].forEach(function (player) {
+              if (player && playerId(player) === String(line.id)) active[sideName][line.id] = player;
+            });
+          });
+        });
+        paint();
+        form.hidden = false;
+      }).catch(function () {
+        lead.textContent = "The rosters could not be loaded.";
+      });
       function numberValue(input) {
-        if (!input || input.value.trim() === "") return null;
+        if (!input || String(input.value).trim() === "") return null;
         var value = Number(input.value);
         return Number.isFinite(value) && value >= 0 ? value : null;
       }
@@ -213,28 +322,10 @@
         return leader && Number(leader.value) > 0 ? leader : null;
       }
 
-      fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
-        var players = data.players || [];
-        grid.appendChild(side(away, "away", roster(players, away)));
-        grid.appendChild(side(home, "home", roster(players, home)));
-        form.hidden = false;
-        var saved = {};
-        try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}")[key] || {}; } catch (err) { saved = {}; }
-        if (saved.awayScore != null) form.elements["away-score"].value = saved.awayScore;
-        if (saved.homeScore != null) form.elements["home-score"].value = saved.homeScore;
-        (saved.lines || []).forEach(function (line) {
-          ["pts", "reb", "ast"].forEach(function (stat) {
-            var field = form.querySelector('[data-player="' + line.id + '"][data-stat="' + stat + '"]');
-            if (field && line[stat] != null) field.value = line[stat];
-          });
-        });
-      }).catch(function () {
-        lead.textContent = "The rosters could not be loaded.";
-      });
-
       form.addEventListener("submit", function (event) {
         event.preventDefault();
         error.hidden = true;
+        rememberStats();
         var awayScore = numberValue(form.elements["away-score"]);
         var homeScore = numberValue(form.elements["home-score"]);
         if (awayScore == null || homeScore == null) {
@@ -243,13 +334,19 @@
           return;
         }
         var lines = [];
-        var grouped = {};
-        Array.prototype.forEach.call(form.querySelectorAll("[data-stat]"), function (field) {
-          var id = field.getAttribute("data-player");
-          if (!grouped[id]) grouped[id] = { id: id, name: field.getAttribute("data-name"), pts: null, reb: null, ast: null };
-          grouped[id][field.getAttribute("data-stat")] = numberValue(field);
+        ["away", "home"].forEach(function (sideName) {
+          Object.keys(active[sideName]).forEach(function (id) {
+            var player = active[sideName][id];
+            var line = stats[id] || {};
+            lines.push({
+              id: id,
+              name: player.name || player.username || "Unknown",
+              pts: line.pts === "" || line.pts == null ? null : Number(line.pts),
+              reb: line.reb === "" || line.reb == null ? null : Number(line.reb),
+              ast: line.ast === "" || line.ast == null ? null : Number(line.ast)
+            });
+          });
         });
-        Object.keys(grouped).forEach(function (id) { lines.push(grouped[id]); });
         var store = {};
         try { store = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { store = {}; }
         store[key] = {

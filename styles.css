@@ -3899,4 +3899,119 @@ a.final-edit {
 
 @media (max-width: 900px) {
   .box-grid { grid-template-columns: 1fr; }
+  .box-layout { grid-template-columns: 1fr; }
+}
+
+.box-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.box-rosters {
+  padding: 0.75rem;
+  border-radius: 14px;
+  background: #121212;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.roster-title {
+  margin: 0 0 0.7rem;
+  color: #fff;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.roster-block + .roster-block { margin-top: 0.85rem; }
+
+.roster-block header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.roster-block header img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+.roster-block header h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 0.84rem;
+}
+
+.roster-block header span {
+  display: block;
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.roster-spot {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  margin-top: 0.28rem;
+  padding: 0.32rem 0.4rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #09090b;
+  color: #eee;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.roster-spot.is-empty {
+  cursor: default;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.roster-spot.is-active {
+  border-color: rgba(255, 255, 255, 0.72);
+}
+
+.roster-spot img,
+.spot-mark {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: 0 0 24px;
+}
+
+.spot-mark {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.roster-spot span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.roster-spot b {
+  font-size: 0.78rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.roster-spot small {
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 0.64rem;
+}
+
+.box-active {
+  display: grid;
+  gap: 1rem;
 }
