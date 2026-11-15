@@ -232,9 +232,11 @@
         if (String(meta.hour || "").trim() === "") return meta.date + "T00:00";
         return meta.date + "T" + (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
       }
-      function club(name) {
+      function club(name, logoRight) {
         var src = LOGOS[name];
-        return '<span class="sched-club">' + (src ? '<img src="' + src + '" alt="">' : '<i></i>') + '<b>' + name + '</b></span>';
+        var mark = src ? '<img src="' + src + '" alt="">' : '<i></i>';
+        var text = "<b>" + name + "</b>";
+        return '<span class="sched-club">' + (logoRight ? text + mark : mark + text) + "</span>";
       }
 
       Array.prototype.forEach.call(grids, function (grid) {
@@ -252,7 +254,7 @@
           var rival = card.querySelector(".sched-rival");
           card.setAttribute("data-when", whenKey(meta));
           card.setAttribute("data-order", String(index));
-          card.innerHTML = '<div class="sched-top"><span class="sched-slot">' + label + '</span></div><div class="sched-match">' + club(away) + '<span class="sched-at">@</span>' + club(home) + '</div>';
+          card.innerHTML = '<div class="sched-top"><span class="sched-slot">' + label + '</span></div><div class="sched-match">' + club(away, false) + '<span class="sched-at">@</span>' + club(home, true) + '</div>';
           if (rival) card.querySelector(".sched-top").appendChild(rival);
         });
         var cards = Array.prototype.slice.call(grid.children);

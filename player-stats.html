@@ -314,7 +314,8 @@
           label.className = "league-name";
           label.textContent = "League Average";
           cell.appendChild(label);
-        } else if (col[0] !== "rk" && col[0] !== "team" && col[0] !== "pos") cell.textContent = showLeague(league, col[0]);
+        } else if (col[0] === "team" || col[0] === "pos") cell.textContent = "N/A";
+        else if (col[0] !== "rk") cell.textContent = showLeague(league, col[0]);
         leagueRow.appendChild(cell);
       });
       body.appendChild(leagueRow);
@@ -350,7 +351,7 @@
               cell.appendChild(stack);
             }
           } else if (col[0] === "player") {
-            cell.className = "player-cell";
+            cell.classList.add("player-cell");
             var person = document.createElement("div");
             person.className = "stat-player";
             var pfp = document.createElement("span");
