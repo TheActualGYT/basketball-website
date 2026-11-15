@@ -1067,18 +1067,18 @@ h2 {
   padding: 0.85rem;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.28);
-  background-color: #101010;
+  background-color: #1c1c1e;
   background-image:
-    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 8px),
-    linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 8px),
+    linear-gradient(180deg, #262628 0%, #1a1a1c 100%);
 }
 
 .sched-week .schedule-banner {
   margin: 0 0 0.85rem;
-  background-color: #070708;
+  background-color: #101012;
   background-image:
-    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 8px),
-    linear-gradient(180deg, #101012 0%, #050506 100%);
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 8px),
+    linear-gradient(180deg, #161618 0%, #0c0c0e 100%);
 }
 
 .sched-week + .sched-week {
