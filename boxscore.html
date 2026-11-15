@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="logo.png" type="image/png">
-  <title>Game Score | Junior Basketball Association</title>
+  <title>Box Score Submission | Junior Basketball Association</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -70,7 +70,7 @@
   </header>
 
   <section class="division-page game-score">
-    <h2>Game Score</h2>
+    <h2>Box Score Submission</h2>
     <p class="box-lead" id="box-lead">Loading game…</p>
     <form id="box-form" hidden>
       <div class="gs-top">
@@ -500,6 +500,12 @@
         if (!button) return;
         button.disabled = !ready || submitted;
         button.textContent = submitted ? "Submitted" : "Submit Box Score";
+        var why = document.getElementById("submit-why");
+        var reasons = submitReasons();
+        if (why) {
+          why.innerHTML = reasons.map(function (reason) { return "<li>" + reason + "</li>"; }).join("");
+          why.hidden = !reasons.length;
+        }
       }
       function panel(id) {
         var node = document.createElement("div");
@@ -524,6 +530,23 @@
           var players = sheetPoints(index);
           return score != null && players != null && score === players;
         });
+      }
+      function submitReasons() {
+        var reasons = [];
+        if (!form.date || !String(form.date.value).trim()) reasons.push("Date is required.");
+        ["away", "home"].forEach(function (side, index) {
+          var name = side === "away" ? away : home;
+          ["h1", "h2"].forEach(function (q) {
+            var input = form.querySelector('[data-side="' + side + '"][data-q="' + q + '"]');
+            if (!input || String(input.value).trim() === "" || num(input.value) == null) reasons.push(name + " " + q.toUpperCase() + " is missing.");
+          });
+          var score = quarterSum(side);
+          var players = sheetPoints(index);
+          if (score != null && players == null) reasons.push(name + " player points are missing.");
+          else if (score != null && players != null && score !== players) reasons.push(name + " player points are off by " + Math.abs(score - players) + ".");
+        });
+        if (!reasons.length && submitted) reasons.push("This box score is already submitted.");
+        return reasons;
       }
       function readyToSubmit() {
         return !!(form.date && String(form.date.value).trim()) && halvesReady() && scoresMatch();
@@ -573,7 +596,7 @@
         var statsPanel = document.querySelector('[data-panel="stats"]');
         statsPanel.id = "stats";
         statsPanel.className = "gs-panel gs-active";
-        document.querySelector('[data-panel="submission"]').innerHTML = '<section class="gs-card"><h3>Submission</h3><div class="gs-submit-row"><div class="gs-submit" id="submission-box"></div><div class="gs-submit-side"><button type="button" id="submit-box" disabled>Submit Box Score</button><p>If the player stats do not match the score because of a disconnect, lost stats, or another issue, contact an owner so they can bypass it.</p></div></div></section>';
+        document.querySelector('[data-panel="submission"]').innerHTML = '<section class="gs-card"><h3>Submission</h3><div class="gs-submit-row"><div class="gs-submit" id="submission-box"></div><div class="gs-submit-side"><span class="gs-submit-hover"><button type="button" id="submit-box" disabled>Submit Box Score</button><ul class="gs-submit-why" id="submit-why" hidden></ul></span><p>If the player stats do not match the score because of a disconnect, lost stats, or another issue, contact an owner so they can bypass it.</p></div></div></section>';
         document.getElementById("submit-box").addEventListener("click", submitScore);
         form.recap.addEventListener("input", function () {
           document.getElementById("recap-count").textContent = form.recap.value.length + " / 500";
