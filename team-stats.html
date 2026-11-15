@@ -69,10 +69,355 @@
     </nav>
   </header>
 
-  <section class="section">
-    <h2>Team Stats</h2>
+  <section class="players-page stats-page" data-kind="team">
+    <div class="stats-tools">
+      <div class="team-pick toolbar-pick" id="mode-pick">
+        <button type="button" class="pick-button" id="mode-btn"><span class="pick-label">AVERAGE</span></button>
+        <div class="pick-menu">
+          <button type="button" class="pick-option" data-value="avg">AVERAGE</button>
+          <button type="button" class="pick-option" data-value="total">TOTAL</button>
+        </div>
+      </div>
+      <label class="stats-search">
+        <input id="stats-search" type="search" placeholder="Search players" aria-label="Search players">
+      </label>
+    </div>
+    <div class="panel division-panel">
+      <div class="division-banner"><h3><img src="logo.png" alt="">TEAM STATS</h3></div>
+      <div class="stats-bar" id="stats-bar"><div class="stats-bar-inner" id="stats-bar-inner"></div></div>
+      <div class="stats-scroll" id="stats-scroll" tabindex="0">
+        <table class="players-table stats-table">
+          <colgroup id="stats-cols"></colgroup>
+          <thead>
+            <tr id="stats-head"></tr>
+          </thead>
+          <tbody id="stats-body"></tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
   <script src="script.js"></script>
+  <script>
+    var COLS = [
+      ["rk", "RK", "Rank for the current sort.", "stat"],
+      ["team", "TEAM", "The team this player is on.", "stat"],
+      ["pos", "POS", "The build they are registered as.", "stat"],
+      ["player", "PLAYER", "The player.", "player"],
+      ["g", "G", "Games played.", "stat"],
+      ["pts", "PTS", "Points.", "stat"],
+      ["ast", "AST", "Assists.", "stat"],
+      ["reb", "TREB", "Total rebounds. Offensive and defensive combined.", "stat"],
+      ["dreb", "DREB", "Defensive rebounds.", "stat"],
+      ["oreb", "OREB", "Offensive rebounds.", "stat"],
+      ["stl", "STL", "Steals.", "stat"],
+      ["blk", "BLK", "Blocks.", "stat"],
+      ["tov", "TOV", "Turnovers.", "stat"],
+      ["pf", "PF", "Personal fouls.", "stat"],
+      ["fga", "FGA", "Field goals attempted.", "stat"],
+      ["fgm", "FGM", "Field goals made.", "stat"],
+      ["fgp", "FG%", "Field goal percentage.", "stat"],
+      ["tpa", "3PA", "Three-pointers attempted.", "stat"],
+      ["tpm", "3PM", "Three-pointers made.", "stat"],
+      ["tpp", "3P%", "Three-point percentage.", "stat"],
+      ["fta", "FTA", "Free throws attempted.", "stat"],
+      ["ftm", "FTM", "Free throws made.", "stat"],
+      ["ftp", "FT%", "Free throw percentage.", "stat"],
+      ["fg2a", "2PA", "Two-pointers attempted.", "stat"],
+      ["fg2m", "2PM", "Two-pointers made.", "stat"],
+      ["fg2p", "2P%", "Two-point percentage.", "stat"],
+      ["gmsc", "GMSC", "Game score.", "stat"]
+    ];
+    if ((document.querySelector(".stats-page").getAttribute("data-kind") || "player") === "team") {
+      COLS = COLS.filter(function (col) { return col[0] !== "team" && col[0] !== "pos" && col[0] !== "gmsc"; });
+    }
+    var SUMS = ["pts", "ast", "reb", "dreb", "oreb", "stl", "blk", "tov", "pf", "fgm", "fga", "tpm", "tpa", "ftm", "fta", "fg2m", "fg2a", "gmsc"];
+    var TEAMS = {
+      "Arizona Wildcats": ["ARZ", "arizona.png"],
+      "Baylor Bears": ["BAY", "baylor.png"],
+      "Duke Blue Devils": ["DUKE", "duke.png"],
+      "Florida Gators": ["FL", "florida.png"],
+      "Georgia Bulldogs": ["GEO", "georgia.png"],
+      "Houston Cougars": ["HOU", "houston.png"],
+      "Kansas Jayhawks": ["KAN", "kansas.png"],
+      "Kentucky Wildcats": ["KEN", "kentucky.png"],
+      "LSU Tigers": ["LSU", "lsu.png"],
+      "Miami Hurricanes": ["MIA", "miami.png"],
+      "Michigan Wolverines": ["MICH", "michigan.png"],
+      "North Carolina Tar Heels": ["NC", "unc.png"],
+      "Ohio State Buckeyes": ["OHST", "ohiostate.png"],
+      "Oregon Ducks": ["OR", "oregon.png"],
+      "UCLA Bruins": ["UCLA", "ucla.png"],
+      "Virginia Cavaliers": ["VIR", "virginia.png"]
+    };
+    var sort = { key: "pts", dir: "desc" };
+    var mode = "avg";
+    var query = "";
+    var rows = [];
+
+    function blank() {
+      var row = { id: "", name: "Unknown", games: 0 };
+      SUMS.forEach(function (key) { row[key] = 0; });
+      return row;
+    }
+    function isForfeit(game) {
+      if (!game || game.forfeit) return true;
+      return [game.awayScore, game.homeScore].some(function (score) {
+        return score === "FFW" || score === "FFL" || score === "W" || score === "L";
+      });
+    }
+    function splitBuild(build) {
+      var text = String(build || "").trim();
+      var formats = {
+        guard: ["GUARD", "[PG/SG]"],
+        wing: ["WING", "[SG/SF]"],
+        forward: ["FORWARD", "[SF/PF]"],
+        big: ["BIG", "[C/PF]"]
+      };
+      if (!text) return null;
+      var key = text.toLowerCase().split(/\s|[—\-[]/)[0];
+      return formats[key] || [text.toUpperCase(), ""];
+    }
+    function teamOf(row) {
+      var name = row.account ? String(row.account.team || row.account.teamName || "").trim() : "";
+      return TEAMS[name] ? { abbr: TEAMS[name][0], logo: TEAMS[name][1], name: name } : null;
+    }
+    function displayName(row) {
+      return (row.account && (row.account.name || row.account.username)) || row.name;
+    }
+    function pct(made, att) {
+      if (!att) return null;
+      return made / att;
+    }
+    function pctText(value) {
+      if (value == null) return "—";
+      if (value === 1) return "1.000";
+      return value.toFixed(3).replace(/^0/, "");
+    }
+    function numberValue(row, key) {
+      if (!row.games) return null;
+      if (key === "g") return row.games;
+      if (key === "fgp") return pct(row.fgm, row.fga);
+      if (key === "tpp") return pct(row.tpm, row.tpa);
+      if (key === "ftp") return pct(row.ftm, row.fta);
+      if (key === "fg2p") return pct(row.fg2m, row.fg2a);
+      if (mode === "total") return row[key];
+      return row[key] / row.games;
+    }
+    function show(row, key) {
+      var value = numberValue(row, key);
+      if (value == null) return "—";
+      if (key === "g") return String(row.games);
+      if (key === "fgp" || key === "tpp" || key === "ftp" || key === "fg2p") return pctText(value);
+      if (mode === "total" && key !== "gmsc") return String(Math.round(value));
+      return value.toFixed(1);
+    }
+    function avatarSrc(player) {
+      if (player && player.avatar && player.id) return "https://cdn.discordapp.com/avatars/" + player.id + "/" + player.avatar + ".png?size=64";
+      return "https://cdn.discordapp.com/embed/avatars/0.png";
+    }
+    function collect() {
+      var saved = {};
+      try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { saved = {}; }
+      var bag = {};
+      Object.keys(saved).forEach(function (id) {
+        var game = saved[id];
+        if (!game || game.submitted !== true || isForfeit(game)) return;
+        (game.lines || []).forEach(function (line) {
+          if (!line || !line.id) return;
+          var row = bag[line.id] || blank();
+          row.id = String(line.id);
+          row.name = line.name || row.name;
+          row.games += 1;
+          SUMS.forEach(function (key) { row[key] += Number(line[key]) || 0; });
+          bag[line.id] = row;
+        });
+      });
+      return Object.keys(bag).map(function (id) { return bag[id]; });
+    }
+    function sortValue(row, key) {
+      if (key === "player") return displayName(row).toLowerCase();
+      if (key === "team") return teamOf(row) ? teamOf(row).abbr : "zzz";
+      if (key === "pos") {
+        var built = splitBuild(row.account && row.account.build);
+        return built ? built[0] : "zzz";
+      }
+      var value = numberValue(row, key === "rk" ? "pts" : key);
+      return value == null ? null : value;
+    }
+    function ordered() {
+      var q = query.trim().toLowerCase();
+      var copy = rows.filter(function (row) {
+        if (!q) return true;
+        var tag = row.account && row.account.username ? row.account.username.toLowerCase() : "";
+        return displayName(row).toLowerCase().indexOf(q) !== -1 || tag.indexOf(q) !== -1 || row.name.toLowerCase().indexOf(q) !== -1;
+      });
+      copy.sort(function (a, b) {
+        var av = sortValue(a, sort.key);
+        var bv = sortValue(b, sort.key);
+        if (typeof av === "string" || typeof bv === "string") {
+          var result = String(av || "").localeCompare(String(bv || ""));
+          return sort.dir === "desc" ? -result : result;
+        }
+        if (av == null && bv == null) return displayName(a).localeCompare(displayName(b));
+        if (av == null) return 1;
+        if (bv == null) return -1;
+        if (av === bv) return displayName(a).localeCompare(displayName(b));
+        return sort.dir === "desc" ? bv - av : av - bv;
+      });
+      return copy;
+    }
+    function markSort() {
+      document.querySelectorAll(".stats-table thead th").forEach(function (th) {
+        th.classList.remove("is-asc", "is-desc");
+        if (th.getAttribute("data-sort") === sort.key) th.classList.add(sort.dir === "desc" ? "is-desc" : "is-asc");
+      });
+    }
+    function paint() {
+      var body = document.getElementById("stats-body");
+      body.textContent = "";
+      markSort();
+      ordered().forEach(function (row, index) {
+        var tr = document.createElement("tr");
+        COLS.forEach(function (col) {
+          var cell = document.createElement("td");
+          if (col[0] === sort.key) cell.classList.add("is-sorted");
+          if (col[0] === "rk") cell.textContent = String(index + 1);
+          else if (col[0] === "team") {
+            var team = teamOf(row);
+            if (team) {
+              var logo = document.createElement("img");
+              logo.className = "team-logo";
+              logo.src = team.logo;
+              logo.alt = team.abbr;
+              cell.appendChild(logo);
+            } else cell.textContent = "—";
+          } else if (col[0] === "pos") {
+            var built = splitBuild(row.account && row.account.build);
+            if (!built) cell.textContent = "—";
+            else {
+              var stack = document.createElement("span");
+              stack.className = "build-stack";
+              var buildName = document.createElement("b");
+              buildName.textContent = built[0];
+              stack.appendChild(buildName);
+              if (built[1]) {
+                var positions = document.createElement("small");
+                positions.textContent = built[1];
+                stack.appendChild(positions);
+              }
+              cell.appendChild(stack);
+            }
+          } else if (col[0] === "player") {
+            cell.className = "player-cell";
+            var person = document.createElement("div");
+            person.className = "stat-player";
+            var pfp = document.createElement("span");
+            pfp.className = "discord-pfp";
+            pfp.style.backgroundImage = "url('" + avatarSrc(row.account) + "')";
+            var copy = document.createElement("span");
+            copy.className = "leader-feature-name";
+            var name = document.createElement("b");
+            name.textContent = displayName(row);
+            var teamLine = document.createElement("small");
+            teamLine.className = "team-tag";
+            var info = teamOf(row);
+            if (info) {
+              teamLine.appendChild(document.createTextNode(info.abbr));
+              var mark = document.createElement("img");
+              mark.className = "abbr-logo";
+              mark.src = info.logo;
+              mark.alt = "";
+              teamLine.appendChild(mark);
+            }
+            copy.append(name, teamLine);
+            person.append(pfp, copy);
+            cell.appendChild(person);
+          } else cell.textContent = show(row, col[0]);
+          tr.appendChild(cell);
+        });
+        body.appendChild(tr);
+      });
+      while (body.children.length < 10) {
+        var empty = document.createElement("tr");
+        var i;
+        for (i = 0; i < COLS.length; i += 1) empty.appendChild(document.createElement("td"));
+        body.appendChild(empty);
+      }
+    }
+    var cols = document.getElementById("stats-cols");
+    var head = document.getElementById("stats-head");
+    COLS.forEach(function (col) {
+      var colEl = document.createElement("col");
+      colEl.className = col[3];
+      cols.appendChild(colEl);
+      var th = document.createElement("th");
+      th.setAttribute("data-sort", col[0]);
+      if (col[0] === "player") th.className = "player-head";
+      th.innerHTML = '<span class="col-tip" tabindex="0">' + col[1] + "<i>" + col[2] + "</i></span>";
+      th.addEventListener("click", function () {
+        if (sort.key !== col[0]) sort = { key: col[0], dir: col[0] === "player" || col[0] === "team" || col[0] === "pos" ? "asc" : "desc" };
+        else sort.dir = sort.dir === "asc" ? "desc" : "asc";
+        paint();
+      });
+      head.appendChild(th);
+    });
+    rows = collect();
+    paint();
+    var modePick = document.getElementById("mode-pick");
+    modePick.querySelector(".pick-button").addEventListener("click", function (event) {
+      event.stopPropagation();
+      modePick.classList.toggle("is-open");
+    });
+    modePick.querySelectorAll(".pick-option").forEach(function (option) {
+      option.addEventListener("click", function () {
+        mode = option.getAttribute("data-value");
+        modePick.querySelector(".pick-label").textContent = option.textContent;
+        modePick.classList.remove("is-open");
+        paint();
+      });
+    });
+    document.addEventListener("click", function (event) {
+      if (!modePick.contains(event.target)) modePick.classList.remove("is-open");
+    });
+    document.getElementById("stats-search").addEventListener("input", function () {
+      query = this.value;
+      paint();
+    });
+    var scroller = document.getElementById("stats-scroll");
+    var bar = document.getElementById("stats-bar");
+    var barInner = document.getElementById("stats-bar-inner");
+    function syncBar() {
+      barInner.style.width = scroller.scrollWidth + "px";
+    }
+    syncBar();
+    bar.addEventListener("scroll", function () {
+      if (scroller.scrollLeft !== bar.scrollLeft) scroller.scrollLeft = bar.scrollLeft;
+    });
+    scroller.addEventListener("scroll", function () {
+      if (bar.scrollLeft !== scroller.scrollLeft) bar.scrollLeft = scroller.scrollLeft;
+    });
+    window.addEventListener("resize", syncBar);
+    var oldPaint = paint;
+    paint = function () { oldPaint(); syncBar(); };
+    document.addEventListener("keydown", function (event) {
+      var tag = event.target && event.target.tagName ? event.target.tagName.toLowerCase() : "";
+      if (tag === "input" || tag === "textarea" || tag === "select") return;
+      var key = event.key.toLowerCase();
+      var step = 96;
+      if (key === "arrowright" || key === "d") { scroller.scrollLeft += step; event.preventDefault(); }
+      else if (key === "arrowleft" || key === "a") { scroller.scrollLeft -= step; event.preventDefault(); }
+      else if (key === "arrowdown" || key === "s") { window.scrollBy(0, step); event.preventDefault(); }
+      else if (key === "arrowup" || key === "w") { window.scrollBy(0, -step); event.preventDefault(); }
+    });
+    fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+      var byId = {};
+      (data.players || []).forEach(function (player) { if (player && player.id) byId[String(player.id)] = player; });
+      rows.forEach(function (row) { row.account = byId[row.id] || null; });
+      paint();
+    }).catch(function () {});
+    var header = document.querySelector("header");
+    if (header) document.documentElement.style.setProperty("--nav-offset", header.offsetHeight + "px");
+  </script>
 </body>
 </html>

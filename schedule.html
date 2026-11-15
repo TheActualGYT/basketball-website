@@ -71,27 +71,10 @@
 
   <section class="division-page">
     <div class="power-top">
-      <label class="week-select">
-        <select id="sched-team" aria-label="Filter schedule by team">
-          <option value="">ALL TEAMS</option>
-          <option>Arizona Wildcats</option>
-          <option>Baylor Bears</option>
-          <option>Duke Blue Devils</option>
-          <option>Florida Gators</option>
-          <option>Georgia Bulldogs</option>
-          <option>Houston Cougars</option>
-          <option>Kansas Jayhawks</option>
-          <option>Kentucky Wildcats</option>
-          <option>LSU Tigers</option>
-          <option>Miami Hurricanes</option>
-          <option>Michigan Wolverines</option>
-          <option>North Carolina Tar Heels</option>
-          <option>Ohio State Buckeyes</option>
-          <option>Oregon Ducks</option>
-          <option>UCLA Bruins</option>
-          <option>Virginia Cavaliers</option>
-        </select>
-      </label>
+      <div class="team-pick toolbar-pick" id="sched-pick">
+        <button type="button" class="pick-button" id="sched-pick-btn"><span class="pick-icon"></span><span class="pick-label">ALL TEAMS</span></button>
+        <div class="pick-menu" id="sched-pick-menu"></div>
+      </div>
       <h2>Schedule</h2>
     </div>
     <section class="sched-week">
@@ -269,8 +252,8 @@
           var rival = card.querySelector(".sched-rival");
           card.setAttribute("data-when", whenKey(meta));
           card.setAttribute("data-order", String(index));
-          card.innerHTML = '<div class="sched-match">' + club(away) + '<span class="sched-at">@</span>' + club(home) + '</div><div class="sched-body"><span class="sched-slot">' + label + '</span></div>';
-          if (rival) card.querySelector(".sched-match").appendChild(rival);
+          card.innerHTML = '<div class="sched-top"><span class="sched-slot">' + label + '</span></div><div class="sched-match">' + club(away) + '<span class="sched-at">@</span>' + club(home) + '</div>';
+          if (rival) card.querySelector(".sched-top").appendChild(rival);
         });
         var cards = Array.prototype.slice.call(grid.children);
         cards.sort(function (a, b) {
@@ -284,18 +267,42 @@
         });
         cards.forEach(function (card) { grid.appendChild(card); });
       });
-      var filter = document.getElementById("sched-team");
-      if (filter) filter.addEventListener("change", function () {
-        var team = filter.value;
+      var pick = document.getElementById("sched-pick");
+      var menu = document.getElementById("sched-pick-menu");
+      var currentTeam = "";
+      function applyFilter() {
         document.querySelectorAll(".sched-week").forEach(function (week) {
           var shown = 0;
           week.querySelectorAll(".sched-game").forEach(function (card) {
-            var keep = !team || card.getAttribute("data-away") === team || card.getAttribute("data-home") === team;
+            var keep = !currentTeam || card.getAttribute("data-away") === currentTeam || card.getAttribute("data-home") === currentTeam;
             card.hidden = !keep;
             if (keep) shown += 1;
           });
           week.hidden = !shown;
         });
+      }
+      function addOption(name, src) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "pick-option";
+        button.innerHTML = '<span class="pick-icon">' + (src ? '<img src="' + src + '" alt="">' : '') + '</span><span>' + name + '</span>';
+        button.addEventListener("click", function () {
+          currentTeam = name === "ALL TEAMS" ? "" : name;
+          pick.querySelector(".pick-label").textContent = name;
+          pick.querySelector(".pick-button .pick-icon").innerHTML = src ? '<img src="' + src + '" alt="">' : "";
+          pick.classList.remove("is-open");
+          applyFilter();
+        });
+        menu.appendChild(button);
+      }
+      addOption("ALL TEAMS", "");
+      Object.keys(LOGOS).sort().forEach(function (name) { addOption(name, LOGOS[name]); });
+      pick.querySelector(".pick-button").addEventListener("click", function (event) {
+        event.stopPropagation();
+        pick.classList.toggle("is-open");
+      });
+      document.addEventListener("click", function (event) {
+        if (!pick.contains(event.target)) pick.classList.remove("is-open");
       });
     })();
   </script>
