@@ -4367,6 +4367,7 @@ a.final-edit {
 
 #validation-box { padding: 0.2rem 0.75rem 0.8rem; color: #eee; font-size: 0.86rem; }
 
+.gs-panel[hidden] { display: none !important; }
 .gs-active { display: flex; flex-direction: column; gap: 1rem; }
 .gs-lock {
   padding: 0.45rem 0.55rem;
