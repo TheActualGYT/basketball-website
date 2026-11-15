@@ -139,6 +139,10 @@
       var slots = { away: [], home: [] };
       var active = { away: {}, home: {} };
       var stats = {};
+      var SHEET = [
+        ["pts", "PTS"], ["reb", "REB"], ["ast", "AST"], ["stl", "STL"], ["blk", "BLK"], ["tov", "TO"], ["pf", "PF"],
+        ["ftm", "FTM"], ["fta", "FTA"], ["fgm", "2PM"], ["fga", "2PA"], ["tpm", "3PM"], ["tpa", "3PA"], ["oreb", "OREB"], ["dreb", "DREB"]
+      ];
 
       function playerId(player) {
         return String(player.id || player.username || "");
@@ -221,7 +225,7 @@
         var section = document.createElement("section");
         section.className = "box-team";
         var head = document.createElement("header");
-        head.innerHTML = '<img src="' + logos[name] + '" alt=""><div><h3>' + name + '</h3><span>Active</span></div>';
+        head.innerHTML = '<img src="' + logos[name] + '" alt=""><div><h3>' + name + '</h3><span>' + (sideName === "home" ? "Home" : "Away") + '</span></div>';
         var score = document.createElement("label");
         score.className = "box-score";
         score.appendChild(document.createTextNode("Score"));
@@ -236,40 +240,77 @@
         score.appendChild(input);
         head.appendChild(score);
         section.appendChild(head);
-        var list = document.createElement("div");
         var playing = slots[sideName].filter(function (player) { return player && active[sideName][playerId(player)]; });
         if (!playing.length) {
           var empty = document.createElement("p");
           empty.className = "box-empty";
-          empty.textContent = "Click a player on the roster to mark them active.";
-          list.appendChild(empty);
-        } else {
-          var labels = document.createElement("div");
-          labels.className = "box-row box-labels";
-          labels.innerHTML = "<span>Player</span><span>PTS</span><span>REB</span><span>AST</span>";
-          list.appendChild(labels);
-          playing.forEach(function (player) {
-            var row = document.createElement("div");
-            row.className = "box-row";
-            var who = document.createElement("div");
-            who.className = "box-player";
-            var img = document.createElement("img");
-            img.alt = "";
-            img.referrerPolicy = "no-referrer";
-            img.src = avatar(player);
-            var copy = document.createElement("span");
-            var title = document.createElement("b");
-            title.textContent = player.name || player.username || "Unknown";
-            var tag = document.createElement("small");
-            tag.textContent = player.username ? "@" + player.username : "";
-            copy.append(title, tag);
-            who.append(img, copy);
-            row.appendChild(who);
-            ["pts", "reb", "ast"].forEach(function (stat) { row.appendChild(statInput(player, sideName, stat)); });
-            list.appendChild(row);
-          });
+          empty.textContent = "Select a player from the roster to add them to this box score.";
+          section.appendChild(empty);
+          return section;
         }
-        section.appendChild(list);
+        var scroll = document.createElement("div");
+        scroll.className = "sheet-scroll";
+        var table = document.createElement("table");
+        table.className = "box-sheet";
+        var thead = document.createElement("thead");
+        var headRow = document.createElement("tr");
+        var playerHead = document.createElement("th");
+        playerHead.textContent = "Player";
+        headRow.appendChild(playerHead);
+        SHEET.forEach(function (col) {
+          var th = document.createElement("th");
+          th.textContent = col[1];
+          headRow.appendChild(th);
+        });
+        thead.appendChild(headRow);
+        var tbody = document.createElement("tbody");
+        playing.forEach(function (player) {
+          var row = document.createElement("tr");
+          var who = document.createElement("th");
+          who.className = "sheet-player";
+          var img = document.createElement("img");
+          img.alt = "";
+          img.referrerPolicy = "no-referrer";
+          img.src = avatar(player);
+          var copy = document.createElement("span");
+          var title = document.createElement("b");
+          title.textContent = player.name || player.username || "Unknown";
+          var tag = document.createElement("small");
+          tag.textContent = player.username ? "@" + player.username : "";
+          copy.append(title, tag);
+          who.append(img, copy);
+          row.appendChild(who);
+          SHEET.forEach(function (col) {
+            var cell = document.createElement("td");
+            cell.appendChild(statInput(player, sideName, col[0]));
+            row.appendChild(cell);
+          });
+          tbody.appendChild(row);
+        });
+        var tfoot = document.createElement("tfoot");
+        var total = document.createElement("tr");
+        var totalLabel = document.createElement("th");
+        totalLabel.textContent = "Total";
+        total.appendChild(totalLabel);
+        SHEET.forEach(function (col) {
+          var cell = document.createElement("td");
+          var sum = 0;
+          var any = false;
+          playing.forEach(function (player) {
+            var saved = stats[playerId(player)] && stats[playerId(player)][col[0]];
+            if (saved === "" || saved == null) return;
+            var value = Number(saved);
+            if (!Number.isFinite(value)) return;
+            sum += value;
+            any = true;
+          });
+          cell.textContent = any ? String(sum) : "—";
+          total.appendChild(cell);
+        });
+        tfoot.appendChild(total);
+        table.append(thead, tbody, tfoot);
+        scroll.appendChild(table);
+        section.appendChild(scroll);
         return section;
       }
 
@@ -278,7 +319,7 @@
         activeBox.textContent = "";
         var label = document.createElement("h3");
         label.className = "roster-title";
-        label.textContent = "Rosters";
+        label.textContent = "Team Rosters";
         rosters.appendChild(label);
         rosters.appendChild(rosterBlock(away, "away"));
         rosters.appendChild(rosterBlock(home, "home"));
@@ -295,7 +336,7 @@
         if (saved.homeScore != null) stats["home-score"] = saved.homeScore;
         (saved.lines || []).forEach(function (line) {
           if (!line || !line.id) return;
-          stats[line.id] = { pts: line.pts, reb: line.reb, ast: line.ast };
+          stats[line.id] = line;
           ["away", "home"].forEach(function (sideName) {
             slots[sideName].forEach(function (player) {
               if (player && playerId(player) === String(line.id)) active[sideName][line.id] = player;
@@ -338,13 +379,12 @@
           Object.keys(active[sideName]).forEach(function (id) {
             var player = active[sideName][id];
             var line = stats[id] || {};
-            lines.push({
-              id: id,
-              name: player.name || player.username || "Unknown",
-              pts: line.pts === "" || line.pts == null ? null : Number(line.pts),
-              reb: line.reb === "" || line.reb == null ? null : Number(line.reb),
-              ast: line.ast === "" || line.ast == null ? null : Number(line.ast)
+            var savedLine = { id: id, name: player.name || player.username || "Unknown" };
+            SHEET.forEach(function (col) {
+              var value = line[col[0]];
+              savedLine[col[0]] = value === "" || value == null ? null : Number(value);
             });
+            lines.push(savedLine);
           });
         });
         var store = {};

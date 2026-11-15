@@ -4014,4 +4014,87 @@ a.final-edit {
 .box-active {
   display: grid;
   gap: 1rem;
+  min-width: 0;
+}
+
+.sheet-scroll {
+  overflow-x: auto;
+}
+
+.box-sheet {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.box-sheet th,
+.box-sheet td {
+  padding: 0.38rem 0.28rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+  color: #eee;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.box-sheet thead th {
+  background: #09090b;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.box-sheet tfoot th,
+.box-sheet tfoot td {
+  background: #141416;
+  color: #fff;
+}
+
+.box-sheet .sheet-player,
+.box-sheet thead th:first-child,
+.box-sheet tfoot th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 168px;
+  text-align: left;
+  background: #101012;
+}
+
+.sheet-player {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sheet-player img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.sheet-player span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sheet-player b {
+  color: #eee;
+  font-size: 0.78rem;
+}
+
+.sheet-player small {
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 0.64rem;
+  font-weight: 600;
+}
+
+.box-sheet input {
+  width: 3rem;
+  padding: 0.28rem 0.15rem;
+  font-size: 0.78rem;
 }
