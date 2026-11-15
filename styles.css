@@ -4688,7 +4688,55 @@ a.final-edit {
 .gs-person b { font-size: 0.78rem; }
 .gs-person small { color: rgba(255, 255, 255, 0.42); font-size: 0.64rem; }
 
-#validation-box { padding: 0.2rem 0.75rem 0.8rem; color: #eee; font-size: 0.86rem; }
+.gs-submit {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  padding: 0.75rem;
+}
+
+.gs-check {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
+  padding: 0.8rem;
+  background: #0c0c0c;
+}
+
+.gs-check h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.7rem;
+  color: #fff;
+  font-size: 0.92rem;
+}
+
+.gs-check h4 img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+.gs-check p {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.35rem 0;
+  color: #ddd;
+  font-size: 0.84rem;
+}
+
+.gs-check strong {
+  display: block;
+  margin-top: 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.gs-check.is-ok { border-color: rgba(134, 239, 172, 0.7); }
+.gs-check.is-ok strong { color: #86efac; }
+.gs-check.is-bad { border-color: rgba(236, 72, 153, 0.7); }
+.gs-check.is-bad strong { color: #f9a8d4; }
+.gs-check.is-wait strong { color: rgba(255, 255, 255, 0.45); }
 
 .gs-panel[hidden] { display: none !important; }
 .gs-active { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
@@ -4701,7 +4749,7 @@ a.final-edit {
 .gs-inline input[readonly] { color: rgba(255, 255, 255, 0.72); }
 
 @media (max-width: 900px) {
-  .gs-info, .gs-align { grid-template-columns: 1fr; }
+  .gs-info, .gs-align, .gs-submit { grid-template-columns: 1fr; }
   .gs-top { justify-content: stretch; }
   .gs-sheet { width: 100%; }
 }

@@ -224,7 +224,7 @@
         document.querySelectorAll(".gs-panel").forEach(function (panel) {
           panel.hidden = panel.getAttribute("data-panel") !== id;
         });
-        if (id === "validation") paintValidation();
+        if (id === "submission") paintSubmission();
       }
       function person(player) {
         var wrap = document.createElement("span");
@@ -453,17 +453,47 @@
           box.appendChild(section);
         });
       }
-      function paintValidation() {
-        var box = document.getElementById("validation-box");
-        var awayTotal = quarterSum("away");
-        var homeTotal = quarterSum("home");
-        var items = [
-          away + ": " + (awayTotal == null ? "no quarter scores yet" : awayTotal + " points"),
-          home + ": " + (homeTotal == null ? "no quarter scores yet" : homeTotal + " points"),
-          "Active " + abbrs[away] + ": " + Object.keys(active.away).length,
-          "Active " + abbrs[home] + ": " + Object.keys(active.home).length
-        ];
-        box.innerHTML = items.map(function (item) { return "<p>" + item + "</p>"; }).join("");
+      function sheetPoints(index) {
+        var table = document.querySelectorAll("#stats .gs-stat")[index];
+        if (!table) return null;
+        var total = 0;
+        var any = false;
+        table.querySelectorAll("tbody tr").forEach(function (tr) {
+          fillCalcs(tr);
+          var cell = tr.querySelector('[data-calc="pts"]');
+          if (!cell || cell.textContent === "—") return;
+          var n = statNum(cell.textContent);
+          if (n == null) return;
+          total += n;
+          any = true;
+        });
+        return any ? total : null;
+      }
+      function paintSubmission() {
+        var box = document.getElementById("submission-box");
+        if (!box) return;
+        box.innerHTML = [away, home].map(function (name, index) {
+          var side = index === 0 ? "away" : "home";
+          var score = quarterSum(side);
+          var players = sheetPoints(index);
+          var state = "wait";
+          var note = "Enter the score and the shooting stats.";
+          if (score == null) note = "The score at the top is missing.";
+          else if (players == null) note = "Player points are missing.";
+          else if (score === players) {
+            state = "ok";
+            note = "Player points match the score.";
+          } else {
+            state = "bad";
+            note = "Off by " + Math.abs(score - players) + ".";
+          }
+          if (state === "wait" && (score == null || players == null)) state = (score == null && players == null) ? "wait" : "bad";
+          return '<article class="gs-check is-' + state + '">'
+            + '<h4><img src="' + logos[name] + '" alt=""><span>' + name + '</span></h4>'
+            + '<p><b>Score</b><span>' + (score == null ? "—" : score) + '</span></p>'
+            + '<p><b>Players</b><span>' + (players == null ? "—" : players) + '</span></p>'
+            + '<strong>' + note + '</strong></article>';
+        }).join("");
       }
       function panel(id) {
         var node = document.createElement("div");
@@ -480,8 +510,7 @@
           ["details", "Details"],
           ["active", "Active Players"],
           ["stats", "Statistics"],
-          ["validation", "Validation"],
-          ["points", "Manage Points"]
+          ["submission", "Submission"]
         ];
         var tabBar = document.getElementById("gs-tabs");
         var panels = document.getElementById("gs-panels");
@@ -512,10 +541,7 @@
         var statsPanel = document.querySelector('[data-panel="stats"]');
         statsPanel.id = "stats";
         statsPanel.className = "gs-panel gs-active";
-        document.querySelector('[data-panel="validation"]').innerHTML = '<section class="gs-card"><h3>Validation</h3><div id="validation-box"></div></section>';
-        document.querySelector('[data-panel="points"]').innerHTML = '<section class="gs-card"><h3>Manage Points</h3>'
-          + '<label class="gs-inline"><span>' + away + ' :</span><input type="number" name="away-points" min="0"></label>'
-          + '<label class="gs-inline"><span>' + home + ' :</span><input type="number" name="home-points" min="0"></label></section>';
+        document.querySelector('[data-panel="submission"]').innerHTML = '<section class="gs-card"><h3>Submission</h3><div class="gs-submit" id="submission-box"></div></section>';
         form.recap.addEventListener("input", function () {
           document.getElementById("recap-count").textContent = form.recap.value.length + " / 500";
         });
@@ -537,8 +563,6 @@
         ["date","hour","minute","youtube","twitch","recap"].forEach(function (name) {
           if (meta[name] != null && form.elements[name]) form.elements[name].value = meta[name];
         });
-        if (saved.awayPoints != null) form.elements["away-points"].value = saved.awayPoints;
-        if (saved.homePoints != null) form.elements["home-points"].value = saved.homePoints;
         if (form.recap) document.getElementById("recap-count").textContent = form.recap.value.length + " / 500";
         paintTotals();
         (saved.lines || []).forEach(function (line) {
@@ -646,8 +670,6 @@
           awayScore: awayScore == null ? "" : String(awayScore),
           homeScore: homeScore == null ? "" : String(homeScore),
           quarters: quarters,
-          awayPoints: form.elements["away-points"].value,
-          homePoints: form.elements["home-points"].value,
           meta: {
             date: form.date.value, hour: form.hour.value, minute: form.minute.value,
             number: number, location: cities[home], youtube: form.youtube.value,
