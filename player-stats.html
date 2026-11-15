@@ -204,6 +204,23 @@
       if (mode === "total") return row[key];
       return row[key] / row.games;
     }
+    function leagueValue(row, key) {
+      if (!row.players) return null;
+      if (key === "g") return row.games / row.players;
+      if (key === "fgp") return pct(row.fgm, row.fga);
+      if (key === "tpp") return pct(row.tpm, row.tpa);
+      if (key === "ftp") return pct(row.ftm, row.fta);
+      if (key === "fg2p") return pct(row.fg2m, row.fg2a);
+      if (mode === "total") return row[key] / row.players;
+      if (!row.games) return null;
+      return row[key] / row.games;
+    }
+    function showLeague(row, key) {
+      var value = leagueValue(row, key);
+      if (value == null) return "—";
+      if (key === "fgp" || key === "tpp" || key === "ftp" || key === "fg2p") return pctText(value);
+      return value.toFixed(1);
+    }
     function show(row, key) {
       var value = numberValue(row, key);
       if (value == null) return "—";
@@ -275,8 +292,32 @@
     }
     function paint() {
       var body = document.getElementById("stats-body");
+      var title = document.querySelector(".stats-page .division-banner h3");
+      var base = document.querySelector(".stats-page").getAttribute("data-kind") === "team" ? "TEAM STATS" : "ALL PLAYERS";
+      if (title) title.innerHTML = '<img src="logo.png" alt="">' + base + " [" + (mode === "total" ? "TOTAL" : "AVERAGE") + "]";
       body.textContent = "";
       markSort();
+      var league = blank();
+      league.players = rows.length;
+      rows.forEach(function (row) {
+        league.games += row.games;
+        SUMS.forEach(function (key) { league[key] += row[key]; });
+      });
+      var leagueRow = document.createElement("tr");
+      leagueRow.className = "is-league";
+      COLS.forEach(function (col) {
+        var cell = document.createElement("td");
+        if (col[0] === sort.key) cell.classList.add("is-sorted");
+        if (col[0] === "player") {
+          cell.classList.add("player-cell");
+          var label = document.createElement("span");
+          label.className = "league-name";
+          label.textContent = "League Average";
+          cell.appendChild(label);
+        } else if (col[0] !== "rk" && col[0] !== "team" && col[0] !== "pos") cell.textContent = showLeague(league, col[0]);
+        leagueRow.appendChild(cell);
+      });
+      body.appendChild(leagueRow);
       ordered().forEach(function (row, index) {
         var tr = document.createElement("tr");
         COLS.forEach(function (col) {
@@ -340,8 +381,11 @@
       });
       while (body.children.length < 10) {
         var empty = document.createElement("tr");
-        var i;
-        for (i = 0; i < COLS.length; i += 1) empty.appendChild(document.createElement("td"));
+        COLS.forEach(function (col) {
+          var cell = document.createElement("td");
+          if (col[0] === sort.key) cell.classList.add("is-sorted");
+          empty.appendChild(cell);
+        });
         body.appendChild(empty);
       }
     }

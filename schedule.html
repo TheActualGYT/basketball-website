@@ -72,7 +72,7 @@
   <section class="division-page">
     <div class="power-top">
       <div class="team-pick toolbar-pick" id="sched-pick">
-        <button type="button" class="pick-button" id="sched-pick-btn"><span class="pick-icon"></span><span class="pick-label">ALL TEAMS</span></button>
+        <button type="button" class="pick-button" id="sched-pick-btn"><span class="pick-icon"><img src="logo.png" alt=""></span><span class="pick-label">ALL TEAMS</span></button>
         <div class="pick-menu" id="sched-pick-menu"></div>
       </div>
       <h2>Schedule</h2>
@@ -295,7 +295,7 @@
         });
         menu.appendChild(button);
       }
-      addOption("ALL TEAMS", "");
+      addOption("ALL TEAMS", "logo.png");
       Object.keys(LOGOS).sort().forEach(function (name) { addOption(name, LOGOS[name]); });
       pick.querySelector(".pick-button").addEventListener("click", function (event) {
         event.stopPropagation();
