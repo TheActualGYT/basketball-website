@@ -249,6 +249,8 @@
           var rosterCol = document.createElement("div");
           rosterCol.className = "gs-list";
           rosterCol.innerHTML = "<h3>" + name + "</h3>";
+          var roster = document.createElement("div");
+          roster.className = "gs-roster";
           slots[side].forEach(function (player) {
             var row = document.createElement("button");
             row.type = "button";
@@ -258,17 +260,20 @@
             row.disabled = !player;
             row.appendChild(person(player));
             if (player) row.addEventListener("click", function () { togglePlayer(side, player); });
-            rosterCol.appendChild(row);
+            roster.appendChild(row);
           });
+          rosterCol.appendChild(roster);
           var activeCol = document.createElement("div");
           activeCol.className = "gs-list";
           activeCol.innerHTML = "<h3>In this game</h3>";
+          var lineup = document.createElement("div");
+          lineup.className = "gs-lineup";
           var playing = slots[side].filter(function (player) { return player && active[side][playerId(player)]; });
           if (!playing.length) {
             var empty = document.createElement("p");
             empty.className = "gs-note";
             empty.textContent = "Select a player from the roster.";
-            activeCol.appendChild(empty);
+            lineup.appendChild(empty);
           }
           playing.forEach(function (player) {
             var row = document.createElement("button");
@@ -276,8 +281,9 @@
             row.className = "gs-spot is-on";
             row.appendChild(person(player));
             row.addEventListener("click", function () { togglePlayer(side, player); });
-            activeCol.appendChild(row);
+            lineup.appendChild(row);
           });
+          activeCol.appendChild(lineup);
           pair.append(rosterCol, activeCol);
           box.appendChild(pair);
         });

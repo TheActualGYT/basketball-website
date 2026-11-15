@@ -4499,13 +4499,20 @@ a.final-edit {
   font-size: 0.75rem;
 }
 
+.gs-roster {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+  padding: 0.7rem;
+}
+
 .gs-spot {
   display: flex;
-  width: calc(100% - 0.8rem);
-  margin: 0.28rem 0.4rem 0;
-  padding: 0.32rem 0.4rem;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 6px;
+  width: auto;
+  margin: 0;
+  padding: 0.42rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
   background: #09090b;
   color: #eee;
   font: inherit;
@@ -4513,8 +4520,19 @@ a.final-edit {
   cursor: pointer;
 }
 
-.gs-spot.is-empty { cursor: default; color: rgba(255, 255, 255, 0.35); }
+.gs-spot:not(.is-empty):hover,
 .gs-spot.is-on { border-color: rgba(255, 255, 255, 0.72); }
+.gs-spot.is-empty { cursor: default; color: rgba(255, 255, 255, 0.35); }
+.gs-spot.is-on { background: #141414; }
+
+.gs-lineup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.7rem;
+}
+
+.gs-lineup .gs-note { margin: 0; }
 
 .gs-person { display: flex; align-items: center; gap: 0.45rem; min-width: 0; }
 .gs-person img, .gs-person i {
