@@ -185,11 +185,11 @@
       try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { saved = {}; }
       document.querySelectorAll(".final-card").forEach(function (card) {
         var game = saved[card.getAttribute("data-game")];
-        if (!game) return;
-        if (game.awayScore !== "" && game.homeScore !== "" && game.awayScore != null && game.homeScore != null) {
-          card.classList.add("is-final");
-          card.querySelector(".final-state").textContent = "FINAL";
-        }
+        var legacy = game && game.submitted == null && game.awayScore !== "" && game.homeScore !== "" && game.awayScore != null && game.homeScore != null;
+        if (!game || (game.submitted !== true && !legacy)) return;
+        if (game.awayScore === "" || game.homeScore === "" || game.awayScore == null || game.homeScore == null) return;
+        card.classList.add("is-final");
+        card.querySelector(".final-state").textContent = "FINAL";
         var scores = card.querySelectorAll(".final-club strong");
         scores[0].textContent = game.awayScore;
         scores[1].textContent = game.homeScore;

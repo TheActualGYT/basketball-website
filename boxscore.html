@@ -331,7 +331,7 @@
         else active[side][id] = player;
         paintActive();
         paintStatistics();
-        persist();
+        draftChanged();
       }
       function paintActive() {
         var box = document.getElementById("active-players");
@@ -352,9 +352,13 @@
             row.className = "gs-spot";
             if (!player) row.classList.add("is-empty");
             else if (active[side][playerId(player)]) row.classList.add("is-on");
-            row.disabled = !player;
+            if (!player) row.setAttribute("aria-disabled", "true");
             row.appendChild(person(player));
-            if (player) row.addEventListener("click", function () { togglePlayer(side, player); });
+            if (player) {
+              row.addEventListener("mouseenter", function () { row.classList.add("is-hot"); });
+              row.addEventListener("mouseleave", function () { row.classList.remove("is-hot"); });
+              row.addEventListener("click", function () { togglePlayer(side, player); });
+            }
             roster.appendChild(row);
           });
           rosterCol.appendChild(roster);
@@ -375,6 +379,8 @@
             row.type = "button";
             row.className = "gs-spot is-on";
             row.appendChild(person(player));
+            row.addEventListener("mouseenter", function () { row.classList.add("is-hot"); });
+            row.addEventListener("mouseleave", function () { row.classList.remove("is-hot"); });
             row.addEventListener("click", function () { togglePlayer(side, player); });
             lineup.appendChild(row);
           });
@@ -496,10 +502,10 @@
         }).join("");
         var button = document.getElementById("submit-box");
         var ready = readyToSubmit();
-        if (!ready) submitted = false;
-        if (!button) return;
-        button.disabled = !ready || submitted;
-        button.textContent = submitted ? "Submitted" : "Submit Box Score";
+        if (button) {
+          button.disabled = !ready || (submitted && locked);
+          button.textContent = submitted && locked ? "Submitted" : "Submit Box Score";
+        }
         var why = document.getElementById("submit-why");
         var reasons = submitReasons();
         if (why) {
@@ -515,6 +521,7 @@
         return node;
       }
       var submitted = false;
+      var locked = false;
       function halvesReady() {
         return ["away", "home"].every(function (side) {
           return ["h1", "h2"].every(function (q) {
@@ -545,7 +552,7 @@
           if (score != null && players == null) reasons.push(name + " player points are missing.");
           else if (score != null && players != null && score !== players) reasons.push(name + " player points are off by " + Math.abs(score - players) + ".");
         });
-        if (!reasons.length && submitted) reasons.push("This box score is already submitted.");
+        if (!reasons.length && submitted && locked) reasons.push("This box score is already submitted. Change it if you need to update it.");
         return reasons;
       }
       function readyToSubmit() {
@@ -554,6 +561,7 @@
       function submitScore() {
         if (!readyToSubmit()) return;
         submitted = true;
+        locked = true;
         persist();
         paintSubmission();
       }
@@ -621,6 +629,7 @@
         });
         if (form.recap) document.getElementById("recap-count").textContent = form.recap.value.length + " / 500";
         submitted = !!saved.submitted;
+        locked = submitted;
         paintTotals();
         (saved.lines || []).forEach(function (line) {
           if (!line || !line.id) return;
@@ -646,33 +655,30 @@
         slots.away = pad(roster(data.players || [], away));
         slots.home = pad(roster(data.players || [], home));
         try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}")[key] || {}; } catch (err) { saved = {}; }
+        var official = saved.submitted === true || (saved.submitted == null && saved.awayScore !== "" && saved.homeScore !== "" && saved.awayScore != null && saved.homeScore != null);
+        if (!official) saved = {};
         build();
         restore();
-        persist();
-        form.addEventListener("input", function () {
-          persist();
-          var panel = document.querySelector('[data-panel="submission"]');
-          if (panel && !panel.hidden) paintSubmission();
-        });
-        form.addEventListener("change", function () {
-          persist();
-          var panel = document.querySelector('[data-panel="submission"]');
-          if (panel && !panel.hidden) paintSubmission();
-        });
-        form.addEventListener("submit", function (event) { event.preventDefault(); persist(); });
+        var numberEl = document.getElementById("game-number");
+        if (numberEl) numberEl.textContent = renumber(false) || "—";
+        form.addEventListener("input", draftChanged);
+        form.addEventListener("change", draftChanged);
+        form.addEventListener("submit", function (event) { event.preventDefault(); submitScore(); });
         lead.hidden = true;
         form.hidden = false;
       }).catch(function () {
         lead.textContent = "The rosters could not be loaded.";
       });
-      function renumber() {
+      function allNumbers() {
         var store = {};
         try { store = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { store = {}; }
         var dated = [];
         ORDER.forEach(function (game, index) {
           var id = game[0] + "|" + game[1] + "|" + game[2];
-          var meta = id === key ? { date: form.date.value, hour: form.hour.value, minute: form.minute.value } : ((store[id] && store[id].meta) || {});
-          if (!meta.date) return;
+          var meta = null;
+          if (id === key) meta = { date: form.date.value, hour: form.hour.value, minute: form.minute.value };
+          else if (store[id] && store[id].submitted === true) meta = store[id].meta || {};
+          if (!meta || !meta.date) return;
           dated.push({ id: id, index: index, date: meta.date, hour: meta.hour || "", minute: meta.minute || "" });
         });
         dated.sort(function (a, b) {
@@ -686,20 +692,27 @@
         });
         var numbers = {};
         dated.forEach(function (game, index) { numbers[game.id] = String(index + 1); });
-        Object.keys(store).forEach(function (id) {
-          if (!store[id].meta) store[id].meta = {};
-          store[id].meta.number = numbers[id] || "";
-        });
-        localStorage.setItem("jba-boxscores", JSON.stringify(store));
-        return numbers[key] || "";
+        return numbers;
+      }
+      function renumber() {
+        return allNumbers()[key] || "";
+      }
+      function draftChanged() {
+        locked = false;
+        document.querySelectorAll(".gs-stat tbody tr").forEach(fillCalcs);
+        paintTotals();
+        var numberEl = document.getElementById("game-number");
+        if (numberEl) numberEl.textContent = renumber() || "—";
+        var panel = document.querySelector('[data-panel="submission"]');
+        if (panel && !panel.hidden) paintSubmission();
       }
       function persist() {
         document.querySelectorAll(".gs-stat tbody tr").forEach(fillCalcs);
         rememberStats();
-        var number = renumber();
+        var numbers = allNumbers();
+        var number = numbers[key] || "";
         var numberEl = document.getElementById("game-number");
         if (numberEl) numberEl.textContent = number || "—";
-        lead.hidden = true;
         var awayScore = quarterSum("away");
         var homeScore = quarterSum("home");
         var lines = [];
@@ -708,9 +721,9 @@
             var player = active[side][id];
             var line = { id: id, name: player.name || player.username || "Unknown" };
             var src = stats[id] || {};
-            INPUT_KEYS.forEach(function (key) {
-              var value = src[key];
-              line[key] = value === "" || value == null ? null : Number(value);
+            INPUT_KEYS.forEach(function (stat) {
+              var value = src[stat];
+              line[stat] = value === "" || value == null ? null : Number(value);
             });
             if (rowHasEntry(src)) {
               var calc = derived(src);
@@ -731,7 +744,6 @@
         });
         var store = {};
         try { store = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { store = {}; }
-        if (!readyToSubmit()) submitted = false;
         store[key] = {
           awayScore: awayScore == null ? "" : String(awayScore),
           homeScore: homeScore == null ? "" : String(homeScore),
@@ -743,8 +755,13 @@
           },
           lines: lines,
           leaders: { pts: best(lines, "pts"), ast: best(lines, "ast"), reb: best(lines, "reb") },
-          submitted: submitted
+          submitted: true
         };
+        Object.keys(numbers).forEach(function (id) {
+          if (!store[id] || store[id].submitted !== true) return;
+          if (!store[id].meta) store[id].meta = {};
+          store[id].meta.number = numbers[id];
+        });
         localStorage.setItem("jba-boxscores", JSON.stringify(store));
       }
     })();

@@ -3635,8 +3635,13 @@ input.is-profile {
 }
 
 .final-card.is-final .final-state {
-  color: #fff;
-  animation: titlePulse 3.6s ease-in-out infinite;
+  color: #86efac;
+  animation: finalPulse 3.6s ease-in-out infinite;
+}
+
+@keyframes finalPulse {
+  0%, 100% { color: #86efac; text-shadow: 0 0 6px rgba(134, 239, 172, 0.25); }
+  50% { color: #bbf7d0; text-shadow: 0 0 18px rgba(134, 239, 172, 0.95); }
 }
 
 .final-edit {
@@ -4303,8 +4308,9 @@ a.final-edit {
 
 .gs-stat tbody tr:hover td,
 .gs-stat tbody tr.is-hot td {
-  background-color: #242424;
-  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, 0.07);
+  background-color: #3a3a3a;
+  background-image: none;
+  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, 0.1);
 }
 
 .gs-stat tbody tr:hover .gs-person img,
@@ -4725,36 +4731,64 @@ a.final-edit {
   font: inherit;
   text-align: left;
   cursor: pointer;
+  appearance: none;
 }
 
-.gs-submit-hover { display: block; }
+.gs-card:has(.gs-submit-hover) {
+  overflow: visible;
+}
+
+.gs-submit-hover {
+  position: relative;
+  display: block;
+}
+
+.gs-submit-hover:has(button:disabled) { cursor: not-allowed; }
 
 .gs-submit-why {
   display: none;
-  margin: 0.55rem 0 0;
-  padding: 0.55rem 0.7rem 0.55rem 1.2rem;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 10px;
+  position: absolute;
+  z-index: 40;
+  right: 0;
+  bottom: calc(100% + 0.5rem);
+  width: 250px;
+  margin: 0;
+  padding: 0.55rem 0.7rem 0.55rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 8px;
   background: #101010;
   color: #eee;
   font-size: 0.72rem;
-  line-height: 1.45;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: left;
+  list-style: disc;
+  list-style-position: inside;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
 }
 
 .gs-submit-hover:hover .gs-submit-why:not([hidden]) { display: block; }
 
-.gs-spot:not(.is-empty):hover {
-  border-color: rgba(255, 255, 255, 0.9);
-  background: #1c1c1c;
-  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, 0.07);
-}
-
-.gs-spot:not(.is-empty):hover .gs-person img,
-.gs-spot:not(.is-empty):hover .gs-person i {
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85);
-}
 .gs-spot.is-empty { cursor: default; color: rgba(255, 255, 255, 0.35); }
 .gs-spot.is-on { background: #141414; border-color: rgba(255, 255, 255, 0.72); }
+
+button.gs-spot:not(.is-empty):hover,
+button.gs-spot:not(.is-empty).is-hot {
+  border-color: #fff;
+  background-color: #3a3a3a;
+  background-image: none;
+  box-shadow: inset 0 0 0 1px #fff;
+}
+
+button.gs-spot:not(.is-empty):hover .gs-person img,
+button.gs-spot:not(.is-empty):hover .gs-person i,
+button.gs-spot:not(.is-empty).is-hot .gs-person img,
+button.gs-spot:not(.is-empty).is-hot .gs-person i {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px #fff;
+}
 
 .gs-lineup {
   display: flex;
@@ -4814,6 +4848,7 @@ a.final-edit {
 .gs-submit-side button:disabled {
   opacity: 0.38;
   cursor: not-allowed;
+  pointer-events: none;
 }
 
 .gs-submit-side p {
