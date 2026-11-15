@@ -165,13 +165,14 @@
         ["away","home"].forEach(function (side) {
           var cell = document.getElementById(side + "-tot");
           var total = quarterSum(side);
-          cell.textContent = total == null ? "" : String(total);
+          cell.textContent = total == null ? "—" : String(total);
         });
       }
       function lineRow(side, name) {
         var tr = document.createElement("tr");
         var team = document.createElement("td");
-        team.textContent = name;
+        team.className = "gs-team";
+        team.innerHTML = '<img src="' + logos[name] + '" alt=""><span>' + name + '</span>';
         tr.appendChild(team);
         ["q1","q2","foul"].forEach(function (q) {
           var td = document.createElement("td");
@@ -187,7 +188,7 @@
         });
         var tot = document.createElement("td");
         tot.className = "is-tot";
-        tot.id = side + "-tot";
+        tot.innerHTML = '<span class="gs-tot" id="' + side + '-tot"></span>';
         tr.insertBefore(tot, tr.lastChild);
         return tr;
       }
@@ -370,11 +371,11 @@
           + '<section class="gs-card"><h3>Details</h3>'
           + '<label class="gs-inline"><span>Date / Time :</span><input type="date" name="date" required><input name="hour" inputmode="numeric" maxlength="2" placeholder="HH"><b>:</b><input name="minute" inputmode="numeric" maxlength="2" placeholder="MM"></label>'
           + '<p class="gs-note">Date is required. Time is optional.</p>'
-          + '<label class="gs-inline"><span>Game number :</span><b class="gs-lock" id="game-number">—</b></label>'
-          + '<label class="gs-inline"><span>Location :</span><input name="location" readonly value="' + cities[home] + '"></label>'
+          + '<label class="gs-inline is-auto"><span>Game number :</span><b class="gs-lock" id="game-number">—</b></label>'
+          + '<label class="gs-inline is-auto"><span>Location :</span><input name="location" readonly tabindex="-1" value="' + cities[home] + '"></label>'
           + '<label class="gs-inline"><span>YouTube :</span><input name="youtube" placeholder="Optional"></label>'
           + '<label class="gs-inline"><span>Twitch :</span><input name="twitch" placeholder="Optional"></label></section>'
-          + '<section class="gs-card"><h3>Game recap</h3><textarea name="recap" maxlength="500"></textarea><p class="gs-count" id="recap-count">0 / 500</p></section>'
+          + '<section class="gs-card"><h3>Game recap <small>Optional</small></h3><textarea name="recap" maxlength="500" placeholder="Optional"></textarea><p class="gs-count" id="recap-count">0 / 500</p></section>'
           + '</div>';
         var activePanel = document.querySelector('[data-panel="active"]');
         activePanel.id = "active-players";
