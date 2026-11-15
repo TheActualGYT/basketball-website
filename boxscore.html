@@ -440,16 +440,24 @@
                 var input = document.createElement("input");
                 input.type = "number";
                 input.min = "0";
+                input.max = "99";
+                input.step = "1";
                 input.setAttribute("inputmode", "numeric");
                 input.setAttribute("data-stat", col.key);
                 if (player) {
                   input.setAttribute("data-player", playerId(player));
                   var current = stats[playerId(player)] && stats[playerId(player)][col.key];
-                  if (current != null && current !== "") input.value = current;
+                  if (current != null && current !== "") input.value = clampTwoValue(current);
                 }
                 td.appendChild(input);
-                input.addEventListener("input", function () { fillCalcs(tr); });
-                input.addEventListener("change", function () { fillCalcs(tr); });
+                input.addEventListener("input", function () {
+                  clampTwo(input);
+                  fillCalcs(tr);
+                });
+                input.addEventListener("change", function () {
+                  clampTwo(input);
+                  fillCalcs(tr);
+                });
               }
               tr.appendChild(td);
             });
@@ -466,6 +474,16 @@
           section.appendChild(scroll);
           box.appendChild(section);
         });
+      }
+      function clampTwoValue(value) {
+        var digits = String(value == null ? "" : value).replace(/\D/g, "");
+        if (!digits) return "";
+        return String(Math.min(99, parseInt(digits, 10)));
+      }
+      function clampTwo(input) {
+        if (!input || input.value === "") return;
+        var next = clampTwoValue(input.value);
+        if (input.value !== next) input.value = next;
       }
       function sheetPoints(index) {
         var table = document.querySelectorAll("#stats .gs-stat")[index];
@@ -500,9 +518,11 @@
           box.innerHTML = [away, home].map(function (name, index) {
             var side = index === 0 ? "away" : "home";
             var picked = !!loser;
-            var result = !picked ? "—" : (side === loser ? "Loss" : "Win");
-            var note = picked ? "Win and loss only. No stats are saved." : "Choose the team that forfeited.";
-            return '<article class="gs-check is-' + (picked ? "ok" : "wait") + '">'
+            var lost = picked && side === loser;
+            var result = !picked ? "—" : (lost ? "Loss" : "Win");
+            var note = !picked ? "Choose the team that forfeited." : (lost ? "Forfeit loss. No stats are saved." : "Forfeit win. No stats are saved.");
+            var state = !picked ? "wait" : (lost ? "loss" : "ok");
+            return '<article class="gs-check is-' + state + '">'
               + '<h4><img src="' + logos[name] + '" alt=""><span>' + name + '</span></h4>'
               + '<p><b>Result</b><span>' + result + '</span></p>'
               + '<strong>' + note + '</strong></article>';
@@ -606,7 +626,7 @@
         submitted = true;
         locked = true;
         persist();
-        paintSubmission();
+        location.href = "scores.html";
       }
       function build() {
         var body = document.getElementById("gs-line-body");
@@ -778,8 +798,8 @@
         var quarters = { away: {}, home: {} };
         var leaders = { pts: null, ast: null, reb: null };
         if (forfeit) {
-          awayScore = loser === "away" ? "L" : "W";
-          homeScore = loser === "home" ? "L" : "W";
+          awayScore = loser === "away" ? "FFL" : "FFW";
+          homeScore = loser === "home" ? "FFL" : "FFW";
         } else {
           document.querySelectorAll(".gs-stat tbody tr").forEach(fillCalcs);
           rememberStats();
