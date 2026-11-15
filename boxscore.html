@@ -119,7 +119,7 @@
         "Ohio State Buckeyes": "OSU", "Oregon Ducks": "ORE", "UCLA Bruins": "UCLA", "Virginia Cavaliers": "UVA"
       };
       var COLS = [
-        { key: "pts", label: "PTS" },
+        { key: "pts", label: "PTS", calc: true },
         { key: "ast", label: "AST" },
         { key: "reb", label: "REB", calc: true },
         { key: "dreb", label: "DREB" },
@@ -256,7 +256,6 @@
         return (made / attempts * 100).toFixed(1);
       }
       function derived(row) {
-        var pts = statNum(row.pts) || 0;
         var fgm = statNum(row.fgm) || 0;
         var fga = statNum(row.fga) || 0;
         var ftm = statNum(row.ftm) || 0;
@@ -272,8 +271,10 @@
         var tpa = statNum(row.tpa) || 0;
         var fg2m = fgm - tpm;
         var fg2a = fga - tpa;
+        var pts = 2 * fg2m + 3 * tpm + ftm;
         var gmsc = pts + 0.4 * fgm - 0.7 * fga - 0.4 * (fta - ftm) + 0.7 * oreb + 0.3 * dreb + stl + 0.7 * ast + 0.7 * blk - 0.4 * pf - tov;
         return {
+          pts: String(pts),
           reb: String((statNum(row.oreb) || 0) + (statNum(row.dreb) || 0)),
           fgp: pct(statNum(row.fgm), statNum(row.fga)),
           tpp: pct(statNum(row.tpm), statNum(row.tpa)),
@@ -624,6 +625,7 @@
             });
             if (rowHasEntry(src)) {
               var calc = derived(src);
+              line.pts = Number(calc.pts);
               line.reb = Number(calc.reb);
               line.fg2m = Number(calc.fg2m);
               line.fg2a = Number(calc.fg2a);
