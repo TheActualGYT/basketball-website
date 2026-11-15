@@ -1063,6 +1063,15 @@ h2 {
   border-radius: 14px;
 }
 
+.sched-week + .sched-week {
+  margin-top: 1.8rem;
+}
+
+.sched-slot {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .sched-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
