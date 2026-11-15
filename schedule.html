@@ -70,7 +70,30 @@
   </header>
 
   <section class="division-page">
-    <h2>Schedule</h2>
+    <div class="power-top">
+      <label class="week-select">
+        <select id="sched-team" aria-label="Filter schedule by team">
+          <option value="">ALL TEAMS</option>
+          <option>Arizona Wildcats</option>
+          <option>Baylor Bears</option>
+          <option>Duke Blue Devils</option>
+          <option>Florida Gators</option>
+          <option>Georgia Bulldogs</option>
+          <option>Houston Cougars</option>
+          <option>Kansas Jayhawks</option>
+          <option>Kentucky Wildcats</option>
+          <option>LSU Tigers</option>
+          <option>Miami Hurricanes</option>
+          <option>Michigan Wolverines</option>
+          <option>North Carolina Tar Heels</option>
+          <option>Ohio State Buckeyes</option>
+          <option>Oregon Ducks</option>
+          <option>UCLA Bruins</option>
+          <option>Virginia Cavaliers</option>
+        </select>
+      </label>
+      <h2>Schedule</h2>
+    </div>
     <section class="sched-week">
       <div class="division-banner schedule-banner"><h3><img src="logo.png" alt="">WEEK 1</h3></div>
       <div class="sched-grid">
@@ -226,11 +249,9 @@
         if (String(meta.hour || "").trim() === "") return meta.date + "T00:00";
         return meta.date + "T" + (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
       }
-      function setLogo(side, name) {
-        var mark = side.querySelector(".sched-mark");
+      function club(name) {
         var src = LOGOS[name];
-        mark.classList.toggle("has-logo", !!src);
-        mark.innerHTML = src ? '<img src="' + src + '" alt="">' : "";
+        return '<span class="sched-club">' + (src ? '<img src="' + src + '" alt="">' : '<i></i>') + '<b>' + name + '</b></span>';
       }
 
       Array.prototype.forEach.call(grids, function (grid) {
@@ -243,17 +264,13 @@
           var meta = official ? (game.meta || {}) : {};
           var date = prettyDate(meta.date);
           var time = prettyTime(meta.hour, meta.minute);
-          card.querySelector(".sched-date").textContent = date || "TBD";
-          card.querySelector(".sched-time").textContent = time || "TBD";
-          var slot = card.querySelector(".sched-slot");
           var label = "Week " + week + ", " + (date || "TBD");
           if (date && time) label += ", @ " + time;
-          slot.textContent = label;
+          var rival = card.querySelector(".sched-rival");
           card.setAttribute("data-when", whenKey(meta));
           card.setAttribute("data-order", String(index));
-          var sides = card.querySelectorAll(".sched-side");
-          setLogo(sides[0], away);
-          setLogo(sides[1], home);
+          card.innerHTML = '<div class="sched-match">' + club(away) + '<span class="sched-at">@</span>' + club(home) + '</div><div class="sched-body"><span class="sched-slot">' + label + '</span></div>';
+          if (rival) card.querySelector(".sched-match").appendChild(rival);
         });
         var cards = Array.prototype.slice.call(grid.children);
         cards.sort(function (a, b) {
@@ -266,6 +283,19 @@
           return Number(a.getAttribute("data-order")) - Number(b.getAttribute("data-order"));
         });
         cards.forEach(function (card) { grid.appendChild(card); });
+      });
+      var filter = document.getElementById("sched-team");
+      if (filter) filter.addEventListener("change", function () {
+        var team = filter.value;
+        document.querySelectorAll(".sched-week").forEach(function (week) {
+          var shown = 0;
+          week.querySelectorAll(".sched-game").forEach(function (card) {
+            var keep = !team || card.getAttribute("data-away") === team || card.getAttribute("data-home") === team;
+            card.hidden = !keep;
+            if (keep) shown += 1;
+          });
+          week.hidden = !shown;
+        });
       });
     })();
   </script>

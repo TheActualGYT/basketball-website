@@ -656,45 +656,98 @@ h2 {
   text-align: center;
 }
 
+.stats-page .stats-tools {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0 0 0.9rem;
+}
+
+.stats-search {
+  justify-self: end;
+  width: min(320px, 100%);
+}
+
+.stats-search input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  background: #121212;
+  color: #fff;
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 0.55rem 0.75rem;
+}
+
+.stats-search input:focus {
+  outline: none;
+  border-color: #ec4899;
+}
+
 .stats-scroll {
-  overflow-x: auto;
-  border-radius: 16px;
+  overflow: auto;
+  max-height: none;
+  border-radius: 0 0 16px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.55) #121212;
+}
+
+.stats-scroll::-webkit-scrollbar {
+  display: block;
+  width: 10px;
+  height: 10px;
+}
+
+.stats-scroll::-webkit-scrollbar-track {
+  background: #121212;
+}
+
+.stats-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.48);
+  border-radius: 99px;
+  border: 2px solid #121212;
 }
 
 .players-table.stats-table {
-  min-width: 1680px;
-  table-layout: auto;
+  width: max-content;
+  min-width: 100%;
+  table-layout: fixed;
 }
+
+.players-table.stats-table col.stat { width: 4.5rem; }
+.players-table.stats-table col.team { width: 3.6rem; }
+.players-table.stats-table col.pos { width: 6.4rem; }
+.players-table.stats-table col.player { width: 230px; }
 
 .players-table.stats-table th,
 .players-table.stats-table td {
   text-align: center;
   white-space: nowrap;
-  font-size: 0.78rem;
-  padding: 0.62rem 0.45rem;
+  font-size: 0.76rem;
+  padding: 0.55rem 0.2rem;
 }
 
-.players-table.stats-table th:first-child,
-.players-table.stats-table td:first-child {
-  width: 220px;
-  min-width: 220px;
+.players-table.stats-table td.player-cell,
+.players-table.stats-table th.player-head {
   text-align: left;
-  position: sticky;
-  left: 0;
+  padding-left: 0.7rem;
 }
 
-.players-table.stats-table thead th:first-child {
-  z-index: 42;
-  background: #09090b;
+.stat-player {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: center;
 }
 
-.players-table.stats-table tbody td:first-child {
-  z-index: 2;
-  background: #121212;
-}
+.stat-player .discord-pfp { width: 34px; height: 34px; }
 
-.players-table.stats-table tbody tr:hover td:first-child {
-  background: #1a1a1a;
+.players-table.stats-table .team-logo {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
 }
 
 .player-person {
@@ -1156,21 +1209,79 @@ h2 {
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
 }
 
+.sched-match {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.35rem;
+  padding: 0.4rem 0.7rem 0.4rem 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.sched-club {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.sched-club img,
+.sched-club i {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex: 0 0 20px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
+}
+
+.sched-club i {
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.sched-club b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 650;
+}
+
+.sched-at {
+  flex: 0 0 auto;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.sched-body {
+  display: flex;
+  align-items: center;
+  min-height: 4.4rem;
+  padding: 0.75rem 0.85rem 0.8rem 0.95rem;
+}
+
+.sched-match .sched-rival { margin-left: 0.4rem; }
+
 .sched-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.85rem;
 }
 
 .sched-game {
   position: relative;
   overflow: hidden;
-  padding: 0.65rem 0.75rem 0.7rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
   border-radius: 14px;
   background: #09090b;
   border: 1px solid rgba(255, 255, 255, 0.5);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 6px 14px rgba(0, 0, 0, 0.32);
-  cursor: pointer;
   transition: background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -3757,8 +3868,8 @@ input.is-profile {
 .final-status {
   display: inline-flex;
   align-items: center;
-  gap: 0;
-  transform: translateY(-2px);
+  gap: 0.32rem;
+  transform: translateY(-1px);
 }
 
 .final-state {
@@ -3783,8 +3894,8 @@ input.is-profile {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 0.92rem;
-  height: 0.92rem;
+  width: 1.25rem;
+  height: 1.25rem;
   padding: 0;
   border: 0;
   border-radius: 6px;
@@ -3796,10 +3907,9 @@ input.is-profile {
 
 .final-edit svg,
 .final-reset svg {
-  width: 0.72rem;
-  height: 0.72rem;
+  width: 1rem;
+  height: 1rem;
   display: block;
-  transform: translateY(-1px);
 }
 
 .final-edit:hover {
@@ -3815,8 +3925,8 @@ a.final-edit {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 0.92rem;
-  height: 0.92rem;
+  width: 1.25rem;
+  height: 1.25rem;
   padding: 0;
   border: 0;
   border-radius: 6px;
@@ -3826,10 +3936,9 @@ a.final-edit {
 }
 
 .final-reset svg {
-  width: 0.72rem;
-  height: 0.72rem;
+  width: 1rem;
+  height: 1rem;
   display: block;
-  transform: translateY(-1px);
 }
 
 .final-reset:hover {

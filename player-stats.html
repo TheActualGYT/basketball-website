@@ -69,47 +69,85 @@
     </nav>
   </header>
 
-  <section class="players-page">
-    <h2>Player Stats</h2>
-    <div class="panel players-table-wrap stats-scroll">
-      <table class="players-table stats-table">
-        <thead>
-          <tr id="stats-head"></tr>
-        </thead>
-        <tbody id="stats-body"></tbody>
-      </table>
+  <section class="players-page stats-page">
+    <div class="stats-tools">
+      <label class="week-select">
+        <select id="stats-mode" aria-label="Stat mode">
+          <option value="avg" selected>AVERAGE</option>
+          <option value="total">TOTAL</option>
+        </select>
+      </label>
+      <label class="stats-search">
+        <input id="stats-search" type="search" placeholder="Search players" aria-label="Search players">
+      </label>
+    </div>
+    <div class="panel division-panel">
+      <div class="division-banner"><h3><img src="logo.png" alt="">ALL PLAYERS</h3></div>
+      <div class="stats-scroll" id="stats-scroll" tabindex="0">
+        <table class="players-table stats-table">
+          <colgroup id="stats-cols"></colgroup>
+          <thead>
+            <tr id="stats-head"></tr>
+          </thead>
+          <tbody id="stats-body"></tbody>
+        </table>
+      </div>
     </div>
   </section>
 
   <script src="script.js"></script>
   <script>
     var COLS = [
-      ["player", "Player", "The player, from submitted box scores."],
-      ["pts", "PTS", "Points per game."],
-      ["ast", "AST", "Assists per game."],
-      ["reb", "REB", "Rebounds per game. Offensive and defensive combined."],
-      ["dreb", "DREB", "Defensive rebounds per game."],
-      ["oreb", "OREB", "Offensive rebounds per game."],
-      ["stl", "STL", "Steals per game."],
-      ["blk", "BLK", "Blocks per game."],
-      ["tov", "TO", "Turnovers per game."],
-      ["pf", "PF", "Personal fouls per game."],
-      ["fgm", "FGM", "Field goals made per game."],
-      ["fga", "FGA", "Field goals attempted per game."],
-      ["fgp", "FG%", "Field goal percentage for the season."],
-      ["tpm", "3PM", "Three-pointers made per game."],
-      ["tpa", "3PA", "Three-pointers attempted per game."],
-      ["tpp", "3P%", "Three-point percentage for the season."],
-      ["ftm", "FTM", "Free throws made per game."],
-      ["fta", "FTA", "Free throws attempted per game."],
-      ["ftp", "FT%", "Free throw percentage for the season."],
-      ["fg2m", "2PM", "Two-pointers made per game."],
-      ["fg2a", "2PA", "Two-pointers attempted per game."],
-      ["fg2p", "2P%", "Two-point percentage for the season."],
-      ["gmsc", "GmSc", "Average game score."]
+      ["rk", "RK", "Rank for the current sort.", "stat"],
+      ["team", "TEAM", "The team this player is on.", "team"],
+      ["pos", "POS", "The build they are registered as.", "pos"],
+      ["player", "PLAYER", "The player.", "player"],
+      ["g", "G", "Games played.", "stat"],
+      ["pts", "PTS", "Points.", "stat"],
+      ["ast", "AST", "Assists.", "stat"],
+      ["reb", "TREB", "Total rebounds. Offensive and defensive combined.", "stat"],
+      ["dreb", "DREB", "Defensive rebounds.", "stat"],
+      ["oreb", "OREB", "Offensive rebounds.", "stat"],
+      ["stl", "STL", "Steals.", "stat"],
+      ["blk", "BLK", "Blocks.", "stat"],
+      ["tov", "TOV", "Turnovers.", "stat"],
+      ["pf", "PF", "Personal fouls.", "stat"],
+      ["fga", "FGA", "Field goals attempted.", "stat"],
+      ["fgm", "FGM", "Field goals made.", "stat"],
+      ["fgp", "FG%", "Field goal percentage.", "stat"],
+      ["tpa", "3PA", "Three-pointers attempted.", "stat"],
+      ["tpm", "3PM", "Three-pointers made.", "stat"],
+      ["tpp", "3P%", "Three-point percentage.", "stat"],
+      ["fta", "FTA", "Free throws attempted.", "stat"],
+      ["ftm", "FTM", "Free throws made.", "stat"],
+      ["ftp", "FT%", "Free throw percentage.", "stat"],
+      ["fg2a", "2PA", "Two-pointers attempted.", "stat"],
+      ["fg2m", "2PM", "Two-pointers made.", "stat"],
+      ["fg2p", "2P%", "Two-point percentage.", "stat"],
+      ["gmsc", "GMSC", "Game score.", "stat"]
     ];
     var SUMS = ["pts", "ast", "reb", "dreb", "oreb", "stl", "blk", "tov", "pf", "fgm", "fga", "tpm", "tpa", "ftm", "fta", "fg2m", "fg2a", "gmsc"];
+    var TEAMS = {
+      "Arizona Wildcats": ["ARZ", "arizona.png"],
+      "Baylor Bears": ["BAY", "baylor.png"],
+      "Duke Blue Devils": ["DUKE", "duke.png"],
+      "Florida Gators": ["FL", "florida.png"],
+      "Georgia Bulldogs": ["GEO", "georgia.png"],
+      "Houston Cougars": ["HOU", "houston.png"],
+      "Kansas Jayhawks": ["KAN", "kansas.png"],
+      "Kentucky Wildcats": ["KEN", "kentucky.png"],
+      "LSU Tigers": ["LSU", "lsu.png"],
+      "Miami Hurricanes": ["MIA", "miami.png"],
+      "Michigan Wolverines": ["MICH", "michigan.png"],
+      "North Carolina Tar Heels": ["NC", "unc.png"],
+      "Ohio State Buckeyes": ["OHST", "ohiostate.png"],
+      "Oregon Ducks": ["OR", "oregon.png"],
+      "UCLA Bruins": ["UCLA", "ucla.png"],
+      "Virginia Cavaliers": ["VIR", "virginia.png"]
+    };
     var sort = { key: "pts", dir: "desc" };
+    var mode = "avg";
+    var query = "";
     var rows = [];
 
     function blank() {
@@ -123,6 +161,25 @@
         return score === "FFW" || score === "FFL" || score === "W" || score === "L";
       });
     }
+    function splitBuild(build) {
+      var text = String(build || "").trim();
+      var formats = {
+        guard: ["GUARD", "[PG/SG]"],
+        wing: ["WING", "[SG/SF]"],
+        forward: ["FORWARD", "[SF/PF]"],
+        big: ["BIG", "[C/PF]"]
+      };
+      if (!text) return null;
+      var key = text.toLowerCase().split(/\s|[—\-[]/)[0];
+      return formats[key] || [text.toUpperCase(), ""];
+    }
+    function teamOf(row) {
+      var name = row.account ? String(row.account.team || row.account.teamName || "").trim() : "";
+      return TEAMS[name] ? { abbr: TEAMS[name][0], logo: TEAMS[name][1], name: name } : null;
+    }
+    function displayName(row) {
+      return (row.account && (row.account.name || row.account.username)) || row.name;
+    }
     function pct(made, att) {
       if (!att) return null;
       return made / att;
@@ -132,18 +189,22 @@
       if (value === 1) return "1.000";
       return value.toFixed(3).replace(/^0/, "");
     }
-    function rate(row, key) {
+    function numberValue(row, key) {
       if (!row.games) return null;
+      if (key === "g") return row.games;
       if (key === "fgp") return pct(row.fgm, row.fga);
       if (key === "tpp") return pct(row.tpm, row.tpa);
       if (key === "ftp") return pct(row.ftm, row.fta);
       if (key === "fg2p") return pct(row.fg2m, row.fg2a);
+      if (mode === "total") return row[key];
       return row[key] / row.games;
     }
     function show(row, key) {
-      var value = rate(row, key);
+      var value = numberValue(row, key);
       if (value == null) return "—";
+      if (key === "g") return String(row.games);
       if (key === "fgp" || key === "tpp" || key === "ftp" || key === "fg2p") return pctText(value);
+      if (mode === "total" && key !== "gmsc") return String(Math.round(value));
       return value.toFixed(1);
     }
     function avatarSrc(player) {
@@ -169,19 +230,34 @@
       });
       return Object.keys(bag).map(function (id) { return bag[id]; });
     }
+    function sortValue(row, key) {
+      if (key === "player") return displayName(row).toLowerCase();
+      if (key === "team") return teamOf(row) ? teamOf(row).abbr : "zzz";
+      if (key === "pos") {
+        var built = splitBuild(row.account && row.account.build);
+        return built ? built[0] : "zzz";
+      }
+      var value = numberValue(row, key === "rk" ? "pts" : key);
+      return value == null ? null : value;
+    }
     function ordered() {
-      var copy = rows.slice();
+      var q = query.trim().toLowerCase();
+      var copy = rows.filter(function (row) {
+        if (!q) return true;
+        var tag = row.account && row.account.username ? row.account.username.toLowerCase() : "";
+        return displayName(row).toLowerCase().indexOf(q) !== -1 || tag.indexOf(q) !== -1 || row.name.toLowerCase().indexOf(q) !== -1;
+      });
       copy.sort(function (a, b) {
-        if (sort.key === "player") {
-          var result = a.name.localeCompare(b.name);
+        var av = sortValue(a, sort.key);
+        var bv = sortValue(b, sort.key);
+        if (typeof av === "string" || typeof bv === "string") {
+          var result = String(av || "").localeCompare(String(bv || ""));
           return sort.dir === "desc" ? -result : result;
         }
-        var av = rate(a, sort.key);
-        var bv = rate(b, sort.key);
-        if (av == null && bv == null) return a.name.localeCompare(b.name);
+        if (av == null && bv == null) return displayName(a).localeCompare(displayName(b));
         if (av == null) return 1;
         if (bv == null) return -1;
-        if (av === bv) return a.name.localeCompare(b.name);
+        if (av === bv) return displayName(a).localeCompare(displayName(b));
         return sort.dir === "desc" ? bv - av : av - bv;
       });
       return copy;
@@ -196,27 +272,62 @@
       var body = document.getElementById("stats-body");
       body.textContent = "";
       markSort();
-      ordered().forEach(function (row) {
+      ordered().forEach(function (row, index) {
         var tr = document.createElement("tr");
-        var player = document.createElement("td");
-        var person = document.createElement("div");
-        person.className = "player-person";
-        var img = document.createElement("img");
-        img.alt = "";
-        img.referrerPolicy = "no-referrer";
-        img.src = avatarSrc(row.account);
-        var copy = document.createElement("span");
-        var name = document.createElement("b");
-        name.textContent = (row.account && (row.account.name || row.account.username)) || row.name;
-        var tag = document.createElement("small");
-        tag.textContent = row.account && row.account.username ? "@" + row.account.username : "";
-        copy.append(name, tag);
-        person.append(img, copy);
-        player.appendChild(person);
-        tr.appendChild(player);
-        COLS.slice(1).forEach(function (col) {
+        COLS.forEach(function (col) {
           var cell = document.createElement("td");
-          cell.textContent = show(row, col[0]);
+          if (col[0] === "rk") cell.textContent = String(index + 1);
+          else if (col[0] === "team") {
+            var team = teamOf(row);
+            if (team) {
+              var logo = document.createElement("img");
+              logo.className = "team-logo";
+              logo.src = team.logo;
+              logo.alt = team.abbr;
+              cell.appendChild(logo);
+            } else cell.textContent = "—";
+          } else if (col[0] === "pos") {
+            var built = splitBuild(row.account && row.account.build);
+            if (!built) cell.textContent = "—";
+            else {
+              var stack = document.createElement("span");
+              stack.className = "build-stack";
+              var buildName = document.createElement("b");
+              buildName.textContent = built[0];
+              stack.appendChild(buildName);
+              if (built[1]) {
+                var positions = document.createElement("small");
+                positions.textContent = built[1];
+                stack.appendChild(positions);
+              }
+              cell.appendChild(stack);
+            }
+          } else if (col[0] === "player") {
+            cell.className = "player-cell";
+            var person = document.createElement("div");
+            person.className = "stat-player";
+            var pfp = document.createElement("span");
+            pfp.className = "discord-pfp";
+            pfp.style.backgroundImage = "url('" + avatarSrc(row.account) + "')";
+            var copy = document.createElement("span");
+            copy.className = "leader-feature-name";
+            var name = document.createElement("b");
+            name.textContent = displayName(row);
+            var teamLine = document.createElement("small");
+            teamLine.className = "team-tag";
+            var info = teamOf(row);
+            if (info) {
+              teamLine.appendChild(document.createTextNode(info.abbr));
+              var mark = document.createElement("img");
+              mark.className = "abbr-logo";
+              mark.src = info.logo;
+              mark.alt = "";
+              teamLine.appendChild(mark);
+            }
+            copy.append(name, teamLine);
+            person.append(pfp, copy);
+            cell.appendChild(person);
+          } else cell.textContent = show(row, col[0]);
           tr.appendChild(cell);
         });
         body.appendChild(tr);
@@ -228,13 +339,18 @@
         body.appendChild(empty);
       }
     }
+    var cols = document.getElementById("stats-cols");
     var head = document.getElementById("stats-head");
     COLS.forEach(function (col) {
+      var colEl = document.createElement("col");
+      colEl.className = col[3];
+      cols.appendChild(colEl);
       var th = document.createElement("th");
       th.setAttribute("data-sort", col[0]);
+      if (col[0] === "player") th.className = "player-head";
       th.innerHTML = '<span class="col-tip" tabindex="0">' + col[1] + "<i>" + col[2] + "</i></span>";
       th.addEventListener("click", function () {
-        if (sort.key !== col[0]) sort = { key: col[0], dir: col[0] === "player" ? "asc" : "desc" };
+        if (sort.key !== col[0]) sort = { key: col[0], dir: col[0] === "player" || col[0] === "team" || col[0] === "pos" ? "asc" : "desc" };
         else sort.dir = sort.dir === "asc" ? "desc" : "asc";
         paint();
       });
@@ -242,6 +358,25 @@
     });
     rows = collect();
     paint();
+    document.getElementById("stats-mode").addEventListener("change", function () {
+      mode = this.value;
+      paint();
+    });
+    document.getElementById("stats-search").addEventListener("input", function () {
+      query = this.value;
+      paint();
+    });
+    var scroller = document.getElementById("stats-scroll");
+    document.addEventListener("keydown", function (event) {
+      var tag = event.target && event.target.tagName ? event.target.tagName.toLowerCase() : "";
+      if (tag === "input" || tag === "textarea" || tag === "select") return;
+      var key = event.key.toLowerCase();
+      var step = 96;
+      if (key === "arrowright" || key === "d") { scroller.scrollLeft += step; event.preventDefault(); }
+      else if (key === "arrowleft" || key === "a") { scroller.scrollLeft -= step; event.preventDefault(); }
+      else if (key === "arrowdown" || key === "s") { window.scrollBy(0, step); event.preventDefault(); }
+      else if (key === "arrowup" || key === "w") { window.scrollBy(0, -step); event.preventDefault(); }
+    });
     fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
       var byId = {};
       (data.players || []).forEach(function (player) { if (player && player.id) byId[String(player.id)] = player; });

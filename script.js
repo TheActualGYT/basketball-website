@@ -1410,6 +1410,7 @@ function setupProfile() {
     if (parts.length < 3) return;
     games.push({ id: id, week: parts[0], away: parts[1], home: parts[2], game: game, when: whenKey(game.meta) });
   });
+  games = games.filter(function (item) { return !isForfeit(item.game); });
   games.sort(function (a, b) {
     if (a.when !== b.when) {
       if (!a.when) return 1;
