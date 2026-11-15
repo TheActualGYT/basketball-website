@@ -1076,10 +1076,10 @@ h2 {
 
 .sched-week .schedule-banner {
   margin: 0 0 0.85rem;
-  background-color: #101012;
+  background-color: #222224;
   background-image:
-    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 8px),
-    linear-gradient(180deg, #161618 0%, #0c0c0e 100%);
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 8px),
+    linear-gradient(180deg, #2e2e30 0%, #222224 100%);
 }
 
 .sched-week + .sched-week {
