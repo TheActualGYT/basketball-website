@@ -4166,7 +4166,7 @@ a.final-edit {
 
 .gs-stat {
   width: 100%;
-  min-width: 1080px;
+  min-width: 1480px;
   border-collapse: collapse;
   background: transparent;
 }
@@ -4252,7 +4252,46 @@ a.final-edit {
   margin: 0;
 }
 
-.gs-stat tbody tr:hover td { background-color: #1a1a1a; }
+.gs-stat tbody tr:hover td,
+.gs-stat tbody tr.is-hot td {
+  background-color: #242424;
+  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, 0.07);
+}
+
+.gs-stat tbody tr:hover .gs-person img,
+.gs-stat tbody tr.is-hot .gs-person img,
+.gs-stat tbody tr:hover .gs-person i,
+.gs-stat tbody tr.is-hot .gs-person i {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85);
+}
+
+.gs-stat-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.gs-stat-title img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+}
+
+.gs-calc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.8rem;
+  height: 1.7rem;
+  padding: 0 0.2rem;
+  border-radius: 8px;
+  border: 1px solid #5a4d68;
+  background: #2c2436;
+  color: #ddd8e4;
+  font-weight: 800;
+  cursor: default;
+}
 
 .game-score h2 { margin-bottom: 1rem; }
 

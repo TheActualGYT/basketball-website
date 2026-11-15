@@ -118,7 +118,31 @@
         "LSU Tigers": "LSU", "Miami Hurricanes": "MIA", "Michigan Wolverines": "MICH", "North Carolina Tar Heels": "UNC",
         "Ohio State Buckeyes": "OSU", "Oregon Ducks": "ORE", "UCLA Bruins": "UCLA", "Virginia Cavaliers": "UVA"
       };
-      var SHEET = [["pts","PTS"],["reb","REB"],["ast","AST"],["stl","STL"],["blk","BLK"],["tov","TO"],["pf","PF"],["ftm","FTM"],["fta","FTA"],["fgm","2PM"],["fga","2PA"],["tpm","3PM"],["tpa","3PA"],["oreb","OREB"],["dreb","DREB"]];
+      var COLS = [
+        { key: "pts", label: "PTS" },
+        { key: "ast", label: "AST" },
+        { key: "reb", label: "REB", calc: true },
+        { key: "dreb", label: "DREB" },
+        { key: "oreb", label: "OREB" },
+        { key: "stl", label: "STL" },
+        { key: "blk", label: "BLK" },
+        { key: "tov", label: "TO" },
+        { key: "pf", label: "PF" },
+        { key: "fgm", label: "FGM" },
+        { key: "fga", label: "FGA" },
+        { key: "fgp", label: "FG%", calc: true },
+        { key: "tpm", label: "3PM" },
+        { key: "tpa", label: "3PA" },
+        { key: "tpp", label: "3P%", calc: true },
+        { key: "ftm", label: "FTM" },
+        { key: "fta", label: "FTA" },
+        { key: "ftp", label: "FT%", calc: true },
+        { key: "fg2m", label: "2PM", calc: true },
+        { key: "fg2a", label: "2PA", calc: true },
+        { key: "fg2p", label: "2P%", calc: true },
+        { key: "gmsc", label: "GmSc", calc: true }
+      ];
+      var INPUT_KEYS = COLS.filter(function (col) { return !col.calc; }).map(function (col) { return col.key; });
       var key = week + "|" + away + "|" + home;
       if (!week || !logos[away] || !logos[home]) {
         lead.textContent = "That game could not be found.";
@@ -222,6 +246,59 @@
         wrap.append(img, copy);
         return wrap;
       }
+      function statNum(value) {
+        if (value == null || String(value).trim() === "") return null;
+        var n = Number(value);
+        return Number.isFinite(n) ? n : null;
+      }
+      function pct(made, attempts) {
+        if (attempts == null || attempts <= 0 || made == null) return "";
+        return (made / attempts * 100).toFixed(1);
+      }
+      function derived(row) {
+        var pts = statNum(row.pts) || 0;
+        var fgm = statNum(row.fgm) || 0;
+        var fga = statNum(row.fga) || 0;
+        var ftm = statNum(row.ftm) || 0;
+        var fta = statNum(row.fta) || 0;
+        var oreb = statNum(row.oreb) || 0;
+        var dreb = statNum(row.dreb) || 0;
+        var stl = statNum(row.stl) || 0;
+        var ast = statNum(row.ast) || 0;
+        var blk = statNum(row.blk) || 0;
+        var pf = statNum(row.pf) || 0;
+        var tov = statNum(row.tov) || 0;
+        var tpm = statNum(row.tpm) || 0;
+        var tpa = statNum(row.tpa) || 0;
+        var fg2m = fgm - tpm;
+        var fg2a = fga - tpa;
+        var gmsc = pts + 0.4 * fgm - 0.7 * fga - 0.4 * (fta - ftm) + 0.7 * oreb + 0.3 * dreb + stl + 0.7 * ast + 0.7 * blk - 0.4 * pf - tov;
+        return {
+          reb: String((statNum(row.oreb) || 0) + (statNum(row.dreb) || 0)),
+          fgp: pct(statNum(row.fgm), statNum(row.fga)),
+          tpp: pct(statNum(row.tpm), statNum(row.tpa)),
+          ftp: pct(statNum(row.ftm), statNum(row.fta)),
+          fg2m: String(fg2m),
+          fg2a: String(fg2a),
+          fg2p: pct(fg2m, fg2a),
+          gmsc: gmsc.toFixed(1)
+        };
+      }
+      function rowHasEntry(row) {
+        return INPUT_KEYS.some(function (key) { return statNum(row[key]) != null; });
+      }
+      function fillCalcs(tr) {
+        var row = {};
+        tr.querySelectorAll("[data-stat]").forEach(function (input) {
+          row[input.getAttribute("data-stat")] = input.value;
+        });
+        var ready = rowHasEntry(row);
+        var values = ready ? derived(row) : {};
+        tr.querySelectorAll("[data-calc]").forEach(function (cell) {
+          var value = values[cell.getAttribute("data-calc")];
+          cell.textContent = ready && value != null && value !== "" ? value : "—";
+        });
+      }
       function rememberStats() {
         document.querySelectorAll("[data-stat]").forEach(function (field) {
           var id = field.getAttribute("data-player");
@@ -296,7 +373,10 @@
           var name = side === "away" ? away : home;
           var section = document.createElement("section");
           section.className = "gs-list";
-          section.innerHTML = "<h3>" + name + "</h3>";
+          var title = document.createElement("h3");
+          title.className = "gs-stat-title";
+          title.innerHTML = '<img src="' + logos[name] + '" alt=""><span>' + name + '</span>';
+          section.appendChild(title);
           var playing = slots[side].filter(function (player) { return player && active[side][playerId(player)]; });
           var rows = playing.slice();
           while (rows.length < 5) rows.push(null);
@@ -305,7 +385,7 @@
           var table = document.createElement("table");
           table.className = "gs-stat";
           var head = document.createElement("tr");
-          head.innerHTML = "<th>Player</th>" + SHEET.map(function (col) { return "<th>" + col[1] + "</th>"; }).join("");
+          head.innerHTML = "<th>Player</th>" + COLS.map(function (col) { return "<th>" + col.label + "</th>"; }).join("");
           var thead = document.createElement("thead");
           thead.appendChild(head);
           var tbody = document.createElement("tbody");
@@ -316,21 +396,35 @@
             who.className = "gs-who";
             who.appendChild(person(player));
             tr.appendChild(who);
-            SHEET.forEach(function (col) {
+            COLS.forEach(function (col) {
               var td = document.createElement("td");
-              var input = document.createElement("input");
-              input.type = "number";
-              input.min = "0";
-              input.setAttribute("inputmode", "numeric");
-              if (player) {
-                input.setAttribute("data-player", playerId(player));
-                input.setAttribute("data-stat", col[0]);
-                var current = stats[playerId(player)] && stats[playerId(player)][col[0]];
-                if (current != null && current !== "") input.value = current;
+              if (col.calc) {
+                var auto = document.createElement("span");
+                auto.className = "gs-calc";
+                auto.setAttribute("data-calc", col.key);
+                auto.textContent = "—";
+                td.appendChild(auto);
+              } else {
+                var input = document.createElement("input");
+                input.type = "number";
+                input.min = "0";
+                input.setAttribute("inputmode", "numeric");
+                if (player) {
+                  input.setAttribute("data-player", playerId(player));
+                  input.setAttribute("data-stat", col.key);
+                  var current = stats[playerId(player)] && stats[playerId(player)][col.key];
+                  if (current != null && current !== "") input.value = current;
+                  input.addEventListener("input", function () { fillCalcs(tr); });
+                }
+                td.appendChild(input);
               }
-              td.appendChild(input);
               tr.appendChild(td);
             });
+            tr.addEventListener("focusin", function () { tr.classList.add("is-hot"); });
+            tr.addEventListener("focusout", function (event) {
+              if (!tr.contains(event.relatedTarget)) tr.classList.remove("is-hot");
+            });
+            fillCalcs(tr);
             tbody.appendChild(tr);
           });
           table.append(thead, tbody);
@@ -503,10 +597,18 @@
           Object.keys(active[side]).forEach(function (id) {
             var player = active[side][id];
             var line = { id: id, name: player.name || player.username || "Unknown" };
-            SHEET.forEach(function (col) {
-              var value = stats[id] && stats[id][col[0]];
-              line[col[0]] = value === "" || value == null ? null : Number(value);
+            var src = stats[id] || {};
+            INPUT_KEYS.forEach(function (key) {
+              var value = src[key];
+              line[key] = value === "" || value == null ? null : Number(value);
             });
+            if (rowHasEntry(src)) {
+              var calc = derived(src);
+              line.reb = Number(calc.reb);
+              line.fg2m = Number(calc.fg2m);
+              line.fg2a = Number(calc.fg2a);
+              line.gmsc = Number(calc.gmsc);
+            } else line.reb = null;
             lines.push(line);
           });
         });
