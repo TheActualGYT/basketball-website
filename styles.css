@@ -4164,3 +4164,212 @@ a.final-edit {
   padding: 0.28rem 0.15rem;
   font-size: 0.78rem;
 }
+
+.game-score h2 { margin-bottom: 1rem; }
+
+.gs-top {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 1.6rem;
+  align-items: start;
+  margin-bottom: 1rem;
+}
+
+.gs-save {
+  width: 100%;
+  border: 0;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #c026d3, #ec4899);
+  color: #fff;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.8rem 0.7rem;
+  cursor: pointer;
+}
+
+.gs-inline {
+  display: flex;
+  align-items: center;
+  margin-top: 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: #101010;
+}
+
+.gs-inline span {
+  padding: 0.48rem 0.6rem;
+  color: rgba(255, 255, 255, 0.72);
+  background: #1c1c1c;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.gs-inline input,
+.gs-inline select {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 0.84rem;
+  padding: 0.45rem 0.55rem;
+}
+
+.gs-inline b { color: rgba(255, 255, 255, 0.45); font-weight: 700; }
+
+.gs-inline input[name="hour"],
+.gs-inline input[name="minute"] {
+  flex: 0 0 3rem;
+  text-align: center;
+}
+
+.gs-line { width: 100%; border-collapse: collapse; }
+
+.gs-line th {
+  background: #141416;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 0.55rem 0.4rem;
+  border-bottom: 2px solid #ec4899;
+}
+
+.gs-line th:first-child,
+.gs-line td:first-child { text-align: left; width: 34%; }
+
+.gs-line td {
+  padding: 0.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #eee;
+  font-size: 0.86rem;
+  text-align: center;
+}
+
+.gs-line input {
+  width: 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 3px;
+  background: #0c0c0c;
+  color: #fff;
+  font: inherit;
+  text-align: center;
+  padding: 0.28rem 0.1rem;
+}
+
+.gs-line .is-tot { font-weight: 800; color: #fff; }
+
+.gs-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.gs-tabs button {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-bottom: 0;
+  background: #161616;
+  color: rgba(255, 255, 255, 0.72);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+}
+
+.gs-tabs button.is-on {
+  background: #09090b;
+  color: #fff;
+  box-shadow: inset 0 -2px 0 #fff;
+}
+
+.gs-panel { margin-top: 0.85rem; }
+
+.gs-info,
+.gs-align {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+  align-items: start;
+}
+
+.gs-card,
+.gs-list {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: #101010;
+}
+
+.gs-list { padding-bottom: 0.4rem; }
+
+.gs-card h3,
+.gs-list h3 {
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: 3px solid #fff;
+  color: #fff;
+  font-size: 0.92rem;
+}
+
+.gs-card .gs-inline { margin: 0.65rem; }
+.gs-card .gs-pair { display: flex; gap: 0.55rem; }
+.gs-card .gs-pair .gs-inline { flex: 1; margin-top: 0; }
+
+.gs-card textarea {
+  display: block;
+  width: calc(100% - 1.3rem);
+  min-height: 180px;
+  margin: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: #0c0c0c;
+  color: #fff;
+  font: inherit;
+  padding: 0.55rem;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.gs-note,
+.gs-count {
+  margin: 0 0.7rem 0.7rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.75rem;
+}
+
+.gs-spot {
+  display: flex;
+  width: calc(100% - 0.8rem);
+  margin: 0.28rem 0.4rem 0;
+  padding: 0.32rem 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  background: #09090b;
+  color: #eee;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gs-spot.is-empty { cursor: default; color: rgba(255, 255, 255, 0.35); }
+.gs-spot.is-on { border-color: rgba(255, 255, 255, 0.72); }
+
+.gs-person { display: flex; align-items: center; gap: 0.45rem; min-width: 0; }
+.gs-person img, .gs-person i {
+  width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex: 0 0 24px;
+}
+.gs-person i { border: 1px solid rgba(255, 255, 255, 0.16); display: block; }
+.gs-person span { display: flex; flex-direction: column; min-width: 0; }
+.gs-person b { font-size: 0.78rem; }
+.gs-person small { color: rgba(255, 255, 255, 0.42); font-size: 0.64rem; }
+
+#validation-box { padding: 0.2rem 0.75rem 0.8rem; color: #eee; font-size: 0.86rem; }
+
+@media (max-width: 900px) {
+  .gs-top, .gs-info, .gs-align { grid-template-columns: 1fr; }
+}

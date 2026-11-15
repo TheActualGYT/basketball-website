@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="logo.png" type="image/png">
-  <title>Submit Box Score | Junior Basketball Association</title>
+  <title>Game Score | Junior Basketball Association</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -69,19 +69,34 @@
     </nav>
   </header>
 
-  <section class="division-page boxscore-page">
-    <h2>Submit Box Score</h2>
+  <section class="division-page game-score">
+    <h2>Game Score</h2>
     <p class="box-lead" id="box-lead">Loading game…</p>
     <form id="box-form" hidden>
-      <div class="box-layout">
-        <aside class="box-rosters" id="box-rosters"></aside>
-        <div class="box-active" id="box-active"></div>
+      <div class="gs-top">
+        <div>
+          <button class="gs-save" type="submit">Save and go back to schedule</button>
+          <label class="gs-inline">
+            <span>Quarters played :</span>
+            <select name="quarters" id="quarters-played">
+              <option>Q1</option>
+              <option>Q2</option>
+              <option>Q3</option>
+              <option selected>Q4</option>
+            </select>
+          </label>
+        </div>
+        <table class="gs-line">
+          <thead>
+            <tr><th>Team</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>TOT</th><th>Foul</th></tr>
+          </thead>
+          <tbody id="gs-line-body"></tbody>
+        </table>
       </div>
-      <p class="box-error" id="box-error" hidden></p>
-      <div class="box-submit"><button class="cta-btn" type="submit">Submit box score</button></div>
+      <div class="gs-tabs" id="gs-tabs"></div>
+      <div id="gs-panels"></div>
     </form>
   </section>
-
   <script>
     (function () {
       var params = new URLSearchParams(location.search);
@@ -90,90 +105,111 @@
       var home = params.get("home") || "";
       var lead = document.getElementById("box-lead");
       var form = document.getElementById("box-form");
-      var rosters = document.getElementById("box-rosters");
-      var activeBox = document.getElementById("box-active");
-      var error = document.getElementById("box-error");
       var logos = {
-        "Arizona Wildcats": "arizona.png",
-        "Baylor Bears": "baylor.png",
-        "Duke Blue Devils": "duke.png",
-        "Florida Gators": "florida.png",
-        "Georgia Bulldogs": "georgia.png",
-        "Houston Cougars": "houston.png",
-        "Kansas Jayhawks": "kansas.png",
-        "Kentucky Wildcats": "kentucky.png",
-        "LSU Tigers": "lsu.png",
-        "Miami Hurricanes": "miami.png",
-        "Michigan Wolverines": "michigan.png",
-        "North Carolina Tar Heels": "unc.png",
-        "Ohio State Buckeyes": "ohiostate.png",
-        "Oregon Ducks": "oregon.png",
-        "UCLA Bruins": "ucla.png",
+        "Arizona Wildcats": "arizona.png", "Baylor Bears": "baylor.png", "Duke Blue Devils": "duke.png",
+        "Florida Gators": "florida.png", "Georgia Bulldogs": "georgia.png", "Houston Cougars": "houston.png",
+        "Kansas Jayhawks": "kansas.png", "Kentucky Wildcats": "kentucky.png", "LSU Tigers": "lsu.png",
+        "Miami Hurricanes": "miami.png", "Michigan Wolverines": "michigan.png", "North Carolina Tar Heels": "unc.png",
+        "Ohio State Buckeyes": "ohiostate.png", "Oregon Ducks": "oregon.png", "UCLA Bruins": "ucla.png",
         "Virginia Cavaliers": "virginia.png"
       };
+      var abbrs = {
+        "Arizona Wildcats": "ARIZ", "Baylor Bears": "BAY", "Duke Blue Devils": "DUKE", "Florida Gators": "FLA",
+        "Georgia Bulldogs": "UGA", "Houston Cougars": "HOU", "Kansas Jayhawks": "KU", "Kentucky Wildcats": "UK",
+        "LSU Tigers": "LSU", "Miami Hurricanes": "MIA", "Michigan Wolverines": "MICH", "North Carolina Tar Heels": "UNC",
+        "Ohio State Buckeyes": "OSU", "Oregon Ducks": "ORE", "UCLA Bruins": "UCLA", "Virginia Cavaliers": "UVA"
+      };
+      var SHEET = [["pts","PTS"],["reb","REB"],["ast","AST"],["stl","STL"],["blk","BLK"],["tov","TO"],["pf","PF"],["ftm","FTM"],["fta","FTA"],["fgm","2PM"],["fga","2PA"],["tpm","3PM"],["tpa","3PA"],["oreb","OREB"],["dreb","DREB"]];
       var key = week + "|" + away + "|" + home;
       if (!week || !logos[away] || !logos[home]) {
         lead.textContent = "That game could not be found.";
         return;
       }
-      lead.textContent = "Week " + week + " · " + away + " at " + home;
+      var slots = { away: [], home: [] };
+      var active = { away: {}, home: {} };
+      var stats = {};
+      var saved = {};
 
-      function teamName(player) {
-        return String(player.team || player.teamName || "").trim();
-      }
-
+      function teamName(player) { return String(player.team || player.teamName || "").trim(); }
+      function playerId(player) { return String(player.id || player.username || ""); }
       function avatar(player) {
         if (player.avatar && player.id) return "https://cdn.discordapp.com/avatars/" + player.id + "/" + player.avatar + ".png?size=64";
         return "https://cdn.discordapp.com/embed/avatars/0.png";
       }
-
-      function roster(players, name) {
-        return players.filter(function (player) {
-          if (player.notPlayer) return false;
-          return teamName(player).toLowerCase() === name.toLowerCase();
-        }).sort(function (a, b) {
-          return String(a.name || a.username || "").localeCompare(String(b.name || b.username || ""));
-        });
-      }
-
-      var slots = { away: [], home: [] };
-      var active = { away: {}, home: {} };
-      var stats = {};
-      var SHEET = [
-        ["pts", "PTS"], ["reb", "REB"], ["ast", "AST"], ["stl", "STL"], ["blk", "BLK"], ["tov", "TO"], ["pf", "PF"],
-        ["ftm", "FTM"], ["fta", "FTA"], ["fgm", "2PM"], ["fga", "2PA"], ["tpm", "3PM"], ["tpa", "3PA"], ["oreb", "OREB"], ["dreb", "DREB"]
-      ];
-
-      function playerId(player) {
-        return String(player.id || player.username || "");
-      }
-
       function pad(list) {
         var spots = list.slice(0, 10);
         while (spots.length < 10) spots.push(null);
         return spots;
       }
-
-      function rememberStats() {
-        Array.prototype.forEach.call(form.querySelectorAll("[data-stat]"), function (field) {
-          var id = field.getAttribute("data-player");
-          if (!stats[id]) stats[id] = {};
-          stats[id][field.getAttribute("data-stat")] = field.value;
+      function roster(players, name) {
+        return players.filter(function (player) {
+          return !player.notPlayer && teamName(player).toLowerCase() === name.toLowerCase();
+        }).sort(function (a, b) {
+          return String(a.name || a.username || "").localeCompare(String(b.name || b.username || ""));
         });
       }
-
-      function spotButton(player, sideName, index) {
-        var button = document.createElement("button");
-        button.type = "button";
-        button.className = "roster-spot";
+      function num(value) {
+        if (value == null || String(value).trim() === "") return null;
+        var n = Number(value);
+        return Number.isFinite(n) && n >= 0 ? n : null;
+      }
+      function quarterSum(side) {
+        var total = 0, any = false;
+        ["q1","q2","q3","q4"].forEach(function (q) {
+          var input = form.querySelector('[data-side="' + side + '"][data-q="' + q + '"]');
+          var value = num(input && input.value);
+          if (value == null) return;
+          total += value;
+          any = true;
+        });
+        return any ? total : null;
+      }
+      function paintTotals() {
+        ["away","home"].forEach(function (side) {
+          var cell = document.getElementById(side + "-tot");
+          var total = quarterSum(side);
+          cell.textContent = total == null ? "" : String(total);
+        });
+      }
+      function lineRow(side, name) {
+        var tr = document.createElement("tr");
+        var team = document.createElement("td");
+        team.textContent = name;
+        tr.appendChild(team);
+        ["q1","q2","q3","q4","foul"].forEach(function (q) {
+          var td = document.createElement("td");
+          if (q === "foul") td.className = "is-foul";
+          var input = document.createElement("input");
+          input.type = "number";
+          input.min = "0";
+          input.setAttribute("data-side", side);
+          input.setAttribute("data-q", q);
+          input.addEventListener("input", paintTotals);
+          td.appendChild(input);
+          tr.appendChild(td);
+        });
+        var tot = document.createElement("td");
+        tot.className = "is-tot";
+        tot.id = side + "-tot";
+        tr.insertBefore(tot, tr.lastChild);
+        return tr;
+      }
+      function showTab(id) {
+        document.querySelectorAll(".gs-tabs button").forEach(function (button) {
+          button.classList.toggle("is-on", button.getAttribute("data-tab") === id);
+        });
+        document.querySelectorAll(".gs-panel").forEach(function (panel) {
+          panel.hidden = panel.getAttribute("data-panel") !== id;
+        });
+        if (id === "validation") paintValidation();
+      }
+      function person(player) {
+        var wrap = document.createElement("span");
+        wrap.className = "gs-person";
         if (!player) {
-          button.classList.add("is-empty");
-          button.disabled = true;
-          button.innerHTML = '<span class="spot-mark"></span><span><b>Empty</b></span>';
-          return button;
+          wrap.innerHTML = '<i></i><b>Empty</b>';
+          return wrap;
         }
-        var id = playerId(player);
-        if (active[sideName][id]) button.classList.add("is-active");
         var img = document.createElement("img");
         img.alt = "";
         img.referrerPolicy = "no-referrer";
@@ -184,309 +220,255 @@
         var tag = document.createElement("small");
         tag.textContent = player.username ? "@" + player.username : "";
         copy.append(title, tag);
-        button.append(img, copy);
-        button.addEventListener("click", function () {
-          rememberStats();
-          if (active[sideName][id]) delete active[sideName][id];
-          else active[sideName][id] = player;
-          paint();
-        });
-        return button;
+        wrap.append(img, copy);
+        return wrap;
       }
-
-      function rosterBlock(name, sideName) {
-        var block = document.createElement("section");
-        block.className = "roster-block";
-        var head = document.createElement("header");
-        head.innerHTML = '<img src="' + logos[name] + '" alt=""><div><h3>' + name + '</h3><span>' + (sideName === "home" ? "Home" : "Away") + '</span></div>';
-        block.appendChild(head);
-        slots[sideName].forEach(function (player, index) {
-          block.appendChild(spotButton(player, sideName, index));
+      function rememberStats() {
+        document.querySelectorAll("[data-stat]").forEach(function (field) {
+          var id = field.getAttribute("data-player");
+          if (!stats[id]) stats[id] = {};
+          stats[id][field.getAttribute("data-stat")] = field.value;
         });
-        return block;
       }
-
-      function statInput(player, sideName, stat) {
+      function togglePlayer(side, player) {
+        rememberStats();
         var id = playerId(player);
-        var field = document.createElement("input");
-        field.type = "number";
-        field.min = "0";
-        field.inputMode = "numeric";
-        field.setAttribute("data-player", id);
-        field.setAttribute("data-name", player.name || player.username || "Unknown");
-        field.setAttribute("data-stat", stat);
-        field.setAttribute("data-side", sideName);
-        field.setAttribute("aria-label", (player.name || "Player") + " " + stat.toUpperCase());
-        if (stats[id] && stats[id][stat] != null) field.value = stats[id][stat];
-        return field;
+        if (active[side][id]) delete active[side][id];
+        else active[side][id] = player;
+        paintAlignment(side);
+        paintStatistics(side);
       }
-
-      function activeTeam(name, sideName) {
-        var section = document.createElement("section");
-        section.className = "box-team";
-        var head = document.createElement("header");
-        head.innerHTML = '<img src="' + logos[name] + '" alt=""><div><h3>' + name + '</h3><span>' + (sideName === "home" ? "Home" : "Away") + '</span></div>';
-        var score = document.createElement("label");
-        score.className = "box-score";
-        score.appendChild(document.createTextNode("Score"));
-        var input = document.createElement("input");
-        input.type = "number";
-        input.min = "0";
-        input.inputMode = "numeric";
-        input.name = sideName + "-score";
-        input.setAttribute("aria-label", name + " score");
-        if (stats[sideName + "-score"] != null) input.value = stats[sideName + "-score"];
-        input.addEventListener("input", function () { stats[sideName + "-score"] = input.value; });
-        score.appendChild(input);
-        head.appendChild(score);
-        section.appendChild(head);
-        var playing = slots[sideName].filter(function (player) { return player && active[sideName][playerId(player)]; });
+      function paintAlignment(side) {
+        var box = document.getElementById("align-" + side);
+        box.textContent = "";
+        var rosterCol = document.createElement("div");
+        rosterCol.className = "gs-list";
+        rosterCol.innerHTML = "<h3>Team roster</h3>";
+        slots[side].forEach(function (player) {
+          var row = document.createElement("button");
+          row.type = "button";
+          row.className = "gs-spot";
+          if (!player) row.classList.add("is-empty");
+          else if (active[side][playerId(player)]) row.classList.add("is-on");
+          row.disabled = !player;
+          row.appendChild(person(player));
+          if (player) row.addEventListener("click", function () { togglePlayer(side, player); });
+          rosterCol.appendChild(row);
+        });
+        var activeCol = document.createElement("div");
+        activeCol.className = "gs-list";
+        activeCol.innerHTML = "<h3>In this game</h3>";
+        var playing = slots[side].filter(function (player) { return player && active[side][playerId(player)]; });
         if (!playing.length) {
           var empty = document.createElement("p");
-          empty.className = "box-empty";
-          empty.textContent = "Select a player from the roster to add them to this box score.";
-          section.appendChild(empty);
-          return section;
+          empty.className = "gs-note";
+          empty.textContent = "Select a player from the roster.";
+          activeCol.appendChild(empty);
         }
-        var scroll = document.createElement("div");
-        scroll.className = "sheet-scroll";
-        var table = document.createElement("table");
-        table.className = "box-sheet";
-        var thead = document.createElement("thead");
-        var headRow = document.createElement("tr");
-        var playerHead = document.createElement("th");
-        playerHead.textContent = "Player";
-        headRow.appendChild(playerHead);
-        SHEET.forEach(function (col) {
-          var th = document.createElement("th");
-          th.textContent = col[1];
-          headRow.appendChild(th);
-        });
-        thead.appendChild(headRow);
-        var tbody = document.createElement("tbody");
         playing.forEach(function (player) {
-          var row = document.createElement("tr");
-          var who = document.createElement("th");
-          who.className = "sheet-player";
-          var img = document.createElement("img");
-          img.alt = "";
-          img.referrerPolicy = "no-referrer";
-          img.src = avatar(player);
-          var copy = document.createElement("span");
-          var title = document.createElement("b");
-          title.textContent = player.name || player.username || "Unknown";
-          var tag = document.createElement("small");
-          tag.textContent = player.username ? "@" + player.username : "";
-          copy.append(title, tag);
-          who.append(img, copy);
-          row.appendChild(who);
-          SHEET.forEach(function (col) {
-            var cell = document.createElement("td");
-            cell.appendChild(statInput(player, sideName, col[0]));
-            row.appendChild(cell);
-          });
-          tbody.appendChild(row);
+          var row = document.createElement("button");
+          row.type = "button";
+          row.className = "gs-spot is-on";
+          row.appendChild(person(player));
+          row.addEventListener("click", function () { togglePlayer(side, player); });
+          activeCol.appendChild(row);
         });
-        var tfoot = document.createElement("tfoot");
-        var total = document.createElement("tr");
-        var totalLabel = document.createElement("th");
-        totalLabel.textContent = "Total";
-        total.appendChild(totalLabel);
-        SHEET.forEach(function (col) {
-          var cell = document.createElement("td");
-          var sum = 0;
-          var any = false;
-          playing.forEach(function (player) {
-            var saved = stats[playerId(player)] && stats[playerId(player)][col[0]];
-            if (saved === "" || saved == null) return;
-            var value = Number(saved);
-            if (!Number.isFinite(value)) return;
-            sum += value;
-            any = true;
-          });
-          cell.textContent = any ? String(sum) : "—";
-          total.appendChild(cell);
-        });
-        tfoot.appendChild(total);
-        table.append(thead, tbody, tfoot);
-        scroll.appendChild(table);
-        section.appendChild(scroll);
-        return section;
+        box.append(rosterCol, activeCol);
       }
-
-      function teamEditor(name, sideName) {
-        var section = document.createElement("section");
-        section.className = "mso-team";
-        var head = document.createElement("header");
-        head.innerHTML = '<img src="' + logos[name] + '" alt=""><div><h3>' + name + '</h3><span>' + (sideName === "home" ? "Home" : "Away") + '</span></div>';
-        var score = document.createElement("label");
-        score.className = "box-score";
-        score.appendChild(document.createTextNode("Score"));
-        var input = document.createElement("input");
-        input.type = "number";
-        input.min = "0";
-        input.inputMode = "numeric";
-        input.name = sideName + "-score";
-        input.setAttribute("aria-label", name + " score");
-        if (stats[sideName + "-score"] != null) input.value = stats[sideName + "-score"];
-        input.addEventListener("input", function () { stats[sideName + "-score"] = input.value; });
-        score.appendChild(input);
-        head.appendChild(score);
-        section.appendChild(head);
-        var split = document.createElement("div");
-        split.className = "mso-split";
-        var roster = document.createElement("div");
-        roster.className = "mso-roster";
-        var rosterLabel = document.createElement("p");
-        rosterLabel.textContent = "Team roster";
-        roster.appendChild(rosterLabel);
-        slots[sideName].forEach(function (player, index) {
-          roster.appendChild(spotButton(player, sideName, index));
-        });
-        split.appendChild(roster);
-        var playing = slots[sideName].filter(function (player) { return player && active[sideName][playerId(player)]; });
+      function paintStatistics(side) {
+        var box = document.getElementById("stats-" + side);
+        box.textContent = "";
+        var playing = slots[side].filter(function (player) { return player && active[side][playerId(player)]; });
         var scroll = document.createElement("div");
         scroll.className = "sheet-scroll";
         var table = document.createElement("table");
         table.className = "box-sheet";
+        var head = document.createElement("tr");
+        head.innerHTML = "<th>Player</th>" + SHEET.map(function (col) { return "<th>" + col[1] + "</th>"; }).join("");
         var thead = document.createElement("thead");
-        var headRow = document.createElement("tr");
-        var playerHead = document.createElement("th");
-        playerHead.textContent = "Player";
-        headRow.appendChild(playerHead);
-        SHEET.forEach(function (col) {
-          var th = document.createElement("th");
-          th.textContent = col[1];
-          headRow.appendChild(th);
-        });
-        thead.appendChild(headRow);
+        thead.appendChild(head);
         var tbody = document.createElement("tbody");
         if (!playing.length) {
           var blank = document.createElement("tr");
-          var cell = document.createElement("td");
-          cell.colSpan = SHEET.length + 1;
-          cell.className = "sheet-empty";
-          cell.textContent = "Select a player from the roster.";
-          blank.appendChild(cell);
+          blank.innerHTML = '<td class="sheet-empty" colspan="' + (SHEET.length + 1) + '">Add players from the Alignment tab first.</td>';
           tbody.appendChild(blank);
-        } else {
-          playing.forEach(function (player) {
-            var row = document.createElement("tr");
-            var who = document.createElement("th");
-            who.className = "sheet-player";
-            var img = document.createElement("img");
-            img.alt = "";
-            img.referrerPolicy = "no-referrer";
-            img.src = avatar(player);
-            var copy = document.createElement("span");
-            var title = document.createElement("b");
-            title.textContent = player.name || player.username || "Unknown";
-            var tag = document.createElement("small");
-            tag.textContent = player.username ? "@" + player.username : "";
-            copy.append(title, tag);
-            who.append(img, copy);
-            row.appendChild(who);
-            SHEET.forEach(function (col) {
-              var statCell = document.createElement("td");
-              statCell.appendChild(statInput(player, sideName, col[0]));
-              row.appendChild(statCell);
-            });
-            tbody.appendChild(row);
-          });
         }
-        var tfoot = document.createElement("tfoot");
-        var total = document.createElement("tr");
-        var totalLabel = document.createElement("th");
-        totalLabel.textContent = "Total";
-        total.appendChild(totalLabel);
-        SHEET.forEach(function (col) {
-          var totalCell = document.createElement("td");
-          var sum = 0;
-          var any = false;
-          playing.forEach(function (player) {
-            var saved = stats[playerId(player)] && stats[playerId(player)][col[0]];
-            if (saved === "" || saved == null) return;
-            var value = Number(saved);
-            if (!Number.isFinite(value)) return;
-            sum += value;
-            any = true;
+        playing.forEach(function (player) {
+          var tr = document.createElement("tr");
+          var who = document.createElement("th");
+          who.className = "sheet-player";
+          who.appendChild(person(player));
+          tr.appendChild(who);
+          SHEET.forEach(function (col) {
+            var td = document.createElement("td");
+            var input = document.createElement("input");
+            input.type = "number";
+            input.min = "0";
+            input.setAttribute("data-player", playerId(player));
+            input.setAttribute("data-stat", col[0]);
+            var current = stats[playerId(player)] && stats[playerId(player)][col[0]];
+            if (current != null && current !== "") input.value = current;
+            td.appendChild(input);
+            tr.appendChild(td);
           });
-          totalCell.textContent = any ? String(sum) : "—";
-          total.appendChild(totalCell);
+          tbody.appendChild(tr);
         });
-        tfoot.appendChild(total);
-        table.append(thead, tbody, tfoot);
+        table.append(thead, tbody);
         scroll.appendChild(table);
-        split.appendChild(scroll);
-        section.appendChild(split);
-        return section;
+        box.appendChild(scroll);
       }
-
-      function paint() {
-        rosters.hidden = true;
-        activeBox.textContent = "";
-        activeBox.appendChild(teamEditor(away, "away"));
-        activeBox.appendChild(teamEditor(home, "home"));
+      function paintValidation() {
+        var box = document.getElementById("validation-box");
+        var awayTotal = quarterSum("away");
+        var homeTotal = quarterSum("home");
+        var items = [
+          away + ": " + (awayTotal == null ? "no quarter scores yet" : awayTotal + " points"),
+          home + ": " + (homeTotal == null ? "no quarter scores yet" : homeTotal + " points"),
+          "Active " + abbrs[away] + ": " + Object.keys(active.away).length,
+          "Active " + abbrs[home] + ": " + Object.keys(active.home).length
+        ];
+        box.innerHTML = items.map(function (item) { return "<p>" + item + "</p>"; }).join("");
       }
-
-      fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
-        slots.away = pad(roster(data.players || [], away));
-        slots.home = pad(roster(data.players || [], home));
-        var saved = {};
-        try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}")[key] || {}; } catch (err) { saved = {}; }
-        if (saved.awayScore != null) stats["away-score"] = saved.awayScore;
-        if (saved.homeScore != null) stats["home-score"] = saved.homeScore;
+      function panel(id) {
+        var node = document.createElement("div");
+        node.className = "gs-panel";
+        node.setAttribute("data-panel", id);
+        node.hidden = id !== "info";
+        return node;
+      }
+      function build() {
+        var body = document.getElementById("gs-line-body");
+        body.appendChild(lineRow("away", away));
+        body.appendChild(lineRow("home", home));
+        var tabs = [
+          ["info", "Info"],
+          ["align-away", "Alignment - " + abbrs[away]],
+          ["align-home", "Alignment - " + abbrs[home]],
+          ["stats-away", "Statistics - " + abbrs[away]],
+          ["stats-home", "Statistics - " + abbrs[home]],
+          ["validation", "Validation"],
+          ["points", "Manage Points"]
+        ];
+        var tabBar = document.getElementById("gs-tabs");
+        var panels = document.getElementById("gs-panels");
+        tabs.forEach(function (tab) {
+          var button = document.createElement("button");
+          button.type = "button";
+          button.setAttribute("data-tab", tab[0]);
+          button.textContent = tab[1];
+          if (tab[0] === "info") button.classList.add("is-on");
+          button.addEventListener("click", function () { showTab(tab[0]); });
+          tabBar.appendChild(button);
+          panels.appendChild(panel(tab[0]));
+        });
+        document.querySelector('[data-panel="info"]').innerHTML = ''
+          + '<div class="gs-info">'
+          + '<section class="gs-card"><h3>Details</h3>'
+          + '<label class="gs-inline"><span>Date / Time :</span><input type="date" name="date"><input name="hour" inputmode="numeric" maxlength="2" placeholder="HH"><b>:</b><input name="minute" inputmode="numeric" maxlength="2" placeholder="MM"></label>'
+          + '<label class="gs-inline"><span>Game number :</span><input name="number" value="' + week + '"></label>'
+          + '<label class="gs-inline"><span>Location :</span><input name="location" placeholder="TBD"></label>'
+          + '<div class="gs-pair"><label class="gs-inline"><span>Status :</span><select name="status"><option>Incomplete</option><option>Final</option><option>Forfeit</option></select></label>'
+          + '<label class="gs-inline"><span>Game Result :</span><select name="result"><option>Based on game score</option><option>Away forfeit</option><option>Home forfeit</option></select></label></div>'
+          + '<label class="gs-inline"><span>Game URL :</span><input name="url" placeholder="Optional"></label>'
+          + '<p class="gs-note">You may optionally enter a URL for this game.</p></section>'
+          + '<section class="gs-card"><h3>Game recap</h3><textarea name="recap" maxlength="500"></textarea><p class="gs-count" id="recap-count">0 / 500</p></section>'
+          + '</div>';
+        document.querySelector('[data-panel="align-away"]').id = "align-away";
+        document.querySelector('[data-panel="align-away"]').classList.add("gs-align");
+        document.querySelector('[data-panel="align-home"]').id = "align-home";
+        document.querySelector('[data-panel="align-home"]').classList.add("gs-align");
+        document.querySelector('[data-panel="stats-away"]').id = "stats-away";
+        document.querySelector('[data-panel="stats-home"]').id = "stats-home";
+        document.querySelector('[data-panel="validation"]').innerHTML = '<section class="gs-card"><h3>Validation</h3><div id="validation-box"></div></section>';
+        document.querySelector('[data-panel="points"]').innerHTML = '<section class="gs-card"><h3>Manage Points</h3>'
+          + '<label class="gs-inline"><span>' + away + ' :</span><input type="number" name="away-points" min="0"></label>'
+          + '<label class="gs-inline"><span>' + home + ' :</span><input type="number" name="home-points" min="0"></label></section>';
+        form.recap.addEventListener("input", function () {
+          document.getElementById("recap-count").textContent = form.recap.value.length + " / 500";
+        });
+        paintAlignment("away");
+        paintAlignment("home");
+        paintStatistics("away");
+        paintStatistics("home");
+      }
+      function restore() {
+        var meta = saved.meta || {};
+        var quarters = saved.quarters || {};
+        ["away","home"].forEach(function (side) {
+          var row = quarters[side] || {};
+          ["q1","q2","q3","q4","foul"].forEach(function (q) {
+            var input = form.querySelector('[data-side="' + side + '"][data-q="' + q + '"]');
+            if (input && row[q] != null) input.value = row[q];
+          });
+        });
+        ["date","hour","minute","number","location","status","result","url","recap","quarters"].forEach(function (name) {
+          if (meta[name] != null && form.elements[name]) form.elements[name].value = meta[name];
+        });
+        if (saved.awayPoints != null) form.elements["away-points"].value = saved.awayPoints;
+        if (saved.homePoints != null) form.elements["home-points"].value = saved.homePoints;
+        if (form.recap) document.getElementById("recap-count").textContent = form.recap.value.length + " / 500";
+        paintTotals();
         (saved.lines || []).forEach(function (line) {
           if (!line || !line.id) return;
           stats[line.id] = line;
-          ["away", "home"].forEach(function (sideName) {
-            slots[sideName].forEach(function (player) {
-              if (player && playerId(player) === String(line.id)) active[sideName][line.id] = player;
+          ["away","home"].forEach(function (side) {
+            slots[side].forEach(function (player) {
+              if (player && playerId(player) === String(line.id)) active[side][line.id] = player;
             });
           });
         });
-        paint();
+        paintAlignment("away");
+        paintAlignment("home");
+        paintStatistics("away");
+        paintStatistics("home");
+      }
+      function best(rows, stat) {
+        var leader = null;
+        rows.forEach(function (row) {
+          if (row[stat] == null || Number(row[stat]) <= 0) return;
+          if (!leader || Number(row[stat]) > Number(leader.value)) leader = { name: row.name, value: String(row[stat]) };
+        });
+        return leader;
+      }
+      fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+        slots.away = pad(roster(data.players || [], away));
+        slots.home = pad(roster(data.players || [], home));
+        try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}")[key] || {}; } catch (err) { saved = {}; }
+        build();
+        restore();
+        lead.hidden = true;
         form.hidden = false;
       }).catch(function () {
         lead.textContent = "The rosters could not be loaded.";
       });
-      function numberValue(input) {
-        if (!input || String(input.value).trim() === "") return null;
-        var value = Number(input.value);
-        return Number.isFinite(value) && value >= 0 ? value : null;
-      }
-
-      function best(rows, stat) {
-        var leader = null;
-        rows.forEach(function (row) {
-          if (row[stat] == null) return;
-          if (!leader || row[stat] > leader.value) leader = { name: row.name, value: String(row[stat]) };
-        });
-        return leader && Number(leader.value) > 0 ? leader : null;
-      }
-
       form.addEventListener("submit", function (event) {
         event.preventDefault();
-        error.hidden = true;
         rememberStats();
-        var awayScore = numberValue(form.elements["away-score"]);
-        var homeScore = numberValue(form.elements["home-score"]);
+        var awayScore = quarterSum("away");
+        var homeScore = quarterSum("home");
         if (awayScore == null || homeScore == null) {
-          error.textContent = "Enter a score for both teams.";
-          error.hidden = false;
+          showTab("info");
+          lead.hidden = false;
+          lead.textContent = "Enter the quarter scores for both teams.";
           return;
         }
+        lead.hidden = true;
         var lines = [];
-        ["away", "home"].forEach(function (sideName) {
-          Object.keys(active[sideName]).forEach(function (id) {
-            var player = active[sideName][id];
-            var line = stats[id] || {};
-            var savedLine = { id: id, name: player.name || player.username || "Unknown" };
+        ["away","home"].forEach(function (side) {
+          Object.keys(active[side]).forEach(function (id) {
+            var player = active[side][id];
+            var line = { id: id, name: player.name || player.username || "Unknown" };
             SHEET.forEach(function (col) {
-              var value = line[col[0]];
-              savedLine[col[0]] = value === "" || value == null ? null : Number(value);
+              var value = stats[id] && stats[id][col[0]];
+              line[col[0]] = value === "" || value == null ? null : Number(value);
             });
-            lines.push(savedLine);
+            lines.push(line);
+          });
+        });
+        var quarters = { away: {}, home: {} };
+        ["away","home"].forEach(function (side) {
+          ["q1","q2","q3","q4","foul"].forEach(function (q) {
+            quarters[side][q] = form.querySelector('[data-side="' + side + '"][data-q="' + q + '"]').value;
           });
         });
         var store = {};
@@ -494,6 +476,15 @@
         store[key] = {
           awayScore: String(awayScore),
           homeScore: String(homeScore),
+          status: form.status.value,
+          quarters: quarters,
+          awayPoints: form.elements["away-points"].value,
+          homePoints: form.elements["home-points"].value,
+          meta: {
+            date: form.date.value, hour: form.hour.value, minute: form.minute.value,
+            number: form.number.value, location: form.location.value, status: form.status.value,
+            result: form.result.value, url: form.url.value, recap: form.recap.value, quarters: form.quarters.value
+          },
           lines: lines,
           leaders: { pts: best(lines, "pts"), ast: best(lines, "ast"), reb: best(lines, "reb") }
         };

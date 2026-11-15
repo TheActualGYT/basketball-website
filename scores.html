@@ -186,8 +186,11 @@
       document.querySelectorAll(".final-card").forEach(function (card) {
         var game = saved[card.getAttribute("data-game")];
         if (!game) return;
-        card.classList.add("is-final");
-        card.querySelector(".final-state").textContent = "FINAL";
+        var status = game.status || (game.meta && game.meta.status) || "Final";
+        if (status !== "Incomplete") {
+          card.classList.add("is-final");
+          card.querySelector(".final-state").textContent = status === "Forfeit" ? "FORFEIT" : "FINAL";
+        }
         var scores = card.querySelectorAll(".final-club strong");
         scores[0].textContent = game.awayScore;
         scores[1].textContent = game.homeScore;
