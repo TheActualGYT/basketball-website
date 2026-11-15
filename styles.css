@@ -3606,10 +3606,44 @@ input.is-profile {
   letter-spacing: 0.04em;
 }
 
-.final-top span:first-child {
-  color: #fff;
+.final-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+}
+
+.final-state {
+  color: rgba(255, 255, 255, 0.48);
   letter-spacing: 0.08em;
-  text-transform: uppercase;
+}
+
+.final-card.is-final .final-state {
+  color: #fff;
+  animation: titlePulse 3.6s ease-in-out infinite;
+}
+
+.final-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+}
+
+.final-edit svg {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.final-edit:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .final-side + .final-side {
