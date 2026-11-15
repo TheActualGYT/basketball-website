@@ -3743,6 +3743,12 @@ a.final-edit {
   font-variant-numeric: tabular-nums;
 }
 
+.final-club strong.is-win {
+  color: #86efac;
+  text-shadow: 0 0 10px rgba(134, 239, 172, 0.45);
+}
+
+.final-club strong.is-loss,
 .final-club strong.is-ffl {
   color: #f87171;
   text-shadow: 0 0 10px rgba(248, 113, 113, 0.45);

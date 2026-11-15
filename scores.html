@@ -220,6 +220,10 @@
           card.setAttribute("data-order", String(index));
         });
       });
+      function paintScore(el, kind) {
+        el.classList.toggle("is-win", kind === "win");
+        el.classList.toggle("is-loss", kind === "loss");
+      }
       document.querySelectorAll(".final-card").forEach(function (card) {
         var id = card.getAttribute("data-game") || "";
         var week = id.split("|")[0] || "";
@@ -242,8 +246,8 @@
           if (game.forfeitTeam === "home") awayMark = "FFW";
           marks[0].textContent = awayMark;
           marks[1].textContent = homeMark;
-          marks[0].classList.toggle("is-ffl", awayMark === "FFL");
-          marks[1].classList.toggle("is-ffl", homeMark === "FFL");
+          paintScore(marks[0], awayMark === "FFL" ? "loss" : "win");
+          paintScore(marks[1], homeMark === "FFL" ? "loss" : "win");
           card.querySelectorAll(".final-leaders div").forEach(function (row) {
             row.querySelector("b").textContent = "—";
             row.querySelector("em").textContent = "—";
@@ -256,6 +260,15 @@
         var scores = card.querySelectorAll(".final-club strong");
         scores[0].textContent = game.awayScore;
         scores[1].textContent = game.homeScore;
+        var awayPts = Number(game.awayScore);
+        var homePts = Number(game.homeScore);
+        if (isFinite(awayPts) && isFinite(homePts) && awayPts !== homePts) {
+          paintScore(scores[0], awayPts > homePts ? "win" : "loss");
+          paintScore(scores[1], homePts > awayPts ? "win" : "loss");
+        } else {
+          paintScore(scores[0], "");
+          paintScore(scores[1], "");
+        }
         var leaders = card.querySelectorAll(".final-leaders div");
         ["pts", "ast", "reb"].forEach(function (key, index) {
           var leader = game.leaders && game.leaders[key];

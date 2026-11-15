@@ -1079,3 +1079,229 @@ function setupProfile() {
   });
 })();
 
+(function paintStandings() {
+  var divisionTables = document.querySelectorAll(".division-table:not(.power-table)");
+  var homeTables = document.querySelectorAll(".conf-table");
+  if (!divisionTables.length && !homeTables.length) return;
+
+  var confOf = {
+    "Duke Blue Devils": "ACC",
+    "Miami Hurricanes": "ACC",
+    "North Carolina Tar Heels": "ACC",
+    "Virginia Cavaliers": "ACC",
+    "Florida Gators": "SEC",
+    "Georgia Bulldogs": "SEC",
+    "Kentucky Wildcats": "SEC",
+    "LSU Tigers": "SEC",
+    "Michigan Wolverines": "BIG-10",
+    "Ohio State Buckeyes": "BIG-10",
+    "Oregon Ducks": "BIG-10",
+    "UCLA Bruins": "BIG-10",
+    "Arizona Wildcats": "BIG-12",
+    "Baylor Bears": "BIG-12",
+    "Houston Cougars": "BIG-12",
+    "Kansas Jayhawks": "BIG-12"
+  };
+
+  function blank() {
+    return { w: 0, l: 0, dw: 0, dl: 0, hw: 0, hl: 0, aw: 0, al: 0, pf: 0, pa: 0, scored: 0, results: [] };
+  }
+  var teams = {};
+  Object.keys(confOf).forEach(function (name) { teams[name] = blank(); });
+
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { saved = {}; }
+
+  function whenKey(meta) {
+    if (!meta || !meta.date) return "";
+    var h = parseInt(meta.hour, 10);
+    var m = parseInt(meta.minute, 10);
+    if (!isFinite(h)) h = 0;
+    if (!isFinite(m)) m = 0;
+    if (String(meta.hour || "").trim() === "") return meta.date + "T00:00";
+    return meta.date + "T" + (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
+  }
+  function sideResult(score, other) {
+    if (score === "W" || score === "FFW") return "W";
+    if (score === "L" || score === "FFL") return "L";
+    var n = Number(score);
+    var m = Number(other);
+    if (!isFinite(n) || !isFinite(m)) return "";
+    if (n > m) return "W";
+    if (n < m) return "L";
+    return "T";
+  }
+  function isForfeit(game) {
+    if (!game) return false;
+    if (game.forfeit) return true;
+    return [game.awayScore, game.homeScore].some(function (score) {
+      return score === "W" || score === "L" || score === "FFW" || score === "FFL";
+    });
+  }
+
+  var games = [];
+  Object.keys(saved).forEach(function (id) {
+    var game = saved[id];
+    if (!game) return;
+    var legacy = game.submitted == null && game.awayScore !== "" && game.homeScore !== "" && game.awayScore != null && game.homeScore != null;
+    if (!(game.submitted === true || legacy)) return;
+    var parts = String(id).split("|");
+    if (parts.length < 3 || !teams[parts[1]] || !teams[parts[2]]) return;
+    games.push({ id: id, week: Number(parts[0]) || 0, away: parts[1], home: parts[2], game: game });
+  });
+  games.sort(function (a, b) {
+    var da = whenKey(a.game.meta);
+    var db = whenKey(b.game.meta);
+    if (!da && !db) return a.week - b.week || (a.id < b.id ? -1 : 1);
+    if (!da) return 1;
+    if (!db) return -1;
+    if (da !== db) return da < db ? -1 : 1;
+    return a.week - b.week || (a.id < b.id ? -1 : 1);
+  });
+
+  games.forEach(function (item) {
+    var game = item.game;
+    var forfeit = isForfeit(game);
+    var awayRes = sideResult(game.awayScore, game.homeScore);
+    var homeRes = sideResult(game.homeScore, game.awayScore);
+    if (forfeit && game.forfeitTeam === "away") { awayRes = "L"; homeRes = "W"; }
+    if (forfeit && game.forfeitTeam === "home") { awayRes = "W"; homeRes = "L"; }
+    function addResult(name, result, atHome) {
+      if (result !== "W" && result !== "L") return;
+      var team = teams[name];
+      if (result === "W") team.w += 1;
+      else team.l += 1;
+      if (atHome) {
+        if (result === "W") team.hw += 1;
+        else team.hl += 1;
+      } else if (result === "W") team.aw += 1;
+      else team.al += 1;
+      if (confOf[item.away] === confOf[item.home]) {
+        if (result === "W") team.dw += 1;
+        else team.dl += 1;
+      }
+      team.results.push(result);
+    }
+    addResult(item.away, awayRes, false);
+    addResult(item.home, homeRes, true);
+    if (!forfeit) {
+      var awayPts = Number(game.awayScore);
+      var homePts = Number(game.homeScore);
+      if (isFinite(awayPts) && isFinite(homePts)) {
+        teams[item.away].pf += awayPts;
+        teams[item.away].pa += homePts;
+        teams[item.away].scored += 1;
+        teams[item.home].pf += homePts;
+        teams[item.home].pa += awayPts;
+        teams[item.home].scored += 1;
+      }
+    }
+  });
+
+  function pct(w, l) {
+    return w + l ? w / (w + l) : null;
+  }
+  function pctText(w, l) {
+    var value = pct(w, l);
+    if (value == null) return "-";
+    if (value === 1) return "1.000";
+    return value.toFixed(3).replace(/^0/, "");
+  }
+  function streak(list) {
+    if (!list.length) return "-";
+    var last = list[list.length - 1];
+    var count = 0;
+    var i;
+    for (i = list.length - 1; i >= 0 && list[i] === last; i -= 1) count += 1;
+    return last + count;
+  }
+  function oneDecimal(value) {
+    return (Math.round(value * 10) / 10).toFixed(1);
+  }
+  function diffText(team) {
+    if (!team.scored) return "-";
+    var diff = team.pf - team.pa;
+    return diff > 0 ? "+" + diff : String(diff);
+  }
+  function line(name) {
+    var team = teams[name];
+    return {
+      name: name,
+      rec: team.w + "-" + team.l,
+      wpct: pctText(team.w, team.l),
+      strk: streak(team.results),
+      ppg: team.scored ? oneDecimal(team.pf / team.scored) : "-",
+      oppppg: team.scored ? oneDecimal(team.pa / team.scored) : "-",
+      diff: diffText(team),
+      division: team.dw + "-" + team.dl,
+      home: team.hw + "-" + team.hl,
+      away: team.aw + "-" + team.al
+    };
+  }
+  function rankNames(names) {
+    var ranked = names.slice().sort(function (a, b) {
+      var ta = teams[a];
+      var tb = teams[b];
+      var aPlayed = ta.w + ta.l > 0;
+      var bPlayed = tb.w + tb.l > 0;
+      if (aPlayed !== bPlayed) return aPlayed ? -1 : 1;
+      var pa = pct(ta.w, ta.l);
+      var pb = pct(tb.w, tb.l);
+      if (pa != null && pb != null && pa !== pb) return pb - pa;
+      if (ta.w !== tb.w) return tb.w - ta.w;
+      var da = ta.scored ? ta.pf - ta.pa : 0;
+      var db = tb.scored ? tb.pf - tb.pa : 0;
+      if (da !== db) return db - da;
+      return a.localeCompare(b);
+    });
+    var leader = teams[ranked[0]];
+    var played = leader.w + leader.l > 0;
+    return ranked.map(function (name, index) {
+      var team = teams[name];
+      var behind = ((leader.w - team.w) + (team.l - leader.l)) / 2;
+      var row = line(name);
+      row.rk = String(index + 1);
+      row.gb = !played || behind === 0 ? "-" : behind.toFixed(1);
+      return row;
+    });
+  }
+  function teamName(row) {
+    var name = row.querySelector(".conf-team span");
+    return name ? name.textContent.trim() : "";
+  }
+  function writeDivision(table) {
+    var body = table.tBodies[0];
+    if (!body) return;
+    var rows = Array.prototype.slice.call(body.rows);
+    var byName = {};
+    rankNames(rows.map(teamName).filter(Boolean)).forEach(function (row) { byName[row.name] = row; });
+    rows.sort(function (a, b) { return Number(byName[teamName(a)].rk) - Number(byName[teamName(b)].rk); });
+    rows.forEach(function (row) {
+      var data = byName[teamName(row)];
+      Array.prototype.forEach.call(table.tHead.rows[0].cells, function (th, index) {
+        var key = th.getAttribute("data-sort");
+        if (key && key !== "team" && data[key] != null) row.cells[index].textContent = data[key];
+      });
+      body.appendChild(row);
+    });
+  }
+  function writeHome(table) {
+    var body = table.tBodies[0];
+    if (!body) return;
+    var rows = Array.prototype.slice.call(body.rows);
+    var byName = {};
+    rankNames(rows.map(teamName).filter(Boolean)).forEach(function (row) { byName[row.name] = row; });
+    rows.sort(function (a, b) { return Number(byName[teamName(a)].rk) - Number(byName[teamName(b)].rk); });
+    rows.forEach(function (row) {
+      var data = byName[teamName(row)];
+      row.cells[0].textContent = data.rk;
+      row.cells[2].textContent = data.rec;
+      row.cells[3].textContent = data.wpct;
+      row.cells[4].textContent = data.gb;
+      body.appendChild(row);
+    });
+  }
+  Array.prototype.forEach.call(divisionTables, writeDivision);
+  Array.prototype.forEach.call(homeTables, writeHome);
+})();
+
