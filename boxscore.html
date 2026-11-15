@@ -172,7 +172,7 @@
         var tr = document.createElement("tr");
         var team = document.createElement("td");
         team.className = "gs-team";
-        team.innerHTML = '<img src="' + logos[name] + '" alt=""><span>' + name + '</span>';
+        team.innerHTML = '<span class="gs-club"><img src="' + logos[name] + '" alt=""><span>' + name + '</span></span>';
         tr.appendChild(team);
         ["h1","h2"].forEach(function (q) {
           var td = document.createElement("td");
