@@ -78,7 +78,11 @@
         <p>A five-player race, ranked by game score.</p>
       </div>
     </div>
-    <ol class="mvp-board" id="mvp-board"></ol>
+    <div class="mvp-podium" id="mvp-podium"></div>
+    <section class="mvp-mentions">
+      <h3>Honorable Mentions</h3>
+      <ol id="mvp-mentions"></ol>
+    </section>
   </section>
 
   <script src="script.js"></script>
@@ -102,7 +106,8 @@
         "UCLA Bruins": ["UCLA", "ucla.png"],
         "Virginia Cavaliers": ["VIR", "virginia.png"]
       };
-      var board = document.getElementById("mvp-board");
+      var podium = document.getElementById("mvp-podium");
+      var mentions = document.getElementById("mvp-mentions");
       function avatar(player) {
         if (player && player.avatar && player.id) return "https://cdn.discordapp.com/avatars/" + player.id + "/" + player.avatar + ".png?size=128";
         return "";
@@ -135,29 +140,32 @@
           return row;
         }).sort(function (a, b) { return b.avg - a.avg || a.name.localeCompare(b.name); }).slice(0, 5);
       }
+      function card(row, account, place) {
+        var teamName = account ? String(account.team || account.teamName || "") : "";
+        var team = TEAMS[teamName];
+        var face = avatar(account);
+        var who = row ? ((account && (account.name || account.username)) || row.name) : "Open";
+        var sub = row ? ((team ? team[0] : "Free Agent") + " · " + row.games + "G") : "Awaiting results";
+        var node = document.createElement(place > 3 ? "li" : "article");
+        node.className = place > 3 ? "mention" : "podium-card place-" + place;
+        node.innerHTML = '<span class="podium-rank">' + place + '</span>' +
+          '<div class="mvp-face' + (face ? "" : " is-empty") + '"' + (face ? ' style="background-image:url(\'' + face + '\')"' : "") + '></div>' +
+          '<div class="mvp-who"><b>' + who + '</b><small>' + (team ? '<img src="' + team[1] + '" alt="">' : '') + sub + '</small></div>' +
+          '<div class="mvp-score"><b>' + (row ? row.avg.toFixed(1) : "—") + '</b><span>GMSC</span></div>';
+        return node;
+      }
       function paint(accounts) {
         var leaders = collect();
-        var best = leaders.length ? leaders[0].avg : 0;
-        board.textContent = "";
-        var i;
-        for (i = 0; i < 5; i += 1) {
-          var row = leaders[i];
-          var account = row && accounts[row.id] ? accounts[row.id] : null;
-          var teamName = account ? String(account.team || account.teamName || "") : "";
-          var team = TEAMS[teamName];
-          var item = document.createElement("li");
-          item.className = "mvp-lane" + (i === 0 ? " is-leader" : "");
-          var face = avatar(account);
-          var who = row ? (account && (account.name || account.username) || row.name) : "Open";
-          var sub = row ? ((team ? team[0] : "Free Agent") + " · " + row.games + "G") : "Awaiting results";
-          item.innerHTML = '<div class="mvp-rank">' + (i + 1) + '</div>' +
-            '<div class="mvp-face' + (face ? "" : " is-empty") + '"' + (face ? ' style="background-image:url(\'' + face + '\')"' : "") + '></div>' +
-            '<div class="mvp-who">' + (i === 0 && row ? '<span class="mvp-tag">LEADER</span>' : '') + '<b>' + who + '</b><small>' +
-            (team ? '<img src="' + team[1] + '" alt="">' : '') + sub + '</small></div>' +
-            '<div class="mvp-score"><b>' + (row ? row.avg.toFixed(1) : "—") + '</b><span>GMSC</span></div>' +
-            '<i class="mvp-meter" style="--meter:' + (row && best ? Math.max(8, (row.avg / best) * 100).toFixed(1) : 0) + '%"></i>';
-          board.appendChild(item);
-        }
+        podium.textContent = "";
+        mentions.textContent = "";
+        [2, 1, 3].forEach(function (place) {
+          var row = leaders[place - 1];
+          podium.appendChild(card(row, row && accounts[row.id], place));
+        });
+        [4, 5].forEach(function (place) {
+          var row = leaders[place - 1];
+          mentions.appendChild(card(row, row && accounts[row.id], place));
+        });
       }
       paint({});
       fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {

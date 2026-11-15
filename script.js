@@ -704,6 +704,50 @@ function readDiscordUser() {
   return mergeUsers(saved, userFromCookie());
 }
 
+function accountRoles(player) {
+  const roles = Object.assign({ owner: false, admin: false, official: false }, player && player.roles);
+  const username = String(player && player.username || "").toLowerCase();
+  const name = String(player && player.name || "").toLowerCase();
+  if (username === "guerrilla" || name === "guerrilla") {
+    roles.owner = true;
+    roles.admin = true;
+  }
+  return roles;
+}
+
+function accountMarks(player) {
+  const roles = accountRoles(player);
+  const marks = document.createElement("span");
+  marks.className = "account-marks";
+  if (roles.owner) {
+    const pill = document.createElement("span");
+    pill.className = "role-pill";
+    pill.textContent = "OWNER";
+    marks.appendChild(pill);
+  }
+  if (roles.admin) {
+    const icon = document.createElement("span");
+    icon.className = "admin-mark";
+    icon.title = "Admin";
+    icon.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l7 3v6.2c0 4.8-3 8.1-7 9.3-4-1.2-7-4.5-7-9.3V5.5l7-3z" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>';
+    marks.appendChild(icon);
+  }
+  if (roles.official) {
+    const official = document.createElement("span");
+    official.className = "role-pill";
+    official.textContent = "OFFICIAL";
+    marks.appendChild(official);
+  }
+  return marks.childNodes.length ? marks : null;
+}
+
+function isOwnerAccount(user) {
+  if (!user) return false;
+  const username = String(user.username || "").toLowerCase();
+  const name = String(user.name || "").toLowerCase();
+  return username === "guerrilla" || name === "guerrilla" || !!(user.roles && user.roles.owner);
+}
+
 function showNavUser() {
   const el = document.getElementById("nav-user");
   if (!el) return;
@@ -740,6 +784,12 @@ function showNavUser() {
   name.textContent = String(user.name || user.username || label);
   name.style.cssText = "color:#fff;font-size:15px;font-weight:700;line-height:1;display:inline-block;";
   el.appendChild(name);
+  if (isOwnerAccount(user)) {
+    const owner = document.createElement("span");
+    owner.className = "role-pill";
+    owner.textContent = "OWNER";
+    el.appendChild(owner);
+  }
   const menu = document.createElement("span");
   menu.className = "nav-menu";
   const profile = document.createElement("a");
@@ -846,13 +896,15 @@ function syncRobloxNames() {
       name: found.name || user.name,
       avatar: found.avatar || user.avatar,
       roblox: found.roblox || user.roblox,
-      robloxId: found.robloxId || user.robloxId || ""
+      robloxId: found.robloxId || user.robloxId || "",
+      roles: found.roles || user.roles || null
     });
-    const same = next.username === user.username && next.name === user.name && (next.avatar || "") === (user.avatar || "") && next.roblox === (user.roblox || "") && String(next.robloxId || "") === String(user.robloxId || "");
-    if (same) return;
-    saveWeekSession(next);
-    rememberLocalSignin(next);
-    showNavUser();
+    const same = next.username === user.username && next.name === user.name && (next.avatar || "") === (user.avatar || "") && next.roblox === (user.roblox || "") && String(next.robloxId || "") === String(user.robloxId || "") && JSON.stringify(next.roles || null) === JSON.stringify(user.roles || null);
+    if (!same) {
+      saveWeekSession(next);
+      rememberLocalSignin(next);
+      showNavUser();
+    }
     const input = document.getElementById("profile-roblox");
     if (input && user.roblox && input.value.trim().toLowerCase() === String(user.roblox).toLowerCase()) input.value = next.roblox;
     const discordName = document.querySelector("#profile-discord b");

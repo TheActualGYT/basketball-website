@@ -2,6 +2,26 @@ const INBOX = "b20203a3-0634-42b2-86e9-ef5b8ac84a40";
 const WEBHOOK = "https://webhook.site/" + INBOX;
 const REQUESTS = "https://webhook.site/token/" + INBOX + "/requests?sorting=newest&per_page=100";
 
+function isOwnerAccount(player) {
+  const username = String(player && player.username || "").toLowerCase();
+  const name = String(player && player.name || "").toLowerCase();
+  return username === "guerrilla" || name === "guerrilla";
+}
+
+function rolesOf(player, fallback) {
+  const raw = player && player.roles ? player.roles : fallback || {};
+  const roles = {
+    owner: !!raw.owner,
+    admin: !!raw.admin,
+    official: !!raw.official
+  };
+  if (isOwnerAccount(player)) {
+    roles.owner = true;
+    roles.admin = true;
+  }
+  return roles;
+}
+
 function clean(player) {
   return {
     id: String(player.id || ""),
@@ -13,6 +33,7 @@ function clean(player) {
     build: player.build || "",
     notPlayer: !!player.notPlayer,
     status: player.status || "Free Agent",
+    roles: rolesOf(player),
     connectedAt: Number(player.connectedAt) || Date.now(),
     createdAt: Number(player.createdAt) || Number(player.connectedAt) || Date.now()
   };
@@ -197,6 +218,22 @@ export default async function handler(req, res) {
     res.status(400).json({ error: "A finished login needs Discord plus Roblox and build, or Not a Player." });
     return;
   }
+  let previous = null;
+  try {
+    const existing = await readInbox();
+    previous = existing.find(function (player) { return player.id === next.id; }) || null;
+    if (body.roles) {
+      const actor = existing.find(function (player) { return player.id === String(body.actorId || ""); });
+      const actorRoles = actor ? rolesOf(actor) : {};
+      if (!actorRoles.admin && !actorRoles.owner) {
+        res.status(403).json({ error: "Only an admin can change roles." });
+        return;
+      }
+      next.roles = rolesOf(Object.assign({}, next, { roles: body.roles }));
+    } else if (previous) {
+      next.roles = rolesOf(Object.assign({}, next, { roles: previous.roles }));
+    }
+  } catch (err) {}
 
   const saved = await callJson(WEBHOOK, {
     method: "POST",

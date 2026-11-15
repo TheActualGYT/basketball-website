@@ -211,12 +211,76 @@
       for (i = 0; i < 6; i += 1) row.appendChild(document.createElement("td"));
       return row;
     }
-    function paint(players) {
+    function viewerIsAdmin(list) {
+      var me = liveAccount();
+      if (!me) return false;
+      if (String(me.username || "").toLowerCase() === "guerrilla" || String(me.name || "").toLowerCase() === "guerrilla") return true;
+      var found = (list || []).find(function (player) { return String(player.id) === String(me.id); });
+      return !!(found && accountRoles(found).admin);
+    }
+    function saveRoles(player, roles) {
+      var me = liveAccount();
+      player.roles = accountRoles(Object.assign({}, player, { roles: roles }));
+      fetch("/api/signins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: player.id,
+          username: player.username || "",
+          name: player.name || player.username || "",
+          avatar: player.avatar || "",
+          roblox: player.roblox || "",
+          build: player.build || "",
+          robloxId: player.robloxId || "",
+          notPlayer: !!player.notPlayer,
+          createdAt: player.createdAt,
+          connectedAt: player.connectedAt,
+          roles: { admin: !!roles.admin, official: !!roles.official },
+          actorId: me && me.id
+        })
+      }).catch(function () {});
+      paint(players);
+    }
+    function roleGrant(player) {
+      var wrap = document.createElement("div");
+      wrap.className = "role-grant";
+      var button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "Roles";
+      var menu = document.createElement("div");
+      menu.className = "role-grant-menu";
+      menu.hidden = true;
+      [["admin", "Admin"], ["official", "Official"]].forEach(function (item) {
+        var label = document.createElement("label");
+        var input = document.createElement("input");
+        input.type = "checkbox";
+        input.checked = !!accountRoles(player)[item[0]];
+        if (item[0] === "admin" && accountRoles(player).owner) input.disabled = true;
+        input.addEventListener("change", function () {
+          var next = accountRoles(player);
+          next[item[0]] = input.checked;
+          if (accountRoles(player).owner) next.admin = true;
+          saveRoles(player, next);
+        });
+        label.append(input, document.createTextNode(item[1]));
+        menu.appendChild(label);
+      });
+      button.addEventListener("click", function (event) {
+        event.stopPropagation();
+        var open = menu.hidden;
+        document.querySelectorAll(".role-grant-menu").forEach(function (node) { node.hidden = true; });
+        menu.hidden = !open;
+      });
+      wrap.append(button, menu);
+      return wrap;
+    }
+    function paint(source) {
       var body = document.getElementById("players-body");
       body.textContent = "";
-      players = ordered(withLiveAccount(players).filter(function (player) { return !player.notPlayer; }));
+      var canGrant = viewerIsAdmin(source);
+      var list = ordered(withLiveAccount(source).filter(function (player) { return !player.notPlayer; }));
       markSort();
-      players.forEach(function (player, index) {
+      list.forEach(function (player, index) {
         var row = document.createElement("tr");
         var number = document.createElement("td");
         number.textContent = String(index + 1);
@@ -230,11 +294,19 @@
         var copy = document.createElement("span");
         var name = document.createElement("b");
         name.textContent = player.name || player.username || "Unknown";
+        player.roles = accountRoles(player);
+        var line = document.createElement("span");
+        line.className = "name-line";
+        line.appendChild(name);
+        var marks = accountMarks(player);
+        if (marks) line.appendChild(marks);
         var tag = document.createElement("small");
         tag.textContent = player.username ? "@" + player.username : "";
-        copy.append(name, tag);
+        copy.append(line, tag);
         person.append(img, copy);
         discord.appendChild(person);
+        if (canGrant) discord.appendChild(roleGrant(player));
+        discord.className = "discord-cell";
         var roblox = document.createElement("td");
         roblox.textContent = player.roblox || "—";
         var build = document.createElement("td");
@@ -306,6 +378,9 @@
         else sort.dir = sort.dir === "asc" ? "desc" : "asc";
         paint(players);
       });
+    });
+    document.addEventListener("click", function () {
+      document.querySelectorAll(".role-grant-menu").forEach(function (node) { node.hidden = true; });
     });
     var header = document.querySelector("header");
     if (header) document.documentElement.style.setProperty("--nav-offset", header.offsetHeight + "px");

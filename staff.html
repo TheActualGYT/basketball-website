@@ -214,7 +214,10 @@
     function paint(players) {
       var body = document.getElementById("players-body");
       body.textContent = "";
-      players = ordered(withLiveAccount(players).filter(function (player) { return player.staff === true || player.role === "staff" || player.leagueStaff === true; }));
+      players = ordered(withLiveAccount(players).filter(function (player) {
+        var roles = accountRoles(player);
+        return !!(roles.owner || roles.admin || roles.official);
+      }));
       markSort();
       players.forEach(function (player, index) {
         var row = document.createElement("tr");
@@ -230,9 +233,15 @@
         var copy = document.createElement("span");
         var name = document.createElement("b");
         name.textContent = player.name || player.username || "Unknown";
+        player.roles = accountRoles(player);
+        var line = document.createElement("span");
+        line.className = "name-line";
+        line.appendChild(name);
+        var marks = accountMarks(player);
+        if (marks) line.appendChild(marks);
         var tag = document.createElement("small");
         tag.textContent = player.username ? "@" + player.username : "";
-        copy.append(name, tag);
+        copy.append(line, tag);
         person.append(img, copy);
         discord.appendChild(person);
         var roblox = document.createElement("td");
