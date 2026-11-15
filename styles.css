@@ -5725,9 +5725,11 @@ button.gs-spot:not(.is-empty).is-hot .gs-person i {
 }
 .nav-user .role-pill { margin-left: 0.15rem; }
 .account-marks, .name-line { display: inline-flex; align-items: center; gap: 0.32rem; min-width: 0; }
-.admin-mark { width: 15px; height: 15px; color: #fff; display: inline-flex; }
-.admin-mark svg { width: 15px; height: 15px; }
-.players-table td.discord-cell { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.role-logo { width: 22px; height: 22px; object-fit: contain; display: block; }
+.nav-user .role-logo { width: 18px; height: 18px; }
+.discord-line { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; min-width: 0; }
+.discord-roles { display: inline-flex; align-items: center; gap: 0.4rem; margin-left: auto; flex: 0 0 auto; }
+.players-table td.discord-cell { display: table-cell; }
 .role-grant { position: relative; flex: 0 0 auto; }
 .role-grant > button {
   border: 1px solid rgba(255, 255, 255, 0.35);
@@ -5745,7 +5747,7 @@ button.gs-spot:not(.is-empty).is-hot .gs-person i {
   right: 0;
   top: calc(100% + 0.28rem);
   z-index: 30;
-  min-width: 148px;
+  min-width: 210px;
   padding: 0.35rem;
   background: #101010;
   border: 1px solid rgba(255, 255, 255, 0.72);
@@ -5759,6 +5761,39 @@ button.gs-spot:not(.is-empty).is-hot .gs-person i {
   font-size: 0.78rem;
   padding: 0.28rem 0.25rem;
   cursor: pointer;
+}
+.role-grant-menu .role-team {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.28rem;
+  cursor: default;
+}
+.role-grant-menu select {
+  width: 100%;
+  color: #fff;
+  background: #18181b;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.75rem;
+  padding: 0.32rem 0.4rem;
+}
+.final-request {
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.final-request:disabled { cursor: default; color: rgba(255, 255, 255, 0.4); }
+.reset-note {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 .mvp-podium {
   display: grid;

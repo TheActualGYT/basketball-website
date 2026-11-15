@@ -285,6 +285,9 @@
             var all = JSON.parse(localStorage.getItem("jba-boxscores") || "{}");
             delete all[id];
             localStorage.setItem("jba-boxscores", JSON.stringify(all));
+            var requests = [];
+            try { requests = JSON.parse(localStorage.getItem("jba-reset-requests") || "[]"); } catch (err) {}
+            localStorage.setItem("jba-reset-requests", JSON.stringify(requests.filter(function (item) { return item.id !== id; })));
           } catch (err) {}
           location.reload();
         });

@@ -32,7 +32,8 @@ function clean(player) {
     robloxId: player.robloxId ? String(player.robloxId) : "",
     build: player.build || "",
     notPlayer: !!player.notPlayer,
-    status: player.status || "Free Agent",
+    status: player.team ? "Signed Player" : (player.status || "Free Agent"),
+    team: typeof player.team === "string" ? player.team : "",
     roles: rolesOf(player),
     connectedAt: Number(player.connectedAt) || Date.now(),
     createdAt: Number(player.createdAt) || Number(player.connectedAt) || Date.now()
@@ -222,16 +223,38 @@ export default async function handler(req, res) {
   try {
     const existing = await readInbox();
     previous = existing.find(function (player) { return player.id === next.id; }) || null;
-    if (body.roles) {
-      const actor = existing.find(function (player) { return player.id === String(body.actorId || ""); });
-      const actorRoles = actor ? rolesOf(actor) : {};
+    const actor = existing.find(function (player) { return player.id === String(body.actorId || ""); });
+    const actorRoles = actor ? rolesOf(actor) : {};
+    const changingRoles = !!body.roles;
+    const changingTeam = Object.prototype.hasOwnProperty.call(body, "team");
+    if (changingRoles || changingTeam) {
       if (!actorRoles.admin && !actorRoles.owner) {
         res.status(403).json({ error: "Only an admin can change roles." });
         return;
       }
+    }
+    if (changingRoles) {
+      const previousRoles = previous ? rolesOf(previous) : { owner: false, admin: false, official: false };
+      if (!actorRoles.owner && !!body.roles.admin !== !!previousRoles.admin) {
+        res.status(403).json({ error: "Only the owner can change an admin role." });
+        return;
+      }
+      if (!actorRoles.owner && previous && rolesOf(previous).owner) {
+        res.status(403).json({ error: "An admin cannot change the owner." });
+        return;
+      }
       next.roles = rolesOf(Object.assign({}, next, { roles: body.roles }));
+      if (!actorRoles.owner) next.roles.admin = previousRoles.admin;
+      next.roles = rolesOf(next);
     } else if (previous) {
       next.roles = rolesOf(Object.assign({}, next, { roles: previous.roles }));
+    }
+    if (changingTeam) {
+      next.team = String(body.team || "");
+      next.status = next.team ? "Signed Player" : "Free Agent";
+    } else if (previous) {
+      next.team = previous.team || "";
+      if (next.team) next.status = "Signed Player";
     }
   } catch (err) {}
 

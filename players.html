@@ -211,16 +211,25 @@
       for (i = 0; i < 6; i += 1) row.appendChild(document.createElement("td"));
       return row;
     }
+    function viewerIsOwner() {
+      var me = liveAccount();
+      if (!me) return false;
+      return !!accountRoles(me).owner;
+    }
     function viewerIsAdmin(list) {
       var me = liveAccount();
       if (!me) return false;
-      if (String(me.username || "").toLowerCase() === "guerrilla" || String(me.name || "").toLowerCase() === "guerrilla") return true;
+      if (accountRoles(me).owner || accountRoles(me).admin) return true;
       var found = (list || []).find(function (player) { return String(player.id) === String(me.id); });
-      return !!(found && accountRoles(found).admin);
+      return !!(found && (accountRoles(found).admin || accountRoles(found).owner));
     }
-    function saveRoles(player, roles) {
+    function saveAssignment(player, roles, team) {
       var me = liveAccount();
+      var locked = accountRoles(player).owner;
       player.roles = accountRoles(Object.assign({}, player, { roles: roles }));
+      if (locked) player.roles.admin = true;
+      player.team = team || "";
+      player.status = player.team ? "Signed Player" : "Free Agent";
       fetch("/api/signins", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -235,7 +244,8 @@
           notPlayer: !!player.notPlayer,
           createdAt: player.createdAt,
           connectedAt: player.connectedAt,
-          roles: { admin: !!roles.admin, official: !!roles.official },
+          roles: { admin: !!player.roles.admin, official: !!player.roles.official },
+          team: player.team,
           actorId: me && me.id
         })
       }).catch(function () {});
@@ -250,26 +260,59 @@
       var menu = document.createElement("div");
       menu.className = "role-grant-menu";
       menu.hidden = true;
-      [["admin", "Admin"], ["official", "Official"]].forEach(function (item) {
-        var label = document.createElement("label");
-        var input = document.createElement("input");
-        input.type = "checkbox";
-        input.checked = !!accountRoles(player)[item[0]];
-        if (item[0] === "admin" && accountRoles(player).owner) input.disabled = true;
-        input.addEventListener("change", function () {
+      var theirs = accountRoles(player);
+      var ownerView = viewerIsOwner();
+      if (ownerView) {
+        var adminLabel = document.createElement("label");
+        var adminInput = document.createElement("input");
+        adminInput.type = "checkbox";
+        adminInput.checked = !!theirs.admin;
+        adminInput.disabled = !!theirs.owner;
+        adminInput.addEventListener("change", function () {
           var next = accountRoles(player);
-          next[item[0]] = input.checked;
-          if (accountRoles(player).owner) next.admin = true;
-          saveRoles(player, next);
+          next.admin = adminInput.checked || !!accountRoles(player).owner;
+          saveAssignment(player, next, player.team || "");
         });
-        label.append(input, document.createTextNode(item[1]));
-        menu.appendChild(label);
+        adminLabel.append(adminInput, document.createTextNode("Admin"));
+        menu.appendChild(adminLabel);
+      }
+      var officialLabel = document.createElement("label");
+      var officialInput = document.createElement("input");
+      officialInput.type = "checkbox";
+      officialInput.checked = !!theirs.official;
+      officialInput.addEventListener("change", function () {
+        var next = accountRoles(player);
+        next.official = officialInput.checked;
+        saveAssignment(player, next, player.team || "");
       });
+      officialLabel.append(officialInput, document.createTextNode("Official"));
+      menu.appendChild(officialLabel);
+      var teamLabel = document.createElement("label");
+      teamLabel.className = "role-team";
+      teamLabel.appendChild(document.createTextNode("Team"));
+      var select = document.createElement("select");
+      var open = document.createElement("option");
+      open.value = "";
+      open.textContent = "Free Agent";
+      select.appendChild(open);
+      TEAMS.forEach(function (team) {
+        var option = document.createElement("option");
+        option.value = team[0];
+        option.textContent = team[0];
+        if (String(player.team || player.teamName || "") === team[0]) option.selected = true;
+        select.appendChild(option);
+      });
+      select.addEventListener("change", function () {
+        saveAssignment(player, accountRoles(player), select.value);
+      });
+      select.addEventListener("click", function (event) { event.stopPropagation(); });
+      teamLabel.appendChild(select);
+      menu.appendChild(teamLabel);
       button.addEventListener("click", function (event) {
         event.stopPropagation();
-        var open = menu.hidden;
+        var opening = menu.hidden;
         document.querySelectorAll(".role-grant-menu").forEach(function (node) { node.hidden = true; });
-        menu.hidden = !open;
+        menu.hidden = !opening;
       });
       wrap.append(button, menu);
       return wrap;
@@ -298,15 +341,19 @@
         var line = document.createElement("span");
         line.className = "name-line";
         line.appendChild(name);
-        var marks = accountMarks(player);
-        if (marks) line.appendChild(marks);
         var tag = document.createElement("small");
         tag.textContent = player.username ? "@" + player.username : "";
         copy.append(line, tag);
         person.append(img, copy);
-        discord.appendChild(person);
-        if (canGrant) discord.appendChild(roleGrant(player));
-        discord.className = "discord-cell";
+        var side = document.createElement("div");
+        side.className = "discord-roles";
+        var marks = accountMarks(player);
+        if (marks) side.appendChild(marks);
+        if (canGrant) side.appendChild(roleGrant(player));
+        var wrap = document.createElement("div");
+        wrap.className = "discord-line";
+        wrap.append(person, side);
+        discord.appendChild(wrap);
         var roblox = document.createElement("td");
         roblox.textContent = player.roblox || "—";
         var build = document.createElement("td");

@@ -719,26 +719,28 @@ function accountMarks(player) {
   const roles = accountRoles(player);
   const marks = document.createElement("span");
   marks.className = "account-marks";
-  if (roles.owner) {
-    const pill = document.createElement("span");
-    pill.className = "role-pill";
-    pill.textContent = "OWNER";
-    marks.appendChild(pill);
+  function logo(src, title) {
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = title;
+    img.title = title;
+    img.className = "role-logo";
+    marks.appendChild(img);
   }
-  if (roles.admin) {
-    const icon = document.createElement("span");
-    icon.className = "admin-mark";
-    icon.title = "Admin";
-    icon.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l7 3v6.2c0 4.8-3 8.1-7 9.3-4-1.2-7-4.5-7-9.3V5.5l7-3z" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>';
-    marks.appendChild(icon);
-  }
-  if (roles.official) {
-    const official = document.createElement("span");
-    official.className = "role-pill";
-    official.textContent = "OFFICIAL";
-    marks.appendChild(official);
-  }
+  if (roles.owner) logo("role-owner.svg", "Owner");
+  else if (roles.admin) logo("role-admin.svg", "Admin");
+  if (roles.official) logo("role-official.png", "Official");
   return marks.childNodes.length ? marks : null;
+}
+
+function canSubmitBoxScore() {
+  const roles = accountRoles(readDiscordUser());
+  return !!(roles.owner || roles.admin || roles.official);
+}
+
+function canResetBoxScore() {
+  const roles = accountRoles(readDiscordUser());
+  return !!(roles.owner || roles.admin);
 }
 
 function isOwnerAccount(user) {
@@ -785,9 +787,11 @@ function showNavUser() {
   name.style.cssText = "color:#fff;font-size:15px;font-weight:700;line-height:1;display:inline-block;";
   el.appendChild(name);
   if (isOwnerAccount(user)) {
-    const owner = document.createElement("span");
-    owner.className = "role-pill";
-    owner.textContent = "OWNER";
+    const owner = document.createElement("img");
+    owner.className = "role-logo";
+    owner.src = "role-owner.svg";
+    owner.alt = "Owner";
+    owner.title = "Owner";
     el.appendChild(owner);
   }
   const menu = document.createElement("span");
@@ -884,6 +888,63 @@ refreshDiscordAvatars();
 markNav();
 setupProfile();
 syncRobloxNames();
+gateScoreAccess();
+
+function gateScoreAccess() {
+  const file = (location.pathname.split("/").pop() || "home.html").toLowerCase();
+  const canSubmit = canSubmitBoxScore();
+  const canReset = canResetBoxScore();
+  if (file === "scores.html") {
+    if (!canSubmit) document.querySelectorAll(".final-edit").forEach(function (node) { node.remove(); });
+    if (!canReset) document.querySelectorAll(".final-reset").forEach(function (node) { node.remove(); });
+    let requests = [];
+    try { requests = JSON.parse(localStorage.getItem("jba-reset-requests") || "[]"); } catch (err) {}
+    if (!Array.isArray(requests)) requests = [];
+    if (canSubmit && !canReset) {
+      document.querySelectorAll(".final-card").forEach(function (card) {
+        const state = card.querySelector(".final-state");
+        if (!state || (state.textContent !== "FINAL" && state.textContent !== "FORFEIT")) return;
+        const edit = card.querySelector(".final-edit");
+        if (!edit || card.querySelector(".final-request")) return;
+        const id = card.getAttribute("data-game") || "";
+        const pending = requests.some(function (item) { return item.id === id; });
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "final-request";
+        button.textContent = pending ? "Requested" : "Request reset";
+        button.disabled = pending;
+        button.addEventListener("click", function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          const me = readDiscordUser();
+          requests = requests.filter(function (item) { return item.id !== id; });
+          requests.push({ id: id, by: me && (me.name || me.username) || "Official", at: Date.now() });
+          localStorage.setItem("jba-reset-requests", JSON.stringify(requests));
+          button.textContent = "Requested";
+          button.disabled = true;
+        });
+        edit.insertAdjacentElement("afterend", button);
+      });
+    }
+    if (canReset) {
+      requests.forEach(function (item) {
+        const card = document.querySelector('.final-card[data-game="' + item.id + '"]');
+        if (!card || card.querySelector(".reset-note")) return;
+        const note = document.createElement("span");
+        note.className = "reset-note";
+        note.textContent = "Reset requested";
+        const status = card.querySelector(".final-status");
+        if (status) status.appendChild(note);
+      });
+    }
+  }
+  if (file === "boxscore.html" && !canSubmit) {
+    const form = document.getElementById("box-form");
+    const lead = document.getElementById("box-lead");
+    if (form) form.hidden = true;
+    if (lead) lead.textContent = "Only an official, an admin, or the owner can submit a box score.";
+  }
+}
 
 function syncRobloxNames() {
   const user = readDiscordUser();
