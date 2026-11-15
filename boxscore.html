@@ -83,7 +83,10 @@
         </table>
         </div>
       </div>
-      <div class="gs-tabs" id="gs-tabs"></div>
+      <div class="gs-tabbar">
+        <div class="gs-tabs" id="gs-tabs"></div>
+        <button type="button" class="gs-save" id="gs-save" hidden>Save</button>
+      </div>
       <div id="gs-panels"></div>
     </form>
   </section>
@@ -556,8 +559,13 @@
         var button = document.getElementById("submit-box");
         var ready = readyToSubmit();
         if (button) {
-          button.disabled = !ready || (submitted && locked);
-          button.textContent = submitted && locked ? "Submitted" : "Submit Box Score";
+          button.disabled = !ready || submitted;
+          button.textContent = submitted ? "Submitted" : "Submit Box Score";
+        }
+        var saveBtn = document.getElementById("gs-save");
+        if (saveBtn) {
+          saveBtn.hidden = !submitted;
+          saveBtn.disabled = !ready;
         }
         var why = document.getElementById("submit-why");
         var reasons = submitReasons();
@@ -596,7 +604,7 @@
         if (!form.date || !String(form.date.value).trim()) reasons.push("Date is required.");
         if (forfeitOn()) {
           if (!forfeitSide()) reasons.push("Choose the team that forfeited.");
-          if (!reasons.length && submitted && locked) reasons.push("This box score is already submitted. Change it if you need to update it.");
+          if (submitted) reasons.push("This box score is already submitted. Use Save to update it, or reset it from Final Scores before submitting again.");
           return reasons;
         }
         ["away", "home"].forEach(function (side, index) {
@@ -611,7 +619,7 @@
           if (score != null && players == null) reasons.push(name + " player points are missing.");
           else if (score != null && players != null && score !== players) reasons.push(name + " player points are off by " + Math.abs(score - players) + ".");
         });
-        if (!reasons.length && submitted && locked) reasons.push("This box score is already submitted. Change it if you need to update it.");
+        if (submitted) reasons.push("This box score is already submitted. Use Save to update it, or reset it from Final Scores before submitting again.");
         return reasons;
       }
       function readyToSubmit() {
@@ -622,9 +630,14 @@
         });
       }
       function submitScore() {
-        if (!readyToSubmit()) return;
+        if (submitted || !readyToSubmit()) return;
         submitted = true;
         locked = true;
+        persist();
+        location.href = "scores.html";
+      }
+      function saveScore() {
+        if (!submitted || !readyToSubmit()) return;
         persist();
         location.href = "scores.html";
       }
@@ -669,6 +682,7 @@
         statsPanel.className = "gs-panel gs-active";
         document.querySelector('[data-panel="submission"]').innerHTML = '<section class="gs-card"><h3>Submission</h3><div class="gs-forfeit"><label class="gs-forfeit-check"><input type="checkbox" id="forfeit-on"> Forfeit</label><label class="gs-forfeit-team">Forfeiting team <select id="forfeit-team" disabled><option value="">Select a team</option><option value="away">' + away + '</option><option value="home">' + home + '</option></select></label><p>A forfeit records a win and a loss only. No team or player stats are saved.</p></div><div class="gs-submit-row"><div class="gs-submit" id="submission-box"></div><div class="gs-submit-side"><span class="gs-submit-hover"><button type="button" id="submit-box" disabled>Submit Box Score</button><ul class="gs-submit-why" id="submit-why" hidden></ul></span><p>If the player stats do not match the score because of a disconnect, lost stats, or another issue, contact an owner so they can bypass it.</p></div></div></section>';
         document.getElementById("submit-box").addEventListener("click", submitScore);
+        document.getElementById("gs-save").addEventListener("click", saveScore);
         document.getElementById("forfeit-on").addEventListener("change", function () {
           var pick = document.getElementById("forfeit-team");
           pick.disabled = !this.checked;
@@ -721,6 +735,7 @@
             pick.value = saved.forfeitTeam || "";
           }
         }
+        paintSubmission();
       }
       function best(rows, stat) {
         var leader = null;
@@ -777,13 +792,19 @@
         return allNumbers()[key] || "";
       }
       function draftChanged() {
-        locked = false;
         document.querySelectorAll(".gs-stat tbody tr").forEach(fillCalcs);
         paintTotals();
         var numberEl = document.getElementById("game-number");
         if (numberEl) numberEl.textContent = renumber() || "—";
         var panel = document.querySelector('[data-panel="submission"]');
         if (panel && !panel.hidden) paintSubmission();
+        else {
+          var saveBtn = document.getElementById("gs-save");
+          if (saveBtn) {
+            saveBtn.hidden = !submitted;
+            saveBtn.disabled = !readyToSubmit();
+          }
+        }
       }
       function persist() {
         var numbers = allNumbers();

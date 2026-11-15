@@ -1258,10 +1258,11 @@ function setupProfile() {
     var played = leader.w + leader.l > 0;
     return ranked.map(function (name, index) {
       var team = teams[name];
-      var behind = ((leader.w - team.w) + (team.l - leader.l)) / 2;
+      var raw = ((leader.w - team.w) + (team.l - leader.l)) / 2;
+      var behind = raw < 0 ? 0 : raw;
       var row = line(name);
       row.rk = String(index + 1);
-      row.gb = !played || behind === 0 ? "-" : behind.toFixed(1);
+      row.gb = !played || raw === 0 ? "-" : behind.toFixed(1);
       return row;
     });
   }
@@ -1373,6 +1374,24 @@ function setupProfile() {
     return win ? "is-win" : "is-loss";
   }
 
+  var logos = {
+    "Arizona Wildcats": "arizona.png",
+    "Baylor Bears": "baylor.png",
+    "Duke Blue Devils": "duke.png",
+    "Florida Gators": "florida.png",
+    "Georgia Bulldogs": "georgia.png",
+    "Houston Cougars": "houston.png",
+    "Kansas Jayhawks": "kansas.png",
+    "Kentucky Wildcats": "kentucky.png",
+    "LSU Tigers": "lsu.png",
+    "Miami Hurricanes": "miami.png",
+    "Michigan Wolverines": "michigan.png",
+    "North Carolina Tar Heels": "unc.png",
+    "Ohio State Buckeyes": "ohiostate.png",
+    "Oregon Ducks": "oregon.png",
+    "UCLA Bruins": "ucla.png",
+    "Virginia Cavaliers": "virginia.png"
+  };
   var games = [];
   Object.keys(saved).forEach(function (id) {
     var game = saved[id];
@@ -1391,9 +1410,18 @@ function setupProfile() {
     }
     return Number(b.week) - Number(a.week);
   });
+  var latest = games.slice(0, slots.length);
+  latest.sort(function (a, b) {
+    if (a.when !== b.when) {
+      if (!a.when) return 1;
+      if (!b.when) return -1;
+      return a.when < b.when ? -1 : 1;
+    }
+    return Number(a.week) - Number(b.week);
+  });
 
   slots.forEach(function (card, index) {
-    var item = games[index];
+    var item = latest[index];
     if (!item) return;
     var game = item.game;
     var meta = game.meta || {};
@@ -1405,16 +1433,15 @@ function setupProfile() {
     card.innerHTML = "";
     var head = document.createElement("span");
     head.className = "final";
-    var copy = document.createElement("span");
-    copy.className = "final-copy";
     var word = document.createElement("b");
     word.className = "final-word";
     word.textContent = label;
+    var end = document.createElement("span");
+    end.className = "final-end";
     var metaEl = document.createElement("span");
     metaEl.className = "final-meta";
-    metaEl.textContent = " " + detail;
-    copy.append(word, metaEl);
-    head.appendChild(copy);
+    metaEl.textContent = detail;
+    end.appendChild(metaEl);
     var links = document.createElement("span");
     links.className = "stream-links";
     [["youtube", "youtube.svg", "YouTube"], ["twitch", "twitch.svg", "Twitch"]].forEach(function (entry) {
@@ -1428,11 +1455,18 @@ function setupProfile() {
       link.innerHTML = '<img src="' + entry[1] + '" alt="">';
       links.appendChild(link);
     });
-    if (links.childNodes.length) head.appendChild(links);
+    if (links.childNodes.length) end.appendChild(links);
+    head.append(word, end);
     card.appendChild(head);
     [["away", item.away], ["home", item.home]].forEach(function (side) {
       var name = document.createElement("span");
-      name.textContent = side[1];
+      name.className = "home-club";
+      var img = document.createElement("img");
+      img.src = logos[side[1]] || "";
+      img.alt = "";
+      var text = document.createElement("span");
+      text.textContent = side[1];
+      name.append(img, text);
       var score = document.createElement("strong");
       score.textContent = sideMark(game, side[0]);
       var kind = sideKind(game, side[0]);
