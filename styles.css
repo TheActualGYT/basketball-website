@@ -1075,10 +1075,14 @@ h2 {
 
 .sched-week .schedule-banner {
   margin: 0 0 0.85rem;
+  background-color: #070708;
+  background-image:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 8px),
+    linear-gradient(180deg, #101012 0%, #050506 100%);
 }
 
 .sched-week + .sched-week {
-  margin-top: 1.5rem;
+  margin-top: 2.75rem;
 }
 
 .sched-slot {
