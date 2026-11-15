@@ -4413,9 +4413,19 @@ a.final-edit {
   background: #1a1a1a;
   color: #fff;
   font: inherit;
+  font-size: 0.78rem;
   font-weight: 700;
+  letter-spacing: 0.02em;
   text-align: center;
   padding: 0;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.gs-line input::-webkit-outer-spin-button,
+.gs-line input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .gs-line input:focus {
@@ -4525,7 +4535,14 @@ a.final-edit {
   border-bottom: 1px solid rgba(255, 255, 255, 0.22);
 }
 
+.gs-inline input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 1;
+  cursor: pointer;
+}
+
 .gs-tabs button {
+  width: 9.6rem;
   border: 1px solid rgba(255, 255, 255, 0.28);
   border-bottom: 0;
   border-radius: 10px 10px 0 0;
@@ -4534,7 +4551,8 @@ a.final-edit {
   font: inherit;
   font-size: 0.78rem;
   font-weight: 700;
-  padding: 0.62rem 0.85rem;
+  padding: 0.62rem 0.4rem;
+  text-align: center;
   cursor: pointer;
 }
 
@@ -4692,7 +4710,49 @@ a.final-edit {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
+  padding: 0;
+  min-width: 0;
+}
+
+.gs-submit-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 230px;
+  gap: 0.75rem;
+  align-items: stretch;
   padding: 0.75rem;
+}
+
+.gs-submit-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.7rem;
+}
+
+.gs-submit-side button {
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #c026d3, #ec4899);
+  color: #fff;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.85rem 0.7rem;
+  cursor: pointer;
+}
+
+.gs-submit-side button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.gs-submit-side p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.75rem;
+  line-height: 1.45;
 }
 
 .gs-check {
@@ -4749,7 +4809,7 @@ a.final-edit {
 .gs-inline input[readonly] { color: rgba(255, 255, 255, 0.72); }
 
 @media (max-width: 900px) {
-  .gs-info, .gs-align, .gs-submit { grid-template-columns: 1fr; }
+  .gs-info, .gs-align, .gs-submit, .gs-submit-row { grid-template-columns: 1fr; }
   .gs-top { justify-content: stretch; }
   .gs-sheet { width: 100%; }
 }
