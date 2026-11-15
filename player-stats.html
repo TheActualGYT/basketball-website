@@ -84,7 +84,7 @@
     </div>
     <div class="panel division-panel">
       <div class="division-banner"><h3><img src="logo.png" alt="">ALL PLAYERS</h3></div>
-      <div class="stats-bar" id="stats-bar"><div class="stats-bar-inner" id="stats-bar-inner"></div></div>
+      <div class="stats-bar" id="stats-bar"><div class="stats-bar-thumb" id="stats-bar-thumb"></div></div>
       <div class="stats-scroll" id="stats-scroll" tabindex="0">
         <table class="players-table stats-table">
           <colgroup id="stats-cols"></colgroup>
@@ -431,18 +431,48 @@
     });
     var scroller = document.getElementById("stats-scroll");
     var bar = document.getElementById("stats-bar");
-    var barInner = document.getElementById("stats-bar-inner");
+    var thumb = document.getElementById("stats-bar-thumb");
     function syncBar() {
-      barInner.style.width = scroller.scrollWidth + "px";
+      var view = scroller.clientWidth;
+      var full = scroller.scrollWidth;
+      var max = Math.max(0, full - view);
+      var track = bar.clientWidth;
+      var size = max <= 0 ? track : Math.max(56, track * (view / full));
+      var left = max <= 0 ? 0 : (scroller.scrollLeft / max) * (track - size);
+      thumb.style.width = size + "px";
+      thumb.style.transform = "translateX(" + left + "px)";
     }
     syncBar();
-    bar.addEventListener("scroll", function () {
-      if (scroller.scrollLeft !== bar.scrollLeft) scroller.scrollLeft = bar.scrollLeft;
-    });
-    scroller.addEventListener("scroll", function () {
-      if (bar.scrollLeft !== scroller.scrollLeft) bar.scrollLeft = scroller.scrollLeft;
-    });
+    scroller.addEventListener("scroll", syncBar);
     window.addEventListener("resize", syncBar);
+    var drag = null;
+    thumb.addEventListener("pointerdown", function (event) {
+      drag = { x: event.clientX, left: scroller.scrollLeft };
+      thumb.setPointerCapture(event.pointerId);
+      event.stopPropagation();
+    });
+    thumb.addEventListener("pointermove", function (event) {
+      if (!drag) return;
+      var view = scroller.clientWidth;
+      var full = scroller.scrollWidth;
+      var max = Math.max(0, full - view);
+      var track = bar.clientWidth;
+      var size = max <= 0 ? track : Math.max(56, track * (view / full));
+      scroller.scrollLeft = drag.left + (event.clientX - drag.x) * (max / Math.max(1, track - size));
+    });
+    function endDrag() { drag = null; }
+    thumb.addEventListener("pointerup", endDrag);
+    thumb.addEventListener("pointercancel", endDrag);
+    bar.addEventListener("pointerdown", function (event) {
+      if (event.target === thumb) return;
+      var view = scroller.clientWidth;
+      var full = scroller.scrollWidth;
+      var max = Math.max(0, full - view);
+      var track = bar.clientWidth;
+      var size = max <= 0 ? track : Math.max(56, track * (view / full));
+      var click = event.clientX - bar.getBoundingClientRect().left - size / 2;
+      scroller.scrollLeft = click * (max / Math.max(1, track - size));
+    });
     var oldPaint = paint;
     paint = function () { oldPaint(); syncBar(); };
     document.addEventListener("keydown", function (event) {

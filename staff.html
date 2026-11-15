@@ -69,10 +69,246 @@
     </nav>
   </header>
 
-  <section class="section">
-    <h2>Staff</h2>
+  <section class="players-page">
+    <h2>Staff Directory</h2>
+    <div class="panel players-table-wrap">
+      <table class="players-table">
+        <colgroup>
+          <col class="col-num">
+          <col class="col-discord">
+          <col class="col-roblox">
+          <col class="col-even">
+          <col class="col-even">
+          <col class="col-even">
+        </colgroup>
+        <thead>
+          <tr>
+            <th data-sort="index"><span class="col-tip" tabindex="0">#<i>The player's place on this list.</i></span></th>
+            <th data-sort="discord"><span class="col-tip" tabindex="0">Discord<i>The Discord name and tag on their account.</i></span></th>
+            <th data-sort="roblox"><span class="col-tip" tabindex="0">Roblox<i>The Roblox username registered to this account.</i></span></th>
+            <th data-sort="build"><span class="col-tip" tabindex="0">Build<i>The build they signed up with for the season.</i></span></th>
+            <th data-sort="status"><span class="col-tip" tabindex="0">Status<i>Free Agent, or Signed Player if they are on a team.</i></span></th>
+            <th data-sort="registered"><span class="col-tip" tabindex="0">Registration<i>The date they finished signing up on the site.</i></span></th>
+          </tr>
+        </thead>
+        <tbody id="players-body"></tbody>
+      </table>
+    </div>
   </section>
 
   <script src="script.js"></script>
+  <script>
+    function avatarSrc(player) {
+      if (player.avatar && player.id) return "https://cdn.discordapp.com/avatars/" + player.id + "/" + player.avatar + ".png?size=64";
+      return "https://cdn.discordapp.com/embed/avatars/0.png";
+    }
+    function splitBuild(build) {
+      var text = String(build || "").trim();
+      var formats = {
+        guard: ["GUARD", "[PG/SG]"],
+        wing: ["WING", "[SG/SF]"],
+        forward: ["FORWARD", "[SF/PF]"],
+        big: ["BIG", "[C/PF]"]
+      };
+      if (!text) return { name: "—", positions: "" };
+      var key = text.toLowerCase().split(/\s|[—\-[]/)[0];
+      if (formats[key]) return { name: formats[key][0], positions: formats[key][1] };
+      return { name: text, positions: "" };
+    }
+    function liveAccount() {
+      var keys = ["jba-session", "jba-discord"];
+      var i, saved;
+      for (i = 0; i < keys.length; i += 1) {
+        try { saved = JSON.parse(localStorage.getItem(keys[i]) || "null"); } catch (err) { saved = null; }
+        if (saved && saved.id && (saved.roblox || saved.build || saved.notPlayer)) return saved;
+      }
+      return null;
+    }
+    function withLiveAccount(list) {
+      var me = liveAccount();
+      if (!me) return list;
+      var found = false;
+      list = list.map(function (player) {
+        if (String(player.id) !== String(me.id)) return player;
+        found = true;
+        return Object.assign({}, player, {
+          username: player.username || me.username,
+          name: player.name || me.name,
+          avatar: player.avatar || me.avatar,
+          roblox: player.roblox || me.roblox || "",
+          robloxId: player.robloxId || me.robloxId || "",
+          build: me.build || player.build || "",
+          notPlayer: !!me.notPlayer,
+          createdAt: me.createdAt || player.createdAt || me.connectedAt || player.connectedAt,
+          connectedAt: me.connectedAt || player.connectedAt
+        });
+      });
+      if (!found) list.push(Object.assign({ status: "Free Agent" }, me));
+      return list;
+    }
+    var TEAMS = [
+      ["Arizona Wildcats", "arizona.png"],
+      ["Baylor Bears", "baylor.png"],
+      ["Duke Blue Devils", "duke.png"],
+      ["Florida Gators", "florida.png"],
+      ["Georgia Bulldogs", "georgia.png"],
+      ["Houston Cougars", "houston.png"],
+      ["Kansas Jayhawks", "kansas.png"],
+      ["Kentucky Wildcats", "kentucky.png"],
+      ["LSU Tigers", "lsu.png"],
+      ["Miami Hurricanes", "miami.png"],
+      ["Michigan Wolverines", "michigan.png"],
+      ["North Carolina Tar Heels", "unc.png"],
+      ["Ohio State Buckeyes", "ohiostate.png"],
+      ["Oregon Ducks", "oregon.png"],
+      ["UCLA Bruins", "ucla.png"],
+      ["Virginia Cavaliers", "virginia.png"]
+    ];
+    var sort = { key: "discord", dir: "asc" };
+    function teamOf(player) {
+      var name = String(player.team || player.teamName || "").trim();
+      if (!name && player.status && player.status !== "Free Agent" && player.status !== "Signed Player") name = String(player.status).trim();
+      if (!name && player.teamLogo) return { name: "Team", logo: player.teamLogo };
+      if (!name) return null;
+      var found = TEAMS.find(function (team) { return team[0].toLowerCase() === name.toLowerCase(); });
+      if (found) return { name: found[0], logo: found[1] };
+      return { name: name, logo: player.teamLogo || "" };
+    }
+    function sortValue(player, key) {
+      if (key === "index") return player._order;
+      if (key === "discord") return String(player.name || player.username || "").toLowerCase();
+      if (key === "roblox") return String(player.roblox || "").toLowerCase();
+      if (key === "build") return splitBuild(player.build).name.toLowerCase();
+      if (key === "status") return teamOf(player) ? "signed player" : "free agent";
+      if (key === "registered") return Number(player.createdAt || player.connectedAt) || 0;
+      return "";
+    }
+    function ordered(list) {
+      var copy = list.slice();
+      if (!sort.key) return copy;
+      copy.sort(function (a, b) {
+        var av = sortValue(a, sort.key);
+        var bv = sortValue(b, sort.key);
+        var result = typeof av === "number" && typeof bv === "number" ? av - bv : String(av).localeCompare(String(bv));
+        return sort.dir === "desc" ? -result : result;
+      });
+      return copy;
+    }
+    function markSort() {
+      document.querySelectorAll(".players-table thead th").forEach(function (th) {
+        th.classList.remove("is-asc", "is-desc");
+        if (th.getAttribute("data-sort") === sort.key) th.classList.add(sort.dir === "desc" ? "is-desc" : "is-asc");
+      });
+    }
+    function registeredOn(player) {
+      var time = Number(player.createdAt || player.connectedAt);
+      if (!time) return "—";
+      return new Date(time).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    }
+    function blankRow() {
+      var row = document.createElement("tr");
+      var i;
+      for (i = 0; i < 6; i += 1) row.appendChild(document.createElement("td"));
+      return row;
+    }
+    function paint(players) {
+      var body = document.getElementById("players-body");
+      body.textContent = "";
+      players = ordered(withLiveAccount(players).filter(function (player) { return player.staff === true || player.role === "staff" || player.leagueStaff === true; }));
+      markSort();
+      players.forEach(function (player, index) {
+        var row = document.createElement("tr");
+        var number = document.createElement("td");
+        number.textContent = String(index + 1);
+        var discord = document.createElement("td");
+        var person = document.createElement("div");
+        person.className = "player-person";
+        var img = document.createElement("img");
+        img.alt = "";
+        img.referrerPolicy = "no-referrer";
+        img.src = avatarSrc(player);
+        var copy = document.createElement("span");
+        var name = document.createElement("b");
+        name.textContent = player.name || player.username || "Unknown";
+        var tag = document.createElement("small");
+        tag.textContent = player.username ? "@" + player.username : "";
+        copy.append(name, tag);
+        person.append(img, copy);
+        discord.appendChild(person);
+        var roblox = document.createElement("td");
+        roblox.textContent = player.roblox || "—";
+        var build = document.createElement("td");
+        var built = splitBuild(player.build);
+        var stack = document.createElement("span");
+        stack.className = "build-stack";
+        var buildName = document.createElement("b");
+        buildName.textContent = built.name;
+        stack.appendChild(buildName);
+        if (built.positions) {
+          var positions = document.createElement("small");
+          positions.textContent = built.positions;
+          stack.appendChild(positions);
+        }
+        build.appendChild(stack);
+        var status = document.createElement("td");
+        var badge = document.createElement("span");
+        var team = teamOf(player);
+        if (team) {
+          badge.className = "player-status is-signed";
+          badge.textContent = "Signed Player";
+          if (team.logo) {
+            var logo = document.createElement("img");
+            logo.src = team.logo;
+            logo.alt = "";
+            badge.appendChild(logo);
+          }
+        } else {
+          badge.className = "player-status is-free";
+          badge.textContent = "Free Agent";
+        }
+        status.appendChild(badge);
+        var registered = document.createElement("td");
+        registered.textContent = registeredOn(player);
+        row.append(number, discord, roblox, build, status, registered);
+        body.appendChild(row);
+      });
+      while (body.children.length < 10) body.appendChild(blankRow());
+    }
+    var players = [];
+    function remember(list) {
+      list.forEach(function (player, index) {
+        if (player._order == null) player._order = index;
+      });
+    }
+    try {
+      var cached = JSON.parse(localStorage.getItem("jba-directory") || "[]");
+      if (Array.isArray(cached) && cached.length) players = cached;
+    } catch (err) {}
+    if (players.length) {
+      remember(players);
+      paint(players);
+    }
+    fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+      var next = [];
+      (data.players || []).forEach(function (player) { next.push(player); });
+      if (!next.length) next = players.slice();
+      remember(next);
+      players = next;
+      try { localStorage.setItem("jba-directory", JSON.stringify(players)); } catch (err) {}
+      paint(players);
+    }).catch(function () {
+      if (!players.length) paint(players);
+    });
+    document.querySelectorAll(".players-table thead th").forEach(function (th) {
+      th.addEventListener("click", function () {
+        var key = th.getAttribute("data-sort");
+        if (sort.key !== key) sort = { key: key, dir: "asc" };
+        else sort.dir = sort.dir === "asc" ? "desc" : "asc";
+        paint(players);
+      });
+    });
+    var header = document.querySelector("header");
+    if (header) document.documentElement.style.setProperty("--nav-offset", header.offsetHeight + "px");
+  </script>
 </body>
 </html>

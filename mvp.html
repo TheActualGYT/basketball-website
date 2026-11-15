@@ -69,10 +69,103 @@
     </nav>
   </header>
 
-  <section class="section">
-    <h2>MVP Race</h2>
+  <section class="mvp-page">
+    <div class="mvp-hero">
+      <img src="logo.png" alt="">
+      <div>
+        <p class="mvp-kicker">Season 1</p>
+        <h2>MVP Race</h2>
+        <p>A five-player race, ranked by game score.</p>
+      </div>
+    </div>
+    <ol class="mvp-board" id="mvp-board"></ol>
   </section>
 
   <script src="script.js"></script>
+  <script>
+    (function () {
+      var TEAMS = {
+        "Arizona Wildcats": ["ARZ", "arizona.png"],
+        "Baylor Bears": ["BAY", "baylor.png"],
+        "Duke Blue Devils": ["DUKE", "duke.png"],
+        "Florida Gators": ["FL", "florida.png"],
+        "Georgia Bulldogs": ["GEO", "georgia.png"],
+        "Houston Cougars": ["HOU", "houston.png"],
+        "Kansas Jayhawks": ["KAN", "kansas.png"],
+        "Kentucky Wildcats": ["KEN", "kentucky.png"],
+        "LSU Tigers": ["LSU", "lsu.png"],
+        "Miami Hurricanes": ["MIA", "miami.png"],
+        "Michigan Wolverines": ["MICH", "michigan.png"],
+        "North Carolina Tar Heels": ["NC", "unc.png"],
+        "Ohio State Buckeyes": ["OHST", "ohiostate.png"],
+        "Oregon Ducks": ["OR", "oregon.png"],
+        "UCLA Bruins": ["UCLA", "ucla.png"],
+        "Virginia Cavaliers": ["VIR", "virginia.png"]
+      };
+      var board = document.getElementById("mvp-board");
+      function avatar(player) {
+        if (player && player.avatar && player.id) return "https://cdn.discordapp.com/avatars/" + player.id + "/" + player.avatar + ".png?size=128";
+        return "";
+      }
+      function isForfeit(game) {
+        if (!game || game.forfeit) return true;
+        return [game.awayScore, game.homeScore].some(function (score) {
+          return score === "FFW" || score === "FFL" || score === "W" || score === "L";
+        });
+      }
+      function collect() {
+        var saved = {};
+        try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { saved = {}; }
+        var bag = {};
+        Object.keys(saved).forEach(function (id) {
+          var game = saved[id];
+          if (!game || game.submitted !== true || isForfeit(game)) return;
+          (game.lines || []).forEach(function (line) {
+            if (!line || !line.id) return;
+            var row = bag[line.id] || { id: String(line.id), name: line.name || "Unknown", games: 0, gmsc: 0 };
+            row.games += 1;
+            row.gmsc += Number(line.gmsc) || 0;
+            if (line.name) row.name = line.name;
+            bag[line.id] = row;
+          });
+        });
+        return Object.keys(bag).map(function (id) {
+          var row = bag[id];
+          row.avg = row.games ? row.gmsc / row.games : 0;
+          return row;
+        }).sort(function (a, b) { return b.avg - a.avg || a.name.localeCompare(b.name); }).slice(0, 5);
+      }
+      function paint(accounts) {
+        var leaders = collect();
+        var best = leaders.length ? leaders[0].avg : 0;
+        board.textContent = "";
+        var i;
+        for (i = 0; i < 5; i += 1) {
+          var row = leaders[i];
+          var account = row && accounts[row.id] ? accounts[row.id] : null;
+          var teamName = account ? String(account.team || account.teamName || "") : "";
+          var team = TEAMS[teamName];
+          var item = document.createElement("li");
+          item.className = "mvp-lane" + (i === 0 ? " is-leader" : "");
+          var face = avatar(account);
+          var who = row ? (account && (account.name || account.username) || row.name) : "Open";
+          var sub = row ? ((team ? team[0] : "Free Agent") + " · " + row.games + "G") : "Awaiting results";
+          item.innerHTML = '<div class="mvp-rank">' + (i + 1) + '</div>' +
+            '<div class="mvp-face' + (face ? "" : " is-empty") + '"' + (face ? ' style="background-image:url(\'' + face + '\')"' : "") + '></div>' +
+            '<div class="mvp-who">' + (i === 0 && row ? '<span class="mvp-tag">LEADER</span>' : '') + '<b>' + who + '</b><small>' +
+            (team ? '<img src="' + team[1] + '" alt="">' : '') + sub + '</small></div>' +
+            '<div class="mvp-score"><b>' + (row ? row.avg.toFixed(1) : "—") + '</b><span>GMSC</span></div>' +
+            '<i class="mvp-meter" style="--meter:' + (row && best ? Math.max(8, (row.avg / best) * 100).toFixed(1) : 0) + '%"></i>';
+          board.appendChild(item);
+        }
+      }
+      paint({});
+      fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+        var accounts = {};
+        (data.players || []).forEach(function (player) { if (player && player.id) accounts[String(player.id)] = player; });
+        paint(accounts);
+      }).catch(function () {});
+    })();
+  </script>
 </body>
 </html>
