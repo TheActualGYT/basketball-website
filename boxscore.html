@@ -159,7 +159,35 @@
       var stats = {};
       var saved = {};
 
+      function sameTeam(playerTeam, gameTeam) {
+        var left = String(playerTeam || "").trim().toLowerCase();
+        var right = String(gameTeam || "").trim().toLowerCase();
+        if (!left || !right) return false;
+        return left === right || left.indexOf(right) === 0 || right.indexOf(left) === 0;
+      }
       function teamName(player) { return String(player.team || player.teamName || "").trim(); }
+      function roster(players, name) {
+        return players.filter(function (player) {
+          return !player.notPlayer && sameTeam(teamName(player), name);
+        }).sort(function (a, b) {
+          return String(a.name || a.username || "").localeCompare(String(b.name || b.username || ""));
+        });
+      }
+      function listedPlayers(remote) {
+        var byId = {};
+        (remote || []).forEach(function (player) {
+          if (player && player.id) byId[String(player.id)] = player;
+        });
+        var local = [];
+        try { local = JSON.parse(localStorage.getItem("jba-directory") || "[]"); } catch (err) { local = []; }
+        (local || []).forEach(function (player) {
+          if (!player || !player.id) return;
+          var current = byId[String(player.id)];
+          if (!current) byId[String(player.id)] = player;
+          else if (!teamName(current) && teamName(player)) current.team = teamName(player);
+        });
+        return Object.keys(byId).map(function (id) { return byId[id]; });
+      }
       function playerId(player) { return String(player.id || player.username || ""); }
       function avatar(player) {
         if (player.avatar && player.id) return "https://cdn.discordapp.com/avatars/" + player.id + "/" + player.avatar + ".png?size=64";
@@ -169,13 +197,6 @@
         var spots = list.slice(0, 10);
         while (spots.length < 10) spots.push(null);
         return spots;
-      }
-      function roster(players, name) {
-        return players.filter(function (player) {
-          return !player.notPlayer && teamName(player).toLowerCase() === name.toLowerCase();
-        }).sort(function (a, b) {
-          return String(a.name || a.username || "").localeCompare(String(b.name || b.username || ""));
-        });
       }
       function num(value) {
         if (value == null || String(value).trim() === "") return null;
@@ -754,14 +775,24 @@
         });
         return leader;
       }
-      fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
-        slots.away = pad(roster(data.players || [], away));
-        slots.home = pad(roster(data.players || [], home));
+      fetch("/api/signins?t=" + Date.now()).then(function (res) { return res.json(); }).then(function (data) {
+        var players = listedPlayers(data.players || []);
+        slots.away = pad(roster(players, away));
+        slots.home = pad(roster(players, home));
         try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}")[key] || {}; } catch (err) { saved = {}; }
         var official = saved.submitted === true || (saved.submitted == null && saved.awayScore !== "" && saved.homeScore !== "" && saved.awayScore != null && saved.homeScore != null);
         if (!official) saved = {};
         build();
         restore();
+        if (!(saved.lines || []).length) {
+          ["away", "home"].forEach(function (side) {
+            slots[side].forEach(function (player) {
+              if (player) active[side][playerId(player)] = player;
+            });
+          });
+          paintActive();
+          paintStatistics();
+        }
         var numberEl = document.getElementById("game-number");
         if (numberEl) numberEl.textContent = renumber(false) || "—";
         form.addEventListener("input", draftChanged);

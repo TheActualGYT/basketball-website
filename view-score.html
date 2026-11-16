@@ -158,14 +158,17 @@
           body.appendChild(row);
         });
         var foot = document.createElement("tfoot");
-        var total = totals(lines);
+        var recorded = lines.filter(function (line) {
+          return SUMS.some(function (key) { return line[key] != null && line[key] !== ""; });
+        });
+        var total = totals(recorded);
         var sum = document.createElement("tr");
         sum.className = "team-total";
         sum.appendChild(cell("TEAM"));
         COLS.forEach(function (col) {
           var value = total[col[0]];
-          if (col[0] === "fgp" || col[0] === "tpp" || col[0] === "ftp" || col[0] === "fg2p" || col[0] === "gmsc") value = lines.length ? total[col[0]] : "—";
-          else value = lines.length ? String(total[col[0]]) : "—";
+          if (col[0] === "fgp" || col[0] === "tpp" || col[0] === "ftp" || col[0] === "fg2p" || col[0] === "gmsc") value = recorded.length ? total[col[0]] : "—";
+          else value = recorded.length ? String(total[col[0]]) : "—";
           sum.appendChild(cell(value, true));
         });
         foot.appendChild(sum);
@@ -215,24 +218,48 @@
         root.appendChild(note);
         return;
       }
-      var hasSide = (game.lines || []).some(function (line) { return line.side; });
-      if (!hasSide) {
-        var only = document.createElement("section");
-        only.className = "view-block";
-        only.innerHTML = "<h3>Player Stats</h3>";
-        only.appendChild(statTable(game.lines || []));
-        root.appendChild(only);
-        return;
+      function sameTeam(playerTeam, gameTeam) {
+        var left = String(playerTeam || "").trim().toLowerCase();
+        var right = String(gameTeam || "").trim().toLowerCase();
+        if (!left || !right) return false;
+        return left === right || left.indexOf(right) === 0 || right.indexOf(left) === 0;
       }
-      [["away", away], ["home", home]].forEach(function (side) {
-        var lines = (game.lines || []).filter(function (line) { return line.side === side[0]; });
-        var block = document.createElement("section");
-        block.className = "view-block";
-        var title = document.createElement("h3");
-        title.innerHTML = '<img src="' + logos[side[1]] + '" alt="">' + side[1];
-        block.appendChild(title);
-        block.appendChild(statTable(lines));
-        root.appendChild(block);
+      function sideLines(players, side, teamName) {
+        var used = {};
+        var rows = [];
+        (players || []).filter(function (player) {
+          return player && !player.notPlayer && sameTeam(player.team || player.teamName, teamName);
+        }).sort(function (a, b) {
+          return String(a.name || a.username || "").localeCompare(String(b.name || b.username || ""));
+        }).forEach(function (player) {
+          var line = (game.lines || []).find(function (item) { return String(item.id) === String(player.id); }) || {};
+          used[String(player.id)] = true;
+          rows.push(Object.assign({ id: player.id, name: player.name || player.username || "Unknown" }, line, { name: player.name || line.name || player.username || "Unknown" }));
+        });
+        (game.lines || []).forEach(function (line) {
+          if (!line || used[String(line.id)]) return;
+          if (line.side && line.side !== side) return;
+          if (!line.side) return;
+          rows.push(line);
+        });
+        return rows;
+      }
+      function paintTeams(players) {
+        [["away", away], ["home", home]].forEach(function (side) {
+          var lines = sideLines(players, side[0], side[1]);
+          var block = document.createElement("section");
+          block.className = "view-block";
+          var title = document.createElement("h3");
+          title.innerHTML = '<img src="' + logos[side[1]] + '" alt="">' + side[1];
+          block.appendChild(title);
+          block.appendChild(statTable(lines));
+          root.appendChild(block);
+        });
+      }
+      fetch("/api/signins?t=" + Date.now()).then(function (res) { return res.json(); }).then(function (data) {
+        paintTeams(data.players || []);
+      }).catch(function () {
+        paintTeams([]);
       });
     })();
   </script>
