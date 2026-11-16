@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="logo.png" type="image/png">
+  <title>Box Score | Junior Basketball Association</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .viewer { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    .viewer a { color: #f0abfc; }
+    .viewer-top { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
+    .viewer-top h1 { margin:0; color:#fff; font-size:1.55rem; letter-spacing:.06em; text-transform:uppercase; }
+    .viewer-back { color:#fff !important; text-decoration:none; border:1px solid #555; border-radius:9px; padding:.45rem .8rem; font-size:.84rem; }
+    .viewer-score { display:grid; grid-template-columns:1fr auto 1fr; gap:1rem; align-items:center; padding:1.4rem; border:1px solid rgba(255,255,255,.25); border-radius:16px; background:linear-gradient(145deg,rgba(28,28,28,.98),rgba(17,17,17,.94)); box-shadow:0 12px 30px rgba(0,0,0,.25); }
+    .viewer-team { display:flex; align-items:center; gap:.9rem; min-width:0; }
+    .viewer-team:last-child { justify-content:flex-end; text-align:right; }
+    .viewer-team img { width:56px; height:56px; object-fit:contain; }
+    .viewer-team b { display:block; color:#fff; font-size:1.02rem; }
+    .viewer-team strong { color:#fff; font-size:2rem; line-height:1.1; }
+    .viewer-team.is-winner strong { color:#f0abfc; }
+    .viewer-vs { color:#999; font-weight:800; letter-spacing:.12em; }
+    .viewer-meta { margin:.8rem 0 1.4rem; color:#aaa; text-align:center; font-size:.82rem; }
+    .viewer-section { margin-top:1.2rem; overflow:hidden; border:1px solid rgba(255,255,255,.25); border-radius:14px; background:rgba(20,20,20,.88); }
+    .viewer-section h2 { margin:0; padding:.8rem 1rem; text-align:left; color:#fff; background:linear-gradient(110deg,rgba(192,38,211,.26),rgba(236,72,153,.08)); font-size:.95rem; letter-spacing:.08em; text-transform:uppercase; }
+    .viewer-table-wrap { overflow-x:auto; }
+    .viewer-table { width:100%; min-width:650px; border-collapse:collapse; font-size:.78rem; }
+    .viewer-table th,.viewer-table td { padding:.62rem .7rem; border-bottom:1px solid rgba(255,255,255,.1); border-right:1px solid rgba(255,255,255,.08); text-align:center; white-space:nowrap; }
+    .viewer-table th { background:#09090b; color:#eee; font-size:.68rem; letter-spacing:.07em; }
+    .viewer-table td:first-child,.viewer-table th:first-child { text-align:left; }
+    .viewer-table tbody tr:last-child td { border-bottom:0; }
+    .viewer-player { display:flex; align-items:center; gap:.6rem; text-align:left; color:#fff; font-weight:600; }
+    .viewer-player img { width:28px; height:28px; border-radius:50%; object-fit:cover; }
+    .viewer-total td { font-weight:800; color:#fff; background:rgba(255,255,255,.055); }
+    .viewer-recap { padding:1rem; color:#ddd; white-space:pre-wrap; }
+    .viewer-empty { padding:2rem; text-align:center; color:#ccc; border:1px solid rgba(255,255,255,.2); border-radius:14px; background:rgba(20,20,20,.85); }
+    @media(max-width:600px) { .viewer{padding:1.2rem .8rem 2rem}.viewer-score{gap:.4rem;padding:.9rem .6rem}.viewer-team{gap:.35rem}.viewer-team img{width:34px;height:34px}.viewer-team b{font-size:.75rem}.viewer-team strong{font-size:1.5rem}.viewer-vs{font-size:.7rem}.viewer-top h1{font-size:1.15rem} }
+  </style>
+</head>
+<body>
+  <header><nav>
+    <div class="brand"><a class="logo" href="home.html"><img src="logo.png" alt="JBA Logo"><span class="logo-name">Junior Basketball<br>Association</span></a></div>
+    <div class="nav-end"><ul><li><a href="home.html">Home</a></li><li><a href="scores.html">Final Scores</a></li><li><a href="schedule.html">Schedule</a></li></ul></div>
+  </nav></header>
+  <main class="viewer">
+    <div class="viewer-top"><h1>Box Score</h1><a class="viewer-back" href="scores.html">← Final Scores</a></div>
+    <div id="boxscore-content" class="viewer-empty" role="status">Loading box score…</div>
+  </main>
+  <script>
+    (function () {
+      var logos={"Arizona Wildcats":"arizona.png","Baylor Bears":"baylor.png","Duke Blue Devils":"duke.png","Florida Gators":"florida.png","Georgia Bulldogs":"georgia.png","Houston Cougars":"houston.png","Kansas Jayhawks":"kansas.png","Kentucky Wildcats":"kentucky.png","LSU Tigers":"lsu.png","Miami Hurricanes":"miami.png","Michigan Wolverines":"michigan.png","North Carolina Tar Heels":"unc.png","Ohio State Buckeyes":"ohiostate.png","Oregon Ducks":"oregon.png","UCLA Bruins":"ucla.png","Virginia Cavaliers":"virginia.png"};
+      var params=new URLSearchParams(location.search), id=params.get("game")||"", parts=id.split("|"), root=document.getElementById("boxscore-content"), store={};
+      try{store=JSON.parse(localStorage.getItem("jba-boxscores")||"{}")}catch(e){}
+      var game=store[id];
+      if(parts.length<3||!game||(game.submitted!==true&&!(game.submitted==null&&game.awayScore!=null&&game.homeScore!=null))){root.textContent="This box score is unavailable. It may not have been submitted on this device.";return;}
+      var away=parts[1],home=parts[2],forfeit=!!game.forfeit;
+      function esc(value){return String(value==null?"":value).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]})}
+      function number(value){var n=Number(value);return Number.isFinite(n)?n:0}
+      function statsFor(team){var lines=(game.lines||[]).filter(function(line){return playerTeams[String(line.id)]===team});var sums={pts:0,ast:0,reb:0,dreb:0,oreb:0,stl:0,blk:0,tov:0,pf:0,fgm:0,fga:0,tpm:0,tpa:0,ftm:0,fta:0};lines.forEach(function(line){Object.keys(sums).forEach(function(key){sums[key]+=number(line[key])})});sums.reb=lines.reduce(function(total,line){return total+number(line.reb!=null?line.reb:number(line.oreb)+number(line.dreb))},0);return {lines:lines,sums:sums}}
+      var playerTeams={};
+      function paint(players){(players||[]).forEach(function(player){if(player&&player.id)playerTeams[String(player.id)]=String(player.team||player.teamName||"")})}
+      function render(){
+        var aScore=String(game.awayScore==null?"—":game.awayScore),hScore=String(game.homeScore==null?"—":game.homeScore),aNum=Number(aScore),hNum=Number(hScore);
+        var aWin=!forfeit&&Number.isFinite(aNum)&&Number.isFinite(hNum)&&aNum>hNum,hWin=!forfeit&&Number.isFinite(aNum)&&Number.isFinite(hNum)&&hNum>aNum;
+        var meta=game.meta||{}, date=meta.date?new Date(meta.date+"T00:00:00").toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}):"Date not provided";
+        var quarters=game.quarters||{}, aq=quarters.away||{},hq=quarters.home||{};
+        var html='<section class="viewer-score"><div class="viewer-team '+(aWin?'is-winner':'')+'"><img src="'+esc(logos[away]||"")+'" alt=""><div><b>'+esc(away)+'</b><strong>'+esc(aScore)+'</strong></div></div><span class="viewer-vs">'+(forfeit?'FORFEIT':'FINAL')+'</span><div class="viewer-team '+(hWin?'is-winner':'')+'"><div><b>'+esc(home)+'</b><strong>'+esc(hScore)+'</strong></div><img src="'+esc(logos[home]||"")+'" alt=""></div></section><p class="viewer-meta">Week '+esc(parts[0])+' · '+esc(date)+(meta.location?' · '+esc(meta.location):'')+'</p>';
+        html+='<section class="viewer-section"><h2>Scoring by half</h2><div class="viewer-table-wrap"><table class="viewer-table"><thead><tr><th>Team</th><th>H1</th><th>H2</th><th>Final</th></tr></thead><tbody><tr><td>'+esc(away)+'</td><td>'+esc(aq.h1!=null?aq.h1:aq.q1||'—')+'</td><td>'+esc(aq.h2!=null?aq.h2:aq.q2||'—')+'</td><td>'+esc(aScore)+'</td></tr><tr><td>'+esc(home)+'</td><td>'+esc(hq.h1!=null?hq.h1:hq.q1||'—')+'</td><td>'+esc(hq.h2!=null?hq.h2:hq.q2||'—')+'</td><td>'+esc(hScore)+'</td></tr></tbody></table></div></section>';
+        [away,home].forEach(function(team){var result=statsFor(team),s=result.sums;html+='<section class="viewer-section"><h2>'+esc(team)+' · Player Stats</h2><div class="viewer-table-wrap"><table class="viewer-table"><thead><tr><th>Player</th><th>PTS</th><th>AST</th><th>REB</th><th>DREB</th><th>OREB</th><th>STL</th><th>BLK</th><th>TO</th><th>PF</th><th>FG</th><th>3P</th><th>FT</th></tr></thead><tbody>';
+          result.lines.forEach(function(line){var name=esc(line.name||"Player"),avatar='https://cdn.discordapp.com/embed/avatars/0.png';var player=(window.__players||[]).find(function(p){return String(p.id)===String(line.id)});if(player&&player.avatar)avatar='https://cdn.discordapp.com/avatars/'+encodeURIComponent(player.id)+'/'+encodeURIComponent(player.avatar)+'.png?size=64';html+='<tr><td><span class="viewer-player"><img src="'+esc(avatar)+'" alt="">'+name+'</span></td><td>'+number(line.pts)+'</td><td>'+number(line.ast)+'</td><td>'+number(line.reb)+'</td><td>'+number(line.dreb)+'</td><td>'+number(line.oreb)+'</td><td>'+number(line.stl)+'</td><td>'+number(line.blk)+'</td><td>'+number(line.tov)+'</td><td>'+number(line.pf)+'</td><td>'+number(line.fgm)+'/'+number(line.fga)+'</td><td>'+number(line.tpm)+'/'+number(line.tpa)+'</td><td>'+number(line.ftm)+'/'+number(line.fta)+'</td></tr>'});
+          html+='<tr class="viewer-total"><td>TEAM TOTAL</td><td>'+s.pts+'</td><td>'+s.ast+'</td><td>'+s.reb+'</td><td>'+s.dreb+'</td><td>'+s.oreb+'</td><td>'+s.stl+'</td><td>'+s.blk+'</td><td>'+s.tov+'</td><td>'+s.pf+'</td><td>'+s.fgm+'/'+s.fga+'</td><td>'+s.tpm+'/'+s.tpa+'</td><td>'+s.ftm+'/'+s.fta+'</td></tr></tbody></table></div></section>';
+        });
+        if(meta.recap)html+='<section class="viewer-section"><h2>Game Recap</h2><div class="viewer-recap">'+esc(meta.recap)+'</div></section>';
+        root.className="";root.innerHTML=html;
+      }
+      fetch("/api/signins").then(function(response){return response.ok?response.json():{players:[]}}).then(function(data){window.__players=data.players||[];paint(window.__players);render()}).catch(function(){render()});
+    })();
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>
