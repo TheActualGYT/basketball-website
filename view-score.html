@@ -215,13 +215,17 @@
         root.appendChild(note);
         return;
       }
+      var hasSide = (game.lines || []).some(function (line) { return line.side; });
+      if (!hasSide) {
+        var only = document.createElement("section");
+        only.className = "view-block";
+        only.innerHTML = "<h3>Player Stats</h3>";
+        only.appendChild(statTable(game.lines || []));
+        root.appendChild(only);
+        return;
+      }
       [["away", away], ["home", home]].forEach(function (side) {
-        var lines = (game.lines || []).filter(function (line) { return line.side === side[0] || !line.side; });
-        if ((game.lines || []).some(function (line) { return line.side; })) {
-          lines = (game.lines || []).filter(function (line) { return line.side === side[0]; });
-        } else if (side[0] === "home") {
-          lines = [];
-        }
+        var lines = (game.lines || []).filter(function (line) { return line.side === side[0]; });
         var block = document.createElement("section");
         block.className = "view-block";
         var title = document.createElement("h3");
