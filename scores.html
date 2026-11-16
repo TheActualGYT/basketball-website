@@ -321,6 +321,14 @@
           if (when) when.textContent = whenLabel(week, game.meta);
           card.setAttribute("data-when", whenKey(game.meta));
         }
+        if (official) {
+          card.classList.add("is-viewable");
+          card.addEventListener("click", function (event) {
+            if (event.target.closest("a, button")) return;
+            var parts = id.split("|");
+            location.href = "view-score.html?week=" + encodeURIComponent(parts[0]) + "&away=" + encodeURIComponent(parts[1]) + "&home=" + encodeURIComponent(parts[2]);
+          });
+        }
         if (!official) return;
         if (game.forfeit) {
           card.classList.add("is-forfeit");

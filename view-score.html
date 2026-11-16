@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="logo.png" type="image/png">
+  <title>Box Score | Junior Basketball Association</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <nav>
+      <div class="brand">
+        <a class="logo" href="home.html">
+          <img src="logo.png" alt="JBA Logo">
+          <span class="logo-name">Junior Basketball<br>Association</span>
+        </a>
+        <div class="nav-social">
+          <a href="https://discord.gg/36FHef566k" target="_blank" rel="noopener" aria-label="Discord"><img src="discord.svg" alt=""></a>
+          <a href="https://www.youtube.com/@PracticaIBasketball" target="_blank" rel="noopener" aria-label="YouTube"><img src="youtube.svg" alt=""></a>
+        </div>
+      </div>
+      <div class="nav-end">
+      <ul>
+        <li class="nav-drop">
+          <a href="rules.html" data-nav="league">League</a>
+          <div class="nav-menu">
+            <a href="rules.html" data-nav="rules">Rules</a>
+            <a href="teams.html" data-nav="teams">Teams</a>
+            <a href="players.html" data-nav="players">Players</a>
+            <a href="staff.html" data-nav="staff">Staff</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="standings.html" data-nav="standings">Standings</a>
+          <div class="nav-menu">
+            <a href="standings.html" data-nav="divisional">Divisional Standings</a>
+            <a href="power-rankings.html" data-nav="power">Power Rankings</a>
+            <a href="playoff.html" data-nav="playoff">Playoff Bracket</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="schedule.html" data-nav="games">Games</a>
+          <div class="nav-menu">
+            <a href="schedule.html" data-nav="schedule">Schedule</a>
+            <a href="scores.html" data-nav="scores">Final Scores</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="player-stats.html" data-nav="statistics">Statistics</a>
+          <div class="nav-menu">
+            <a href="team-stats.html" data-nav="team-stats">Team Stats</a>
+            <a href="player-stats.html" data-nav="player-stats">Player Stats</a>
+            <a href="records.html" data-nav="records">Records</a>
+          </div>
+        </li>
+        <li class="nav-drop">
+          <a href="mvp.html" data-nav="awards">Awards</a>
+          <div class="nav-menu">
+            <a href="mvp.html" data-nav="mvp">MVP Race</a>
+            <a href="all-stars.html" data-nav="all-stars">All-Stars</a>
+            <a href="hall-of-fame.html" data-nav="hall">Hall of Fame</a>
+          </div>
+        </li>
+      </ul>
+      <span class="nav-user" id="nav-user" hidden></span>
+      </div>
+    </nav>
+  </header>
+
+  <section class="division-page game-score view-score">
+    <h2>Box Score</h2>
+    <p class="box-lead" id="view-lead">Loading game…</p>
+    <div id="view-root"></div>
+  </section>
+  <script src="script.js"></script>
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var week = params.get("week") || "";
+      var away = params.get("away") || "";
+      var home = params.get("home") || "";
+      var lead = document.getElementById("view-lead");
+      var root = document.getElementById("view-root");
+      var logos = {
+        "Arizona Wildcats": "arizona.png", "Baylor Bears": "baylor.png", "Duke Blue Devils": "duke.png",
+        "Florida Gators": "florida.png", "Georgia Bulldogs": "georgia.png", "Houston Cougars": "houston.png",
+        "Kansas Jayhawks": "kansas.png", "Kentucky Wildcats": "kentucky.png", "LSU Tigers": "lsu.png",
+        "Miami Hurricanes": "miami.png", "Michigan Wolverines": "michigan.png", "North Carolina Tar Heels": "unc.png",
+        "Ohio State Buckeyes": "ohiostate.png", "Oregon Ducks": "oregon.png", "UCLA Bruins": "ucla.png",
+        "Virginia Cavaliers": "virginia.png"
+      };
+      var COLS = [
+        ["pts", "PTS"], ["ast", "AST"], ["reb", "REB"], ["dreb", "DREB"], ["oreb", "OREB"],
+        ["stl", "STL"], ["blk", "BLK"], ["tov", "TO"], ["pf", "PF"], ["fgm", "FGM"], ["fga", "FGA"],
+        ["fgp", "FG%"], ["tpm", "3PM"], ["tpa", "3PA"], ["tpp", "3P%"], ["ftm", "FTM"], ["fta", "FTA"],
+        ["ftp", "FT%"], ["fg2m", "2PM"], ["fg2a", "2PA"], ["fg2p", "2P%"], ["gmsc", "GmSc"]
+      ];
+      var SUMS = ["pts", "ast", "reb", "dreb", "oreb", "stl", "blk", "tov", "pf", "fgm", "fga", "tpm", "tpa", "ftm", "fta", "fg2m", "fg2a", "gmsc"];
+      function num(value) {
+        var n = Number(value);
+        return isFinite(n) ? n : 0;
+      }
+      function pct(made, att) {
+        if (!att) return "—";
+        return (made / att * 100).toFixed(1);
+      }
+      function show(line, key) {
+        if (key === "fgp") return pct(num(line.fgm), num(line.fga));
+        if (key === "tpp") return pct(num(line.tpm), num(line.tpa));
+        if (key === "ftp") return pct(num(line.ftm), num(line.fta));
+        if (key === "fg2p") return pct(num(line.fg2m), num(line.fg2a));
+        if (key === "gmsc") return isFinite(Number(line.gmsc)) ? Number(line.gmsc).toFixed(1) : "—";
+        if (line[key] == null || line[key] === "") return "—";
+        return String(line[key]);
+      }
+      function totals(lines) {
+        var bag = { name: "TEAM" };
+        SUMS.forEach(function (key) { bag[key] = 0; });
+        lines.forEach(function (line) {
+          SUMS.forEach(function (key) { bag[key] += num(line[key]); });
+        });
+        bag.fgp = pct(bag.fgm, bag.fga);
+        bag.tpp = pct(bag.tpm, bag.tpa);
+        bag.ftp = pct(bag.ftm, bag.fta);
+        bag.fg2p = pct(bag.fg2m, bag.fg2a);
+        bag.gmsc = bag.gmsc ? bag.gmsc.toFixed(1) : "0.0";
+        return bag;
+      }
+      function cell(text, strong) {
+        var td = document.createElement("td");
+        td.textContent = text;
+        if (strong) td.style.fontWeight = "800";
+        return td;
+      }
+      function statTable(lines) {
+        var wrap = document.createElement("div");
+        wrap.className = "view-scroll";
+        var table = document.createElement("table");
+        table.className = "gs-stat";
+        var head = document.createElement("tr");
+        var player = document.createElement("th");
+        player.textContent = "Player";
+        head.appendChild(player);
+        COLS.forEach(function (col) {
+          var th = document.createElement("th");
+          th.textContent = col[1];
+          head.appendChild(th);
+        });
+        var thead = document.createElement("thead");
+        thead.appendChild(head);
+        var body = document.createElement("tbody");
+        (lines.length ? lines : [{}]).forEach(function (line) {
+          var row = document.createElement("tr");
+          row.appendChild(cell(line.name || "—"));
+          COLS.forEach(function (col) { row.appendChild(cell(line.name ? show(line, col[0]) : "—")); });
+          body.appendChild(row);
+        });
+        var foot = document.createElement("tfoot");
+        var total = totals(lines);
+        var sum = document.createElement("tr");
+        sum.className = "team-total";
+        sum.appendChild(cell("TEAM"));
+        COLS.forEach(function (col) {
+          var value = total[col[0]];
+          if (col[0] === "fgp" || col[0] === "tpp" || col[0] === "ftp" || col[0] === "fg2p" || col[0] === "gmsc") value = lines.length ? total[col[0]] : "—";
+          else value = lines.length ? String(total[col[0]]) : "—";
+          sum.appendChild(cell(value, true));
+        });
+        foot.appendChild(sum);
+        table.append(thead, body, foot);
+        wrap.appendChild(table);
+        return wrap;
+      }
+      var saved = {};
+      try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { saved = {}; }
+      var key = week + "|" + away + "|" + home;
+      var game = saved[key];
+      if (!logos[away] || !logos[home] || !game || game.submitted !== true) {
+        lead.textContent = "That box score has not been submitted.";
+        return;
+      }
+      lead.textContent = away + " at " + home;
+      var quarters = game.quarters || { away: {}, home: {} };
+      var sheet = document.createElement("div");
+      sheet.className = "gs-sheet";
+      var table = document.createElement("table");
+      table.className = "gs-line";
+      table.innerHTML = "<thead><tr><th>Team</th><th>H1</th><th>H2</th><th>Total</th></tr></thead>";
+      var body = document.createElement("tbody");
+      [["away", away], ["home", home]].forEach(function (side) {
+        var row = document.createElement("tr");
+        var team = document.createElement("td");
+        team.className = "gs-team";
+        team.innerHTML = '<span class="gs-club"><img src="' + logos[side[1]] + '" alt=""><span>' + side[1] + '</span></span>';
+        row.appendChild(team);
+        ["h1", "h2"].forEach(function (half) {
+          var q = (quarters[side[0]] && quarters[side[0]][half]) || "—";
+          row.appendChild(cell(game.forfeit ? "—" : (q === "" ? "—" : q)));
+        });
+        var total = document.createElement("td");
+        total.className = "is-tot";
+        total.textContent = side[0] === "away" ? (game.awayScore || "—") : (game.homeScore || "—");
+        row.appendChild(total);
+        body.appendChild(row);
+      });
+      table.appendChild(body);
+      sheet.appendChild(table);
+      root.appendChild(sheet);
+      if (game.forfeit) {
+        var note = document.createElement("p");
+        note.className = "box-lead";
+        note.textContent = "This game was recorded as a forfeit. No player or team stats were saved.";
+        root.appendChild(note);
+        return;
+      }
+      [["away", away], ["home", home]].forEach(function (side) {
+        var lines = (game.lines || []).filter(function (line) { return line.side === side[0] || !line.side; });
+        if ((game.lines || []).some(function (line) { return line.side; })) {
+          lines = (game.lines || []).filter(function (line) { return line.side === side[0]; });
+        } else if (side[0] === "home") {
+          lines = [];
+        }
+        var block = document.createElement("section");
+        block.className = "view-block";
+        var title = document.createElement("h3");
+        title.innerHTML = '<img src="' + logos[side[1]] + '" alt="">' + side[1];
+        block.appendChild(title);
+        block.appendChild(statTable(lines));
+        root.appendChild(block);
+      });
+    })();
+  </script>
+</body>
+</html>

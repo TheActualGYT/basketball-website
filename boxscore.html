@@ -839,7 +839,7 @@
               var player = active[side][id];
               var src = stats[id] || {};
               if (!rowHasEntry(src)) return;
-              var line = { id: id, name: player.name || player.username || "Unknown" };
+              var line = { id: id, side: side, name: player.name || player.username || "Unknown" };
               INPUT_KEYS.forEach(function (stat) {
                 var value = src[stat];
                 line[stat] = value === "" || value == null ? null : Number(value);

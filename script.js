@@ -719,17 +719,17 @@ function accountMarks(player) {
   const roles = accountRoles(player);
   const marks = document.createElement("span");
   marks.className = "account-marks";
-  function logo(src, title) {
-    const img = document.createElement("img");
-    img.src = src;
-    img.alt = title;
-    img.title = title;
-    img.className = "role-logo";
-    marks.appendChild(img);
+  function logo(emoji, title) {
+    const mark = document.createElement("span");
+    mark.className = "role-emoji";
+    mark.textContent = emoji;
+    mark.title = title;
+    mark.setAttribute("aria-label", title);
+    marks.appendChild(mark);
   }
-  if (roles.owner) logo("role-owner.svg", "Owner");
-  else if (roles.admin) logo("role-admin.svg", "Admin");
-  if (roles.official) logo("role-official.png", "Official");
+  if (roles.owner) logo("👑", "Owner");
+  else if (roles.admin) logo("🔰", "Admin");
+  if (roles.official) logo("🏁", "Official");
   return marks.childNodes.length ? marks : null;
 }
 
@@ -787,11 +787,11 @@ function showNavUser() {
   name.style.cssText = "color:#fff;font-size:15px;font-weight:700;line-height:1;display:inline-block;";
   el.appendChild(name);
   if (isOwnerAccount(user)) {
-    const owner = document.createElement("img");
-    owner.className = "role-logo";
-    owner.src = "role-owner.svg";
-    owner.alt = "Owner";
+    const owner = document.createElement("span");
+    owner.className = "role-emoji";
+    owner.textContent = "👑";
     owner.title = "Owner";
+    owner.setAttribute("aria-label", "Owner");
     el.appendChild(owner);
   }
   const menu = document.createElement("span");
@@ -869,6 +869,7 @@ function markNav() {
     "playoff.html": ["standings", "playoff"],
     "schedule.html": ["games", "schedule"],
     "scores.html": ["games", "scores"],
+    "view-score.html": ["games", "scores"],
     "team-stats.html": ["statistics", "team-stats"],
     "player-stats.html": ["statistics", "player-stats"],
     "records.html": ["statistics", "records"],
@@ -1585,6 +1586,11 @@ function setupProfile() {
       head.appendChild(end);
     }
     card.appendChild(head);
+    card.classList.add("is-viewable");
+    card.addEventListener("click", function (event) {
+      if (event.target.closest("a, button")) return;
+      location.href = "view-score.html?week=" + encodeURIComponent(item.week) + "&away=" + encodeURIComponent(item.away) + "&home=" + encodeURIComponent(item.home);
+    });
     [["away", item.away], ["home", item.home]].forEach(function (side) {
       var name = document.createElement("span");
       name.className = "home-club";

@@ -516,7 +516,7 @@ h2 {
   -webkit-text-fill-color: #fff;
   font-size: 1.7rem;
   letter-spacing: 0.08em;
-  text-align: center;
+  text-align: left;
   text-transform: uppercase;
   animation: titlePulse 3.6s ease-in-out infinite;
 }
@@ -782,8 +782,6 @@ h2 {
   border-radius: 0;
 }
 
-.players-table.stats-table thead th.is-asc,
-.players-table.stats-table thead th.is-desc,
 .players-table.stats-table tbody td.is-sorted,
 .players-table.stats-table tr.is-league td,
 .players-table.stats-table tbody tr:hover td {
@@ -796,11 +794,6 @@ h2 {
   background-size: auto, 180px 180px, auto, auto;
   background-blend-mode: normal, overlay, normal, normal;
   box-shadow: none;
-}
-
-.players-table.stats-table thead th.is-asc,
-.players-table.stats-table thead th.is-desc {
-  background-color: #141416;
 }
 
 .players-table.stats-table tr.is-league .league-name {
@@ -922,6 +915,8 @@ h2 {
 .player-person span {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
   min-width: 0;
 }
 
@@ -5725,8 +5720,36 @@ button.gs-spot:not(.is-empty).is-hot .gs-person i {
 }
 .nav-user .role-pill { margin-left: 0.15rem; }
 .account-marks, .name-line { display: inline-flex; align-items: center; gap: 0.32rem; min-width: 0; }
-.role-logo { width: 22px; height: 22px; object-fit: contain; display: block; }
-.nav-user .role-logo { width: 18px; height: 18px; }
+.role-emoji {
+  font-size: 1.05rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+.nav-user .role-emoji { font-size: 0.95rem; }
+.final-card.is-viewable,
+.score-game.is-posted { cursor: pointer; }
+.view-score { max-width: 1180px; }
+.view-block { margin-top: 1.1rem; }
+.view-block h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 0.55rem;
+  color: #fff;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+}
+.view-block h3 img { width: 28px; height: 28px; object-fit: contain; }
+.view-scroll { overflow-x: auto; border-radius: 14px; border: 1px solid rgba(255,255,255,0.28); }
+.view-score .gs-stat { min-width: 980px; }
+.view-score .gs-stat tfoot td {
+  background: #101012;
+  color: #fff;
+  font-weight: 800;
+  border-top: 1px solid rgba(255,255,255,0.28);
+}
+.view-score .team-total td:first-child { text-align: left; letter-spacing: 0.06em; }
 .discord-line { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; min-width: 0; }
 .discord-roles { display: inline-flex; align-items: center; gap: 0.4rem; margin-left: auto; flex: 0 0 auto; }
 .players-table td.discord-cell { display: table-cell; }
