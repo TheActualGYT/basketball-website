@@ -784,15 +784,6 @@
         if (!official) saved = {};
         build();
         restore();
-        if (!(saved.lines || []).length) {
-          ["away", "home"].forEach(function (side) {
-            slots[side].forEach(function (player) {
-              if (player) active[side][playerId(player)] = player;
-            });
-          });
-          paintActive();
-          paintStatistics();
-        }
         var numberEl = document.getElementById("game-number");
         if (numberEl) numberEl.textContent = renumber(false) || "—";
         form.addEventListener("input", draftChanged);

@@ -184,15 +184,32 @@
         lead.textContent = "That box score has not been submitted.";
         return;
       }
-      lead.textContent = away + " at " + home;
+      lead.textContent = "";
       var quarters = game.quarters || { away: {}, home: {} };
+      var awayScore = game.awayScore == null || game.awayScore === "" ? "—" : String(game.awayScore);
+      var homeScore = game.homeScore == null || game.homeScore === "" ? "—" : String(game.homeScore);
+      var awayNum = Number(awayScore);
+      var homeNum = Number(homeScore);
+      var awayWin = !game.forfeit && isFinite(awayNum) && isFinite(homeNum) && awayNum > homeNum;
+      var homeWin = !game.forfeit && isFinite(awayNum) && isFinite(homeNum) && homeNum > awayNum;
+      if (game.forfeit) {
+        awayWin = awayScore === "FFW";
+        homeWin = homeScore === "FFW";
+      }
+      var hero = document.createElement("section");
+      hero.className = "box-hero";
+      hero.innerHTML = ''
+        + '<div class="box-club ' + (awayWin ? "is-win" : "is-loss") + '"><img src="' + logos[away] + '" alt=""><div><b>' + away + '</b><strong>' + awayScore + '</strong></div></div>'
+        + '<div class="box-mid"><span>' + (game.forfeit ? "FORFEIT" : "FINAL") + '</span><small>Week ' + week + '</small></div>'
+        + '<div class="box-club is-home ' + (homeWin ? "is-win" : "is-loss") + '"><div><b>' + home + '</b><strong>' + homeScore + '</strong></div><img src="' + logos[home] + '" alt=""></div>';
+      root.appendChild(hero);
       var sheet = document.createElement("div");
-      sheet.className = "gs-sheet";
+      sheet.className = "box-halves";
       var table = document.createElement("table");
       table.className = "gs-line";
       table.innerHTML = "<thead><tr><th>Team</th><th>H1</th><th>H2</th><th>Total</th></tr></thead>";
       var body = document.createElement("tbody");
-      [["away", away], ["home", home]].forEach(function (side) {
+      [["away", away, awayScore], ["home", home, homeScore]].forEach(function (side) {
         var row = document.createElement("tr");
         var team = document.createElement("td");
         team.className = "gs-team";
@@ -204,7 +221,7 @@
         });
         var total = document.createElement("td");
         total.className = "is-tot";
-        total.textContent = side[0] === "away" ? (game.awayScore || "—") : (game.homeScore || "—");
+        total.textContent = side[2];
         row.appendChild(total);
         body.appendChild(row);
       });
@@ -225,30 +242,23 @@
         return left === right || left.indexOf(right) === 0 || right.indexOf(left) === 0;
       }
       function sideLines(players, side, teamName) {
-        var used = {};
-        var rows = [];
-        (players || []).filter(function (player) {
-          return player && !player.notPlayer && sameTeam(player.team || player.teamName, teamName);
-        }).sort(function (a, b) {
-          return String(a.name || a.username || "").localeCompare(String(b.name || b.username || ""));
-        }).forEach(function (player) {
-          var line = (game.lines || []).find(function (item) { return String(item.id) === String(player.id); }) || {};
-          used[String(player.id)] = true;
-          rows.push(Object.assign({ id: player.id, name: player.name || player.username || "Unknown" }, line, { name: player.name || line.name || player.username || "Unknown" }));
+        var byId = {};
+        (players || []).forEach(function (player) { if (player && player.id) byId[String(player.id)] = player; });
+        return (game.lines || []).filter(function (line) {
+          if (!line) return false;
+          if (line.side) return line.side === side;
+          var player = byId[String(line.id)];
+          return player && sameTeam(player.team || player.teamName, teamName);
+        }).map(function (line) {
+          var player = byId[String(line.id)];
+          return Object.assign({}, line, { name: (player && (player.roblox || player.name || player.username)) || line.name || "Unknown" });
         });
-        (game.lines || []).forEach(function (line) {
-          if (!line || used[String(line.id)]) return;
-          if (line.side && line.side !== side) return;
-          if (!line.side) return;
-          rows.push(line);
-        });
-        return rows;
       }
       function paintTeams(players) {
         [["away", away], ["home", home]].forEach(function (side) {
           var lines = sideLines(players, side[0], side[1]);
           var block = document.createElement("section");
-          block.className = "view-block";
+          block.className = "view-block panel";
           var title = document.createElement("h3");
           title.innerHTML = '<img src="' + logos[side[1]] + '" alt="">' + side[1];
           block.appendChild(title);

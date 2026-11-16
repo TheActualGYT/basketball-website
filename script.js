@@ -1644,3 +1644,120 @@ function setupProfile() {
   });
 })();
 
+(function paintHomeLeaders() {
+  var cards = document.querySelectorAll(".home-board .leader-card");
+  if (!cards.length) return;
+  var TEAMS = {
+    "Arizona Wildcats": ["ARZ", "arizona.png"],
+    "Baylor Bears": ["BAY", "baylor.png"],
+    "Duke Blue Devils": ["DUKE", "duke.png"],
+    "Florida Gators": ["FL", "florida.png"],
+    "Georgia Bulldogs": ["GEO", "georgia.png"],
+    "Houston Cougars": ["HOU", "houston.png"],
+    "Kansas Jayhawks": ["KAN", "kansas.png"],
+    "Kentucky Wildcats": ["KEN", "kentucky.png"],
+    "LSU Tigers": ["LSU", "lsu.png"],
+    "Miami Hurricanes": ["MIA", "miami.png"],
+    "Michigan Wolverines": ["MICH", "michigan.png"],
+    "North Carolina Tar Heels": ["NC", "unc.png"],
+    "Ohio State Buckeyes": ["OHST", "ohiostate.png"],
+    "Oregon Ducks": ["OR", "oregon.png"],
+    "UCLA Bruins": ["UCLA", "ucla.png"],
+    "Virginia Cavaliers": ["VIR", "virginia.png"]
+  };
+  var KEYS = ["pts", "reb", "ast", "gmsc"];
+  function isForfeit(game) {
+    if (!game || game.forfeit) return true;
+    return [game.awayScore, game.homeScore].some(function (score) {
+      return score === "FFW" || score === "FFL" || score === "W" || score === "L";
+    });
+  }
+  function avatar(player) {
+    if (player && player.avatar && player.id) return "https://cdn.discordapp.com/avatars/" + player.id + "/" + player.avatar + ".png?size=64";
+    return "https://cdn.discordapp.com/embed/avatars/0.png";
+  }
+  function collect() {
+    var saved = {};
+    try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { saved = {}; }
+    var bag = {};
+    Object.keys(saved).forEach(function (id) {
+      var game = saved[id];
+      if (!game || game.submitted !== true || isForfeit(game)) return;
+      (game.lines || []).forEach(function (line) {
+        if (!line || !line.id) return;
+        var row = bag[line.id] || { id: String(line.id), name: line.name || "Unknown", games: 0, pts: 0, reb: 0, ast: 0, gmsc: 0 };
+        row.name = line.name || row.name;
+        row.games += 1;
+        row.pts += Number(line.pts) || 0;
+        row.reb += Number(line.reb) || 0;
+        row.ast += Number(line.ast) || 0;
+        row.gmsc += Number(line.gmsc) || 0;
+        bag[line.id] = row;
+      });
+    });
+    return Object.keys(bag).map(function (id) { return bag[id]; });
+  }
+  function fill(card, rows, key) {
+    var feature = card.querySelector(".leader-feature");
+    var rest = card.querySelector(".leader-rest");
+    if (!feature || !rest) return;
+    var ranked = rows.slice().sort(function (a, b) {
+      var av = a.games ? a[key] / a.games : -1;
+      var bv = b.games ? b[key] / b.games : -1;
+      return bv - av;
+    }).slice(0, 5);
+    function teamTag(player) {
+      var team = player && TEAMS[player.team || player.teamName || ""];
+      if (!team) return "";
+      return '<small class="team-tag">' + team[0] + '<img class="abbr-logo" src="' + team[1] + '" alt=""></small>';
+    }
+    function value(row) {
+      if (!row || !row.games) return "—";
+      return (row[key] / row.games).toFixed(1);
+    }
+    var top = ranked[0];
+    feature.innerHTML = "";
+    var face = document.createElement("span");
+    face.className = "discord-pfp";
+    if (top) face.style.backgroundImage = "url('" + avatar(top.account) + "')";
+    var name = document.createElement("div");
+    name.className = "leader-feature-name";
+    name.innerHTML = "<b>" + (top ? ((top.account && (top.account.name || top.account.username)) || top.name) : "—") + "</b>" + (top ? teamTag(top.account) : "");
+    var stat = document.createElement("span");
+    stat.className = "leader-stat";
+    stat.textContent = value(top);
+    feature.append(face, name, stat);
+    rest.innerHTML = "";
+    for (var i = 1; i < 5; i += 1) {
+      var row = ranked[i];
+      var li = document.createElement("li");
+      var place = document.createElement("span");
+      place.textContent = String(i + 1);
+      var pfp = document.createElement("span");
+      pfp.className = "discord-pfp";
+      if (row) pfp.style.backgroundImage = "url('" + avatar(row.account) + "')";
+      var who = document.createElement("span");
+      who.textContent = row ? ((row.account && (row.account.name || row.account.username)) || row.name) : "—";
+      var abbr = document.createElement("span");
+      abbr.className = "abbr team-tag";
+      if (row && row.account && TEAMS[row.account.team || row.account.teamName || ""]) {
+        var team = TEAMS[row.account.team || row.account.teamName || ""];
+        abbr.innerHTML = team[0] + '<img class="abbr-logo" src="' + team[1] + '" alt="">';
+      } else abbr.textContent = "—";
+      var num = document.createElement("span");
+      num.textContent = value(row);
+      li.append(place, pfp, who, abbr, num);
+      rest.appendChild(li);
+    }
+  }
+  var rows = collect();
+  fetch("/api/signins?t=" + Date.now()).then(function (res) { return res.json(); }).then(function (data) {
+    var byId = {};
+    (data.players || []).forEach(function (player) { if (player && player.id) byId[String(player.id)] = player; });
+    rows.forEach(function (row) { row.account = byId[row.id] || null; });
+    cards.forEach(function (card, index) { fill(card, rows, KEYS[index] || "pts"); });
+  }).catch(function () {
+    cards.forEach(function (card, index) { fill(card, rows, KEYS[index] || "pts"); });
+  });
+})();
+

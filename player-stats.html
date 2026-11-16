@@ -315,16 +315,32 @@
           label.textContent = "League Average";
           cell.appendChild(label);
         } else if (col[0] === "team" || col[0] === "pos") cell.textContent = "N/A";
-        else if (col[0] !== "rk") cell.textContent = showLeague(league, col[0]);
+        else if (col[0] !== "rk") {
+          cell.classList.add("num");
+          cell.textContent = showLeague(league, col[0]);
+        }
         leagueRow.appendChild(cell);
       });
-      body.appendChild(leagueRow);
-      ordered().forEach(function (row, index) {
+      var list = ordered();
+      var numeric = sort.key !== "player" && sort.key !== "team" && sort.key !== "pos";
+      var leagueVal = numeric ? leagueValue(league, sort.key === "rk" ? "pts" : sort.key) : null;
+      var placed = !numeric;
+      var rank = 0;
+      list.forEach(function (row) {
+        if (!placed) {
+          var value = sortValue(row, sort.key);
+          var before = value == null || (sort.dir === "desc" ? leagueVal >= value : leagueVal <= value);
+          if (before) {
+            body.appendChild(leagueRow);
+            placed = true;
+          }
+        }
+        rank += 1;
         var tr = document.createElement("tr");
         COLS.forEach(function (col) {
           var cell = document.createElement("td");
           if (col[0] === sort.key) cell.classList.add("is-sorted");
-          if (col[0] === "rk") cell.textContent = String(index + 1);
+          if (col[0] === "rk") cell.textContent = String(rank);
           else if (col[0] === "team") {
             var team = teamOf(row);
             if (team) {
@@ -358,28 +374,23 @@
             pfp.className = "discord-pfp";
             pfp.style.backgroundImage = "url('" + avatarSrc(row.account) + "')";
             var copy = document.createElement("span");
-            copy.className = "leader-feature-name";
+            copy.className = "stat-who";
             var name = document.createElement("b");
-            name.textContent = displayName(row);
-            var teamLine = document.createElement("small");
-            teamLine.className = "team-tag";
-            var info = teamOf(row);
-            if (info) {
-              teamLine.appendChild(document.createTextNode(info.abbr));
-              var mark = document.createElement("img");
-              mark.className = "abbr-logo";
-              mark.src = info.logo;
-              mark.alt = "";
-              teamLine.appendChild(mark);
-            }
-            copy.append(name, teamLine);
+            name.textContent = (row.account && row.account.roblox) || displayName(row);
+            var tag = document.createElement("small");
+            tag.textContent = row.account && row.account.username ? "@" + row.account.username : "";
+            copy.append(name, tag);
             person.append(pfp, copy);
             cell.appendChild(person);
-          } else cell.textContent = show(row, col[0]);
+          } else {
+            cell.classList.add("num");
+            cell.textContent = show(row, col[0]);
+          }
           tr.appendChild(cell);
         });
         body.appendChild(tr);
       });
+      if (!placed) body.appendChild(leagueRow);
       while (body.children.length < 10) {
         var empty = document.createElement("tr");
         COLS.forEach(function (col) {
