@@ -1706,27 +1706,41 @@ function setupProfile() {
       var bv = b.games ? b[key] / b.games : -1;
       return bv - av;
     }).slice(0, 5);
-    function teamTag(player) {
-      var team = player && TEAMS[player.team || player.teamName || ""];
-      if (!team) return "";
-      return '<small class="team-tag">' + team[0] + '<img class="abbr-logo" src="' + team[1] + '" alt=""></small>';
-    }
     function value(row) {
       if (!row || !row.games) return "—";
       return (row[key] / row.games).toFixed(1);
+    }
+    function identity(row) {
+      var account = row && row.account;
+      var roblox = account && account.roblox ? account.roblox : (row ? ((account && (account.name || account.username)) || row.name) : "—");
+      var team = account ? String(account.team || account.teamName || "").trim() : "";
+      var tag = account && account.username ? "@" + account.username : "";
+      return { roblox: roblox || "—", team: team || "—", tag: tag };
+    }
+    function nameBlock(row) {
+      var who = identity(row);
+      var wrap = document.createElement("div");
+      wrap.className = "leader-feature-name";
+      var title = document.createElement("b");
+      title.textContent = who.roblox;
+      var team = document.createElement("small");
+      team.textContent = who.team;
+      wrap.append(title, team);
+      var tag = document.createElement("span");
+      tag.className = "leader-tag";
+      tag.textContent = who.tag;
+      return { wrap: wrap, tag: tag };
     }
     var top = ranked[0];
     feature.innerHTML = "";
     var face = document.createElement("span");
     face.className = "discord-pfp";
     if (top) face.style.backgroundImage = "url('" + avatar(top.account) + "')";
-    var name = document.createElement("div");
-    name.className = "leader-feature-name";
-    name.innerHTML = "<b>" + (top ? ((top.account && (top.account.name || top.account.username)) || top.name) : "—") + "</b>" + (top ? teamTag(top.account) : "");
+    var named = nameBlock(top);
     var stat = document.createElement("span");
     stat.className = "leader-stat";
     stat.textContent = value(top);
-    feature.append(face, name, stat);
+    feature.append(face, named.wrap, named.tag, stat);
     rest.innerHTML = "";
     for (var i = 1; i < 5; i += 1) {
       var row = ranked[i];
@@ -1736,24 +1750,27 @@ function setupProfile() {
       var pfp = document.createElement("span");
       pfp.className = "discord-pfp";
       if (row) pfp.style.backgroundImage = "url('" + avatar(row.account) + "')";
-      var who = document.createElement("span");
-      who.textContent = row ? ((row.account && (row.account.name || row.account.username)) || row.name) : "—";
-      var abbr = document.createElement("span");
-      abbr.className = "abbr team-tag";
-      if (row && row.account && TEAMS[row.account.team || row.account.teamName || ""]) {
-        var team = TEAMS[row.account.team || row.account.teamName || ""];
-        abbr.innerHTML = team[0] + '<img class="abbr-logo" src="' + team[1] + '" alt="">';
-      } else abbr.textContent = "—";
+      var copy = nameBlock(row);
       var num = document.createElement("span");
       num.textContent = value(row);
-      li.append(place, pfp, who, abbr, num);
+      li.append(place, pfp, copy.wrap, copy.tag, num);
       rest.appendChild(li);
     }
   }
   var rows = collect();
+  try {
+    var cached = JSON.parse(localStorage.getItem("jba-directory") || "[]");
+    var byCache = {};
+    (cached || []).forEach(function (player) { if (player && player.id) byCache[String(player.id)] = player; });
+    if (Object.keys(byCache).length) {
+      rows.forEach(function (row) { row.account = byCache[row.id] || null; });
+      cards.forEach(function (card, index) { fill(card, rows, KEYS[index] || "pts"); });
+    }
+  } catch (err) {}
   fetch("/api/signins?t=" + Date.now()).then(function (res) { return res.json(); }).then(function (data) {
     var byId = {};
     (data.players || []).forEach(function (player) { if (player && player.id) byId[String(player.id)] = player; });
+    try { localStorage.setItem("jba-directory", JSON.stringify(data.players || [])); } catch (err) {}
     rows.forEach(function (row) { row.account = byId[row.id] || null; });
     cards.forEach(function (card, index) { fill(card, rows, KEYS[index] || "pts"); });
   }).catch(function () {

@@ -69,7 +69,7 @@
     </nav>
   </header>
 
-  <section class="players-page stats-page" data-kind="team">
+  <section class="players-page stats-page is-loading" data-kind="team">
     <div class="stats-tools">
       <div class="team-pick toolbar-pick" id="mode-pick">
         <button type="button" class="pick-button" id="mode-btn"><span class="pick-label">AVERAGE</span></button>
@@ -347,8 +347,6 @@
       });
       var list = ordered();
       var numeric = sort.key !== "player" && sort.key !== "team" && sort.key !== "pos";
-      var lead = list.length ? sortValue(list[0], sort.key) : null;
-      var splitLead = numeric && list.some(function (row) { return sortValue(row, sort.key) !== lead; });
       var leagueVal = numeric ? leagueValue(league, sort.key === "rk" ? "pts" : sort.key) : null;
       var placed = !numeric;
       var rank = 0;
@@ -363,7 +361,6 @@
         }
         rank += 1;
         var tr = document.createElement("tr");
-        if (splitLead && sortValue(row, sort.key) === lead) tr.classList.add("is-first");
         COLS.forEach(function (col) {
           var cell = document.createElement("td");
           if (col[0] === sort.key) cell.classList.add("is-sorted");
@@ -444,8 +441,18 @@
       });
       head.appendChild(th);
     });
+    function loadDirectory(players) {
+      directory = {};
+      (players || []).forEach(function (player) { if (player && player.id) directory[String(player.id)] = player; });
+    }
+    var cached = [];
+    try { cached = JSON.parse(localStorage.getItem("jba-directory") || "[]"); } catch (err) { cached = []; }
+    if (Array.isArray(cached) && cached.length) loadDirectory(cached);
     rows = collect();
-    paint();
+    if (cached.length) {
+      paint();
+      document.querySelector(".stats-page").classList.remove("is-loading");
+    }
     var modePick = document.getElementById("mode-pick");
     modePick.querySelector(".pick-button").addEventListener("click", function (event) {
       event.stopPropagation();
@@ -523,11 +530,16 @@
       else if (key === "arrowup" || key === "w") { window.scrollBy(0, -step); event.preventDefault(); }
     });
     fetch("/api/signins?t=" + Date.now()).then(function (res) { return res.json(); }).then(function (data) {
-      directory = {};
-      (data.players || []).forEach(function (player) { if (player && player.id) directory[String(player.id)] = player; });
+      var players = data.players || [];
+      try { localStorage.setItem("jba-directory", JSON.stringify(players)); } catch (err) {}
+      loadDirectory(players);
       rows = collect();
       paint();
-    }).catch(function () {});
+      document.querySelector(".stats-page").classList.remove("is-loading");
+    }).catch(function () {
+      if (!cached.length) paint();
+      document.querySelector(".stats-page").classList.remove("is-loading");
+    });
     var header = document.querySelector("header");
     if (header) document.documentElement.style.setProperty("--nav-offset", header.offsetHeight + "px");
   </script>

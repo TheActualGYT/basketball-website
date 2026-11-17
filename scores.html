@@ -181,7 +181,30 @@
 
   <script>
     (function () {
+      var LOGOS = {
+        "Arizona Wildcats": "arizona.png",
+        "Baylor Bears": "baylor.png",
+        "Duke Blue Devils": "duke.png",
+        "Florida Gators": "florida.png",
+        "Georgia Bulldogs": "georgia.png",
+        "Houston Cougars": "houston.png",
+        "Kansas Jayhawks": "kansas.png",
+        "Kentucky Wildcats": "kentucky.png",
+        "LSU Tigers": "lsu.png",
+        "Miami Hurricanes": "miami.png",
+        "Michigan Wolverines": "michigan.png",
+        "North Carolina Tar Heels": "unc.png",
+        "Ohio State Buckeyes": "ohiostate.png",
+        "Oregon Ducks": "oregon.png",
+        "UCLA Bruins": "ucla.png",
+        "Virginia Cavaliers": "virginia.png"
+      };
+      var directory = {};
       var saved = {};
+      try {
+        var cached = JSON.parse(localStorage.getItem("jba-directory") || "[]");
+        (cached || []).forEach(function (player) { if (player && player.id) directory[String(player.id)] = player; });
+      } catch (err) {}
       try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { saved = {}; }
 
       function prettyDate(iso) {
@@ -366,8 +389,25 @@
         var leaders = card.querySelectorAll(".final-leaders div");
         ["pts", "ast", "reb"].forEach(function (key, index) {
           var leader = game.leaders && game.leaders[key];
+          var account = null;
+          if (leader && leader.id) account = directory[String(leader.id)];
+          if (!account && leader) {
+            var line = (game.lines || []).find(function (row) { return row && (row.id === leader.id || row.name === leader.name); });
+            if (line) account = directory[String(line.id)];
+          }
+          var roblox = account && account.roblox ? account.roblox : (leader ? leader.name : "—");
+          var team = account ? String(account.team || account.teamName || "") : "";
           leaders[index].querySelector("b").textContent = leader ? leader.value : "—";
-          leaders[index].querySelector("em").textContent = leader ? leader.name : "—";
+          leaders[index].querySelector("em").textContent = leader ? roblox : "—";
+          var old = leaders[index].querySelector(".leader-logo");
+          if (old) old.remove();
+          if (LOGOS[team]) {
+            var img = document.createElement("img");
+            img.className = "leader-logo";
+            img.src = LOGOS[team];
+            img.alt = "";
+            leaders[index].appendChild(img);
+          }
         });
       });
       document.querySelectorAll(".finals-grid").forEach(function (grid) {
@@ -383,6 +423,42 @@
         });
         cards.forEach(function (card) { grid.appendChild(card); });
       });
+      function paintLeaders() {
+        document.querySelectorAll(".final-card").forEach(function (card) {
+          var game = saved[card.getAttribute("data-game") || ""];
+          if (!game || game.submitted !== true) return;
+          var leaders = card.querySelectorAll(".final-leaders div");
+          ["pts", "ast", "reb"].forEach(function (key, index) {
+            if (!leaders[index]) return;
+            var leader = game.leaders && game.leaders[key];
+            var account = null;
+            if (leader && leader.id) account = directory[String(leader.id)];
+            if (!account && leader) {
+              var line = (game.lines || []).find(function (row) { return row && (row.id === leader.id || row.name === leader.name); });
+              if (line) account = directory[String(line.id)];
+            }
+            var roblox = account && account.roblox ? account.roblox : (leader ? leader.name : "—");
+            var team = account ? String(account.team || account.teamName || "") : "";
+            leaders[index].querySelector("b").textContent = leader ? leader.value : "—";
+            leaders[index].querySelector("em").textContent = leader ? roblox : "—";
+            var old = leaders[index].querySelector(".leader-logo");
+            if (old) old.remove();
+            if (LOGOS[team]) {
+              var img = document.createElement("img");
+              img.className = "leader-logo";
+              img.src = LOGOS[team];
+              img.alt = "";
+              leaders[index].appendChild(img);
+            }
+          });
+        });
+      }
+      fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+        directory = {};
+        (data.players || []).forEach(function (player) { if (player && player.id) directory[String(player.id)] = player; });
+        try { localStorage.setItem("jba-directory", JSON.stringify(data.players || [])); } catch (err) {}
+        paintLeaders();
+      }).catch(function () {});
     })();
   </script>
   <script src="script.js"></script>

@@ -771,7 +771,7 @@
         var leader = null;
         rows.forEach(function (row) {
           if (row[stat] == null || Number(row[stat]) <= 0) return;
-          if (!leader || Number(row[stat]) > Number(leader.value)) leader = { name: row.name, value: String(row[stat]) };
+          if (!leader || Number(row[stat]) > Number(leader.value)) leader = { id: row.id, name: row.name, value: String(row[stat]) };
         });
         return leader;
       }
