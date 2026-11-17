@@ -100,8 +100,8 @@
   <script src="script.js"></script>
   <script>
     var COLS = [
+      ["team", "TEAM", "The team this player is on.", "teamcol"],
       ["rk", "RK", "Rank for the current sort.", "stat"],
-      ["team", "TEAM", "The team this player is on.", "stat"],
       ["pos", "POS", "The build they are registered as.", "stat"],
       ["player", "PLAYER", "The player.", "player"],
       ["g", "G", "Games played.", "stat"],
@@ -308,6 +308,7 @@
       COLS.forEach(function (col) {
         var cell = document.createElement("td");
         if (col[0] === sort.key) cell.classList.add("is-sorted");
+        if (col[0] === "team") cell.classList.add("team-cell");
         if (col[0] === "player") {
           cell.classList.add("player-cell");
           var label = document.createElement("span");
@@ -323,6 +324,8 @@
       });
       var list = ordered();
       var numeric = sort.key !== "player" && sort.key !== "team" && sort.key !== "pos";
+      var lead = list.length ? sortValue(list[0], sort.key) : null;
+      var splitLead = numeric && list.some(function (row) { return sortValue(row, sort.key) !== lead; });
       var leagueVal = numeric ? leagueValue(league, sort.key === "rk" ? "pts" : sort.key) : null;
       var placed = !numeric;
       var rank = 0;
@@ -337,18 +340,27 @@
         }
         rank += 1;
         var tr = document.createElement("tr");
+        if (splitLead && sortValue(row, sort.key) === lead) tr.classList.add("is-first");
         COLS.forEach(function (col) {
           var cell = document.createElement("td");
           if (col[0] === sort.key) cell.classList.add("is-sorted");
-          if (col[0] === "rk") cell.textContent = String(rank);
-          else if (col[0] === "team") {
+          if (col[0] === "rk") {
+            cell.classList.add("rk-cell");
+            cell.textContent = String(rank);
+          } else if (col[0] === "team") {
+            cell.classList.add("team-cell");
             var team = teamOf(row);
             if (team) {
+              var mark = document.createElement("span");
+              mark.className = "team-mark";
+              var abbr = document.createElement("b");
+              abbr.textContent = team.abbr;
               var logo = document.createElement("img");
               logo.className = "team-logo";
               logo.src = team.logo;
-              logo.alt = team.abbr;
-              cell.appendChild(logo);
+              logo.alt = "";
+              mark.append(abbr, logo);
+              cell.appendChild(mark);
             } else cell.textContent = "—";
           } else if (col[0] === "pos") {
             var built = splitBuild(row.account && row.account.build);
@@ -410,6 +422,7 @@
       var th = document.createElement("th");
       th.setAttribute("data-sort", col[0]);
       if (col[0] === "player") th.className = "player-head";
+      else if (col[0] === "team") th.className = "team-head";
       th.innerHTML = '<span class="col-tip" tabindex="0">' + col[1] + "<i>" + col[2] + "</i></span>";
       th.addEventListener("click", function () {
         if (sort.key !== col[0]) sort = { key: col[0], dir: col[0] === "player" || col[0] === "team" || col[0] === "pos" ? "asc" : "desc" };

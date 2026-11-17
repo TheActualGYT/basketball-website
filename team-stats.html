@@ -79,7 +79,7 @@
         </div>
       </div>
       <label class="stats-search">
-        <input id="stats-search" type="search" placeholder="Search players" aria-label="Search players">
+        <input id="stats-search" type="search" placeholder="Search teams" aria-label="Search teams">
       </label>
     </div>
     <div class="panel division-panel">
@@ -103,7 +103,7 @@
       ["rk", "RK", "Rank for the current sort.", "stat"],
       ["team", "TEAM", "The team this player is on.", "stat"],
       ["pos", "POS", "The build they are registered as.", "stat"],
-      ["player", "PLAYER", "The player.", "player"],
+      ["player", "TEAM", "The team.", "player"],
       ["g", "G", "Games played.", "stat"],
       ["pts", "PTS", "Points.", "stat"],
       ["ast", "AST", "Assists.", "stat"],
@@ -186,7 +186,7 @@
       return (row.account && (row.account.name || row.account.username)) || row.name;
     }
     function pct(made, att) {
-      if (!att) return null;
+      if (!att) return 0;
       return made / att;
     }
     function pctText(value) {
@@ -195,7 +195,7 @@
       return value.toFixed(3).replace(/^0/, "");
     }
     function numberValue(row, key) {
-      if (!row.games) return null;
+      if (!row.games) return 0;
       if (key === "g") return row.games;
       if (key === "fgp") return pct(row.fgm, row.fga);
       if (key === "tpp") return pct(row.tpm, row.tpa);
@@ -212,7 +212,7 @@
       if (key === "ftp") return pct(row.ftm, row.fta);
       if (key === "fg2p") return pct(row.fg2m, row.fg2a);
       if (mode === "total") return row[key] / row.players;
-      if (!row.games) return null;
+      if (!row.games) return 0;
       return row[key] / row.games;
     }
     function showLeague(row, key) {
@@ -233,24 +233,48 @@
       if (player && player.avatar && player.id) return "https://cdn.discordapp.com/avatars/" + player.id + "/" + player.avatar + ".png?size=64";
       return "https://cdn.discordapp.com/embed/avatars/0.png";
     }
+    var directory = {};
     function collect() {
+      var bag = {};
+      Object.keys(TEAMS).forEach(function (name) {
+        var row = blank();
+        row.id = name;
+        row.name = name;
+        row.abbr = TEAMS[name][0];
+        row.logo = TEAMS[name][1];
+        bag[name] = row;
+      });
       var saved = {};
       try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { saved = {}; }
-      var bag = {};
       Object.keys(saved).forEach(function (id) {
         var game = saved[id];
         if (!game || game.submitted !== true || isForfeit(game)) return;
+        var parts = String(id).split("|");
+        if (parts.length < 3) return;
+        var sides = { away: parts[1], home: parts[2] };
+        if (!bag[sides.away] || !bag[sides.home]) return;
+        var counted = {};
+        function addGame(teamName) {
+          if (!bag[teamName] || counted[teamName]) return;
+          bag[teamName].games += 1;
+          counted[teamName] = true;
+        }
         (game.lines || []).forEach(function (line) {
-          if (!line || !line.id) return;
-          var row = bag[line.id] || blank();
-          row.id = String(line.id);
-          row.name = line.name || row.name;
-          row.games += 1;
-          SUMS.forEach(function (key) { row[key] += Number(line[key]) || 0; });
-          bag[line.id] = row;
+          if (!line) return;
+          var teamName = line.side && sides[line.side] ? sides[line.side] : "";
+          if (!teamName) {
+            var player = directory[String(line.id || "")];
+            var named = player ? String(player.team || player.teamName || "") : "";
+            if (named === sides.away || named === sides.home) teamName = named;
+          }
+          if (!bag[teamName]) return;
+          addGame(teamName);
+          SUMS.forEach(function (key) { bag[teamName][key] += Number(line[key]) || 0; });
         });
+        addGame(sides.away);
+        addGame(sides.home);
       });
-      return Object.keys(bag).map(function (id) { return bag[id]; });
+      return Object.keys(bag).map(function (name) { return bag[name]; });
     }
     function sortValue(row, key) {
       if (key === "player") return displayName(row).toLowerCase();
@@ -266,7 +290,7 @@
       var q = query.trim().toLowerCase();
       var copy = rows.filter(function (row) {
         if (!q) return true;
-        var tag = row.account && row.account.username ? row.account.username.toLowerCase() : "";
+        var tag = row.abbr ? row.abbr.toLowerCase() : "";
         return displayName(row).toLowerCase().indexOf(q) !== -1 || tag.indexOf(q) !== -1 || row.name.toLowerCase().indexOf(q) !== -1;
       });
       copy.sort(function (a, b) {
@@ -323,6 +347,8 @@
       });
       var list = ordered();
       var numeric = sort.key !== "player" && sort.key !== "team" && sort.key !== "pos";
+      var lead = list.length ? sortValue(list[0], sort.key) : null;
+      var splitLead = numeric && list.some(function (row) { return sortValue(row, sort.key) !== lead; });
       var leagueVal = numeric ? leagueValue(league, sort.key === "rk" ? "pts" : sort.key) : null;
       var placed = !numeric;
       var rank = 0;
@@ -337,6 +363,7 @@
         }
         rank += 1;
         var tr = document.createElement("tr");
+        if (splitLead && sortValue(row, sort.key) === lead) tr.classList.add("is-first");
         COLS.forEach(function (col) {
           var cell = document.createElement("td");
           if (col[0] === sort.key) cell.classList.add("is-sorted");
@@ -370,17 +397,16 @@
             cell.classList.add("player-cell");
             var person = document.createElement("div");
             person.className = "stat-player";
-            var pfp = document.createElement("span");
-            pfp.className = "discord-pfp";
-            pfp.style.backgroundImage = "url('" + avatarSrc(row.account) + "')";
+            var logo = document.createElement("img");
+            logo.className = "team-logo team-identity";
+            logo.src = row.logo;
+            logo.alt = "";
             var copy = document.createElement("span");
             copy.className = "stat-who";
             var name = document.createElement("b");
-            name.textContent = (row.account && row.account.roblox) || displayName(row);
-            var tag = document.createElement("small");
-            tag.textContent = row.account && row.account.username ? "@" + row.account.username : "";
-            copy.append(name, tag);
-            person.append(pfp, copy);
+            name.textContent = row.name;
+            copy.appendChild(name);
+            person.append(logo, copy);
             cell.appendChild(person);
           } else {
             cell.classList.add("num");
@@ -496,10 +522,10 @@
       else if (key === "arrowdown" || key === "s") { window.scrollBy(0, step); event.preventDefault(); }
       else if (key === "arrowup" || key === "w") { window.scrollBy(0, -step); event.preventDefault(); }
     });
-    fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
-      var byId = {};
-      (data.players || []).forEach(function (player) { if (player && player.id) byId[String(player.id)] = player; });
-      rows.forEach(function (row) { row.account = byId[row.id] || null; });
+    fetch("/api/signins?t=" + Date.now()).then(function (res) { return res.json(); }).then(function (data) {
+      directory = {};
+      (data.players || []).forEach(function (player) { if (player && player.id) directory[String(player.id)] = player; });
+      rows = collect();
       paint();
     }).catch(function () {});
     var header = document.querySelector("header");
