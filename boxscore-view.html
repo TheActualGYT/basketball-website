@@ -32,6 +32,9 @@
     .viewer-table tbody tr:last-child td { border-bottom:0; }
     .viewer-player { display:flex; align-items:center; gap:.6rem; text-align:left; color:#fff; font-weight:600; }
     .viewer-player img { width:28px; height:28px; border-radius:50%; object-fit:cover; }
+    .viewer-who { display:flex; flex-direction:column; gap:.12rem; min-width:0; }
+    .viewer-who b { font-size:.82rem; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .viewer-who small { font-size:.64rem; color:#8d8d8d; font-weight:500; }
     .viewer-total td { font-weight:800; color:#fff; background:rgba(255,255,255,.055); }
     .viewer-recap { padding:1rem; color:#ddd; white-space:pre-wrap; }
     .viewer-empty { padding:2rem; text-align:center; color:#ccc; border:1px solid rgba(255,255,255,.2); border-radius:14px; background:rgba(20,20,20,.85); }
@@ -67,9 +70,19 @@
         var quarters=game.quarters||{}, aq=quarters.away||{},hq=quarters.home||{};
         var html='<section class="viewer-score"><div class="viewer-team '+(aWin?'is-winner':'')+'"><img src="'+esc(logos[away]||"")+'" alt=""><div><b>'+esc(away)+'</b><strong>'+esc(aScore)+'</strong></div></div><span class="viewer-vs">'+(forfeit?'FORFEIT':'FINAL')+'</span><div class="viewer-team '+(hWin?'is-winner':'')+'"><div><b>'+esc(home)+'</b><strong>'+esc(hScore)+'</strong></div><img src="'+esc(logos[home]||"")+'" alt=""></div></section><p class="viewer-meta">Week '+esc(parts[0])+' · '+esc(date)+(meta.location?' · '+esc(meta.location):'')+'</p>';
         html+='<section class="viewer-section"><h2>Scoring by half</h2><div class="viewer-table-wrap"><table class="viewer-table"><thead><tr><th>Team</th><th>H1</th><th>H2</th><th>Final</th></tr></thead><tbody><tr><td>'+esc(away)+'</td><td>'+esc(aq.h1!=null?aq.h1:aq.q1||'—')+'</td><td>'+esc(aq.h2!=null?aq.h2:aq.q2||'—')+'</td><td>'+esc(aScore)+'</td></tr><tr><td>'+esc(home)+'</td><td>'+esc(hq.h1!=null?hq.h1:hq.q1||'—')+'</td><td>'+esc(hq.h2!=null?hq.h2:hq.q2||'—')+'</td><td>'+esc(hScore)+'</td></tr></tbody></table></div></section>';
-        [away,home].forEach(function(team){var result=statsFor(team),s=result.sums;html+='<section class="viewer-section"><h2>'+esc(team)+' · Player Stats</h2><div class="viewer-table-wrap"><table class="viewer-table"><thead><tr><th>Player</th><th>PTS</th><th>AST</th><th>REB</th><th>DREB</th><th>OREB</th><th>STL</th><th>BLK</th><th>TO</th><th>PF</th><th>FG</th><th>3P</th><th>FT</th></tr></thead><tbody>';
-          result.lines.forEach(function(line){var name=esc(line.name||"Player"),avatar='https://cdn.discordapp.com/embed/avatars/0.png';var player=(window.__players||[]).find(function(p){return String(p.id)===String(line.id)});if(player&&player.avatar)avatar='https://cdn.discordapp.com/avatars/'+encodeURIComponent(player.id)+'/'+encodeURIComponent(player.avatar)+'.png?size=64';html+='<tr><td><span class="viewer-player"><img src="'+esc(avatar)+'" alt="">'+name+'</span></td><td>'+number(line.pts)+'</td><td>'+number(line.ast)+'</td><td>'+number(line.reb)+'</td><td>'+number(line.dreb)+'</td><td>'+number(line.oreb)+'</td><td>'+number(line.stl)+'</td><td>'+number(line.blk)+'</td><td>'+number(line.tov)+'</td><td>'+number(line.pf)+'</td><td>'+number(line.fgm)+'/'+number(line.fga)+'</td><td>'+number(line.tpm)+'/'+number(line.tpa)+'</td><td>'+number(line.ftm)+'/'+number(line.fta)+'</td></tr>'});
-          html+='<tr class="viewer-total"><td>TEAM TOTAL</td><td>'+s.pts+'</td><td>'+s.ast+'</td><td>'+s.reb+'</td><td>'+s.dreb+'</td><td>'+s.oreb+'</td><td>'+s.stl+'</td><td>'+s.blk+'</td><td>'+s.tov+'</td><td>'+s.pf+'</td><td>'+s.fgm+'/'+s.fga+'</td><td>'+s.tpm+'/'+s.tpa+'</td><td>'+s.ftm+'/'+s.fta+'</td></tr></tbody></table></div></section>';
+        [away,home].forEach(function(team){var result=statsFor(team);html+='<section class="viewer-section"><h2>'+esc(team)+' · Player Stats</h2><div class="viewer-table-wrap"><table class="viewer-table"><thead><tr><th>Player</th><th>PTS</th><th>AST</th><th>TREB</th><th>DREB</th><th>OREB</th><th>STL</th><th>BLK</th><th>TOV</th><th>PF</th><th>FGA</th><th>FGM</th><th>FG%</th><th>3PA</th><th>3PM</th><th>3P%</th><th>FTA</th><th>FTM</th><th>FT%</th><th>2PA</th><th>2PM</th><th>2P%</th><th>GMSC</th></tr></thead><tbody>';
+          result.lines.forEach(function(line){
+            var player=(window.__players||[]).find(function(p){return String(p.id)===String(line.id)});
+            var roblox=player&&player.roblox?player.roblox:(line.name||"Player");
+            var tag=player&&player.username?"@"+player.username:"";
+            var avatar='https://cdn.discordapp.com/embed/avatars/0.png';
+            if(player&&player.avatar)avatar='https://cdn.discordapp.com/avatars/'+encodeURIComponent(player.id)+'/'+encodeURIComponent(player.avatar)+'.png?size=64';
+            function pct(m,a){var n=Number(a);if(!n)return "—";var v=Number(m)/n;return v===1?"1.000":v.toFixed(3).replace(/^0/,"")}
+            var fga=number(line.fga),fgm=number(line.fgm),tpa=number(line.tpa),tpm=number(line.tpm),fta=number(line.fta),ftm=number(line.ftm);
+            var fg2a=Math.max(0,fga-tpa),fg2m=Math.max(0,fgm-tpm);
+            html+='<tr><td><span class="viewer-player"><img src="'+esc(avatar)+'" alt=""><span class="viewer-who"><b>'+esc(roblox)+'</b><small>'+esc(tag)+'</small></span></span></td><td>'+number(line.pts)+'</td><td>'+number(line.ast)+'</td><td>'+number(line.reb)+'</td><td>'+number(line.dreb)+'</td><td>'+number(line.oreb)+'</td><td>'+number(line.stl)+'</td><td>'+number(line.blk)+'</td><td>'+number(line.tov)+'</td><td>'+number(line.pf)+'</td><td>'+fga+'</td><td>'+fgm+'</td><td>'+pct(fgm,fga)+'</td><td>'+tpa+'</td><td>'+tpm+'</td><td>'+pct(tpm,tpa)+'</td><td>'+fta+'</td><td>'+ftm+'</td><td>'+pct(ftm,fta)+'</td><td>'+fg2a+'</td><td>'+fg2m+'</td><td>'+pct(fg2m,fg2a)+'</td><td>'+number(line.gmsc).toFixed(1)+'</td></tr>';
+          });
+          html+='</tbody></table></div></section>';
         });
         if(meta.recap)html+='<section class="viewer-section"><h2>Game Recap</h2><div class="viewer-recap">'+esc(meta.recap)+'</div></section>';
         root.className="";root.innerHTML=html;

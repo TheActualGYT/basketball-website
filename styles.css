@@ -927,12 +927,12 @@ h2 {
   object-fit: contain;
 }
 
-.players-table.stats-table col.teamcol { width: 6.15rem; }
+.players-table.stats-table col.teamcol { width: 4.6rem; }
 .players-table.stats-table td.team-cell,
 .players-table.stats-table th.team-head {
-  width: 6.15rem;
-  min-width: 6.15rem;
-  max-width: 6.15rem;
+  width: 4.6rem;
+  min-width: 4.6rem;
+  max-width: 4.6rem;
   text-align: center;
   color: #eee;
 }
@@ -3637,7 +3637,7 @@ input.is-profile {
 
 .leader-feature {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) auto auto;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
   gap: 0.55rem;
   align-items: center;
   padding: 0.8rem 0.7rem;
@@ -3651,7 +3651,7 @@ input.is-profile {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.22rem;
+  gap: 0.18rem;
   min-height: 34px;
 }
 
@@ -3663,6 +3663,24 @@ input.is-profile {
   border: 1px solid rgba(255, 255, 255, 0.2);
   object-fit: cover;
   display: block;
+  position: relative;
+}
+
+.discord-pfp.is-top {
+  border-color: transparent;
+}
+.discord-pfp.is-top::after {
+  content: "";
+  position: absolute;
+  inset: -2.5px;
+  border-radius: 50%;
+  padding: 2.5px;
+  background: linear-gradient(135deg, #ffffff 0%, #f5d0fe 30%, #ec4899 65%, #c026d3 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 .leader-rest .discord-pfp {
@@ -3673,18 +3691,18 @@ input.is-profile {
 .leader-feature-name b {
   display: block;
   color: #fff;
-  font-size: 0.92rem;
+  font-size: 0.96rem;
   line-height: 1.05;
   font-weight: 700;
 }
 
-.leader-feature-name small {
-  display: block;
-  margin-top: 0.12rem;
-  color: #d0d0d0;
+.leader-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  color: #8d8d8d;
   font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0;
+  font-weight: 500;
   line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
@@ -3693,15 +3711,25 @@ input.is-profile {
 
 .leader-tag {
   color: #8d8d8d;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 500;
-  white-space: nowrap;
 }
 
-.leader-feature .leader-stat {
-  font-size: 1.05rem;
+.team-abbr {
+  color: #d0d0d0;
+  font-size: 0.68rem;
   font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.leader-feature .leader-stat,
+.leader-rest .leader-stat {
+  font-size: 1.28rem;
+  font-weight: 800;
   color: #fff;
+  font-variant-numeric: tabular-nums;
+  min-width: 2.8rem;
+  text-align: right;
 }
 
 .leader-rest {
@@ -3715,7 +3743,7 @@ input.is-profile {
 
 .leader-rest li {
   display: grid;
-  grid-template-columns: 0.9rem 28px minmax(0, 1fr) auto auto;
+  grid-template-columns: 0.9rem 28px minmax(0, 1fr) auto;
   gap: 0.45rem;
   align-items: center;
   padding: 0.5rem 0.15rem;
@@ -3727,27 +3755,18 @@ input.is-profile {
 }
 
 .leader-rest .leader-feature-name b {
-  font-size: 0.86rem;
+  font-size: 0.88rem;
 }
 
-.leader-rest .leader-feature-name small,
+.leader-rest .leader-meta,
 .leader-rest .leader-tag {
-  font-size: 0.66rem;
+  font-size: 0.64rem;
 }
 
-.leader-rest li span:first-child,
-.leader-rest .abbr {
+.leader-rest li span:first-child {
   color: #9a9a9a;
   font-size: 0.78rem;
   font-weight: 700;
-}
-
-.leader-rest li span:last-child {
-  color: #fff;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  min-width: 2.4rem;
-  text-align: right;
 }
 
 

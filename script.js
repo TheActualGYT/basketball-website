@@ -1713,34 +1713,51 @@ function setupProfile() {
     function identity(row) {
       var account = row && row.account;
       var roblox = account && account.roblox ? account.roblox : (row ? ((account && (account.name || account.username)) || row.name) : "—");
-      var team = account ? String(account.team || account.teamName || "").trim() : "";
+      var teamName = account ? String(account.team || account.teamName || "").trim() : "";
+      var team = TEAMS[teamName] || null;
       var tag = account && account.username ? "@" + account.username : "";
-      return { roblox: roblox || "—", team: team || "—", tag: tag };
+      return { roblox: roblox || "—", teamName: teamName, team: team, tag: tag };
     }
-    function nameBlock(row) {
+    function nameBlock(row, isFeature) {
       var who = identity(row);
       var wrap = document.createElement("div");
       wrap.className = "leader-feature-name";
       var title = document.createElement("b");
       title.textContent = who.roblox;
-      var team = document.createElement("small");
-      team.textContent = who.team;
-      wrap.append(title, team);
-      var tag = document.createElement("span");
-      tag.className = "leader-tag";
-      tag.textContent = who.tag;
-      return { wrap: wrap, tag: tag };
+      var meta = document.createElement("small");
+      meta.className = "leader-meta";
+      if (who.tag) {
+        var tagSpan = document.createElement("span");
+        tagSpan.className = "leader-tag";
+        tagSpan.textContent = who.tag;
+        meta.appendChild(tagSpan);
+      }
+      if (who.team) {
+        var dash = document.createElement("span");
+        dash.textContent = " — ";
+        dash.style.color = "#8d8d8d";
+        var abbr = document.createElement("span");
+        abbr.className = "team-abbr";
+        abbr.textContent = who.team[0];
+        var logo = document.createElement("img");
+        logo.src = who.team[1];
+        logo.alt = "";
+        logo.className = "abbr-logo";
+        meta.append(dash, abbr, logo);
+      }
+      wrap.append(title, meta);
+      return { wrap: wrap };
     }
     var top = ranked[0];
     feature.innerHTML = "";
     var face = document.createElement("span");
-    face.className = "discord-pfp";
+    face.className = "discord-pfp" + (top ? " is-top" : "");
     if (top) face.style.backgroundImage = "url('" + avatar(top.account) + "')";
-    var named = nameBlock(top);
+    var named = nameBlock(top, true);
     var stat = document.createElement("span");
     stat.className = "leader-stat";
     stat.textContent = value(top);
-    feature.append(face, named.wrap, named.tag, stat);
+    feature.append(face, named.wrap, stat);
     rest.innerHTML = "";
     for (var i = 1; i < 5; i += 1) {
       var row = ranked[i];
@@ -1750,10 +1767,11 @@ function setupProfile() {
       var pfp = document.createElement("span");
       pfp.className = "discord-pfp";
       if (row) pfp.style.backgroundImage = "url('" + avatar(row.account) + "')";
-      var copy = nameBlock(row);
+      var copy = nameBlock(row, false);
       var num = document.createElement("span");
+      num.className = "leader-stat";
       num.textContent = value(row);
-      li.append(place, pfp, copy.wrap, copy.tag, num);
+      li.append(place, pfp, copy.wrap, num);
       rest.appendChild(li);
     }
   }
