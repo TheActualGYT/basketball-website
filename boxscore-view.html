@@ -27,7 +27,15 @@
     .viewer-table-wrap { overflow-x:auto; }
     .viewer-table { width:100%; min-width:650px; border-collapse:collapse; font-size:.78rem; }
     .viewer-table th,.viewer-table td { padding:.62rem .7rem; border-bottom:1px solid rgba(255,255,255,.1); border-right:1px solid rgba(255,255,255,.08); text-align:center; white-space:nowrap; }
-    .viewer-table th { background:#09090b; color:#eee; font-size:.68rem; letter-spacing:.07em; }
+    .viewer-table thead th { border-top: 2px solid #c026d3; border-bottom: 2px solid #c026d3; }
+    .viewer-table tbody tr.textured td {
+      background-color: #1c1c1c;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+        repeating-linear-gradient(115deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 8px);
+      background-size: 180px 180px, auto;
+    }
+    .viewer-table .empty-row td { opacity: 0.45; }
     .viewer-table td:first-child,.viewer-table th:first-child { text-align:left; }
     .viewer-table tbody tr:last-child td { border-bottom:0; }
     .viewer-player { display:flex; align-items:center; gap:.6rem; text-align:left; color:#fff; font-weight:600; }
@@ -80,8 +88,11 @@
             function pct(m,a){var n=Number(a);if(!n)return "—";var v=Number(m)/n;return v===1?"1.000":v.toFixed(3).replace(/^0/,"")}
             var fga=number(line.fga),fgm=number(line.fgm),tpa=number(line.tpa),tpm=number(line.tpm),fta=number(line.fta),ftm=number(line.ftm);
             var fg2a=Math.max(0,fga-tpa),fg2m=Math.max(0,fgm-tpm);
-            html+='<tr><td><span class="viewer-player"><img src="'+esc(avatar)+'" alt=""><span class="viewer-who"><b>'+esc(roblox)+'</b><small>'+esc(tag)+'</small></span></span></td><td>'+number(line.pts)+'</td><td>'+number(line.ast)+'</td><td>'+number(line.reb)+'</td><td>'+number(line.dreb)+'</td><td>'+number(line.oreb)+'</td><td>'+number(line.stl)+'</td><td>'+number(line.blk)+'</td><td>'+number(line.tov)+'</td><td>'+number(line.pf)+'</td><td>'+fga+'</td><td>'+fgm+'</td><td>'+pct(fgm,fga)+'</td><td>'+tpa+'</td><td>'+tpm+'</td><td>'+pct(tpm,tpa)+'</td><td>'+fta+'</td><td>'+ftm+'</td><td>'+pct(ftm,fta)+'</td><td>'+fg2a+'</td><td>'+fg2m+'</td><td>'+pct(fg2m,fg2a)+'</td><td>'+number(line.gmsc).toFixed(1)+'</td></tr>';
+            html+='<tr class="textured"><td><span class="viewer-player"><img src="'+esc(avatar)+'" alt=""><span class="viewer-who"><b>'+esc(roblox)+'</b><small>'+esc(tag)+'</small></span></span></td><td>'+number(line.pts)+'</td><td>'+number(line.ast)+'</td><td>'+number(line.reb)+'</td><td>'+number(line.dreb)+'</td><td>'+number(line.oreb)+'</td><td>'+number(line.stl)+'</td><td>'+number(line.blk)+'</td><td>'+number(line.tov)+'</td><td>'+number(line.pf)+'</td><td>'+fga+'</td><td>'+fgm+'</td><td>'+pct(fgm,fga)+'</td><td>'+tpa+'</td><td>'+tpm+'</td><td>'+pct(tpm,tpa)+'</td><td>'+fta+'</td><td>'+ftm+'</td><td>'+pct(ftm,fta)+'</td><td>'+fg2a+'</td><td>'+fg2m+'</td><td>'+pct(fg2m,fg2a)+'</td><td>'+number(line.gmsc).toFixed(1)+'</td></tr>';
           });
+          for (var empty = result.lines.length; empty < 5; empty++) {
+            html += '<tr class="textured empty-row"><td><span class="viewer-player"><span class="viewer-who"><b>—</b><small></small></span></span></td>' + '<td>—</td>'.repeat(21) + '</tr>';
+          }
           html+='</tbody></table></div></section>';
         });
         if(meta.recap)html+='<section class="viewer-section"><h2>Game Recap</h2><div class="viewer-recap">'+esc(meta.recap)+'</div></section>';

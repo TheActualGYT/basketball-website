@@ -166,10 +166,16 @@
           mentions.appendChild(card(row, row && accounts[row.id], place));
         });
       }
-      paint({});
+      try {
+        var cached = JSON.parse(localStorage.getItem("jba-directory") || "[]");
+        var byCache = {};
+        (cached || []).forEach(function (p) { if (p && p.id) byCache[String(p.id)] = p; });
+        if (Object.keys(byCache).length) paint(byCache);
+      } catch (e) {}
       fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
         var accounts = {};
         (data.players || []).forEach(function (player) { if (player && player.id) accounts[String(player.id)] = player; });
+        try { localStorage.setItem("jba-directory", JSON.stringify(data.players || [])); } catch (err) {}
         paint(accounts);
       }).catch(function () {});
     })();

@@ -1750,8 +1750,10 @@ function setupProfile() {
     }
     var top = ranked[0];
     feature.innerHTML = "";
+    if (top) feature.classList.add("is-top");
+    else feature.classList.remove("is-top");
     var face = document.createElement("span");
-    face.className = "discord-pfp" + (top ? " is-top" : "");
+    face.className = "discord-pfp";
     if (top) face.style.backgroundImage = "url('" + avatar(top.account) + "')";
     var named = nameBlock(top, true);
     var stat = document.createElement("span");

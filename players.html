@@ -69,13 +69,17 @@
   </header>
 
   <section class="players-page">
-    <h2>Player Directory</h2>
+    <div class="directory-head">
+      <h2>Player Directory</h2>
+      <input type="search" id="player-search" class="directory-search" placeholder="Search Roblox or Discord…" aria-label="Search players">
+    </div>
     <div class="panel players-table-wrap">
       <table class="players-table">
         <colgroup>
           <col class="col-num">
           <col class="col-discord">
           <col class="col-roblox">
+          <col class="col-even">
           <col class="col-even">
           <col class="col-even">
           <col class="col-even">
@@ -88,6 +92,7 @@
             <th data-sort="build"><span class="col-tip" tabindex="0">Build<i>The build they signed up with for the season.</i></span></th>
             <th data-sort="status"><span class="col-tip" tabindex="0">Status<i>Free Agent, or Signed Player if they are on a team.</i></span></th>
             <th data-sort="registered"><span class="col-tip" tabindex="0">Registration<i>The date they finished signing up on the site.</i></span></th>
+            <th data-sort="role"><span class="col-tip" tabindex="0">Role<i>Owner, Admin, or Official status.</i></span></th>
           </tr>
         </thead>
         <tbody id="players-body"></tbody>
@@ -207,7 +212,7 @@
     function blankRow() {
       var row = document.createElement("tr");
       var i;
-      for (i = 0; i < 6; i += 1) row.appendChild(document.createElement("td"));
+      for (i = 0; i < 7; i += 1) row.appendChild(document.createElement("td"));
       return row;
     }
     function viewerIsOwner() {
@@ -346,9 +351,6 @@
         person.append(img, copy);
         var side = document.createElement("div");
         side.className = "discord-roles";
-        var marks = accountMarks(player);
-        if (marks) side.appendChild(marks);
-        if (canGrant) side.appendChild(roleGrant(player));
         var wrap = document.createElement("div");
         wrap.className = "discord-line";
         wrap.append(person, side);
@@ -387,7 +389,19 @@
         status.appendChild(badge);
         var registered = document.createElement("td");
         registered.textContent = registeredOn(player);
-        row.append(number, discord, roblox, build, status, registered);
+        var role = document.createElement("td");
+        role.className = "role-cell";
+        var marks = accountMarks(player);
+        if (marks) role.appendChild(marks);
+        if (canGrant) {
+          var edit = document.createElement("button");
+          edit.type = "button";
+          edit.className = "role-edit";
+          edit.textContent = "Edit";
+          edit.addEventListener("click", function () { openRoleModal(player); });
+          role.appendChild(edit);
+        }
+        row.append(number, discord, roblox, build, status, registered, role);
         body.appendChild(row);
       });
       while (body.children.length < 10) body.appendChild(blankRow());
@@ -425,9 +439,65 @@
         paint(players);
       });
     });
-    document.addEventListener("click", function () {
-      document.querySelectorAll(".role-grant-menu").forEach(function (node) { node.hidden = true; });
-    });
+    function openRoleModal(player) {
+      var existing = document.getElementById("role-modal");
+      if (existing) existing.remove();
+      var overlay = document.createElement("div");
+      overlay.id = "role-modal";
+      overlay.className = "role-modal-overlay";
+      var box = document.createElement("div");
+      box.className = "role-modal";
+      box.innerHTML = '<h3>Edit Role — ' + (player.name || player.username || "Player") + '</h3>';
+      var roles = accountRoles(player);
+      var adminCheck = document.createElement("label");
+      adminCheck.innerHTML = '<input type="checkbox"' + (roles.admin ? " checked" : "") + (roles.owner ? " disabled" : "") + '> Admin';
+      var officialCheck = document.createElement("label");
+      officialCheck.innerHTML = '<input type="checkbox"' + (roles.official ? " checked" : "") + '> Official';
+      var teamSelect = document.createElement("select");
+      var openOpt = document.createElement("option");
+      openOpt.value = "";
+      openOpt.textContent = "Free Agent";
+      teamSelect.appendChild(openOpt);
+      TEAMS.forEach(function (team) {
+        var opt = document.createElement("option");
+        opt.value = team[0];
+        opt.textContent = team[0];
+        if (String(player.team || player.teamName || "") === team[0]) opt.selected = true;
+        teamSelect.appendChild(opt);
+      });
+      var save = document.createElement("button");
+      save.type = "button";
+      save.textContent = "Save";
+      save.className = "cta-btn";
+      var cancel = document.createElement("button");
+      cancel.type = "button";
+      cancel.textContent = "Cancel";
+      cancel.className = "cta-btn secondary";
+      save.addEventListener("click", function () {
+        var next = accountRoles(player);
+        next.admin = adminCheck.querySelector("input").checked || !!roles.owner;
+        next.official = officialCheck.querySelector("input").checked;
+        saveAssignment(player, next, teamSelect.value);
+        overlay.remove();
+      });
+      cancel.addEventListener("click", function () { overlay.remove(); });
+      box.append(adminCheck, officialCheck, document.createElement("div"), teamSelect, document.createElement("div"), save, cancel);
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+    }
+    var searchInput = document.getElementById("player-search");
+    if (searchInput) {
+      searchInput.addEventListener("input", function () {
+        var q = this.value.trim().toLowerCase();
+        var filtered = players.filter(function (p) {
+          if (!q) return true;
+          var roblox = (p.roblox || "").toLowerCase();
+          var discord = ((p.name || "") + " " + (p.username || "")).toLowerCase();
+          return roblox.indexOf(q) !== -1 || discord.indexOf(q) !== -1;
+        });
+        paint(filtered);
+      });
+    }
     var header = document.querySelector("header");
     if (header) document.documentElement.style.setProperty("--nav-offset", header.offsetHeight + "px");
   </script>
