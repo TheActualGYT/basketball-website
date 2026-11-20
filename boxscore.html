@@ -774,7 +774,7 @@
         });
         return leader;
       }
-      fetch("/api/signins?t=" + Date.now()).then(function (res) { return res.json(); }).then(function (data) {
+      fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
         var players = listedPlayers(data.players || []);
         slots.away = pad(roster(players, away));
         slots.home = pad(roster(players, home));

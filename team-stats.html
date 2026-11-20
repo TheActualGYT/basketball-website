@@ -130,6 +130,7 @@
     if ((document.querySelector(".stats-page").getAttribute("data-kind") || "player") === "team") {
       COLS = COLS.filter(function (col) { return col[0] !== "team" && col[0] !== "pos" && col[0] !== "gmsc"; });
     }
+    var TINT = { pts: 1, reb: 1, oreb: 1, blk: 1, pf: 1, fgm: 1, tpa: 1, tpp: 1, ftm: 1, fg2a: 1, fg2p: 1 };
     var SUMS = ["pts", "ast", "reb", "dreb", "oreb", "stl", "blk", "tov", "pf", "fgm", "fga", "tpm", "tpa", "ftm", "fta", "fg2m", "fg2a", "gmsc"];
     var TEAMS = {
       "Arizona Wildcats": ["ARZ", "arizona.png"],
@@ -330,6 +331,7 @@
       leagueRow.className = "is-league";
       COLS.forEach(function (col) {
         var cell = document.createElement("td");
+        if (TINT[col[0]]) cell.classList.add("col-tint");
         if (col[0] === sort.key) cell.classList.add("is-sorted");
         if (col[0] === "player") {
           cell.classList.add("player-cell");
@@ -338,7 +340,9 @@
           label.textContent = "League Average";
           cell.appendChild(label);
         } else if (col[0] === "team" || col[0] === "pos") cell.textContent = "N/A";
-        else if (col[0] !== "rk") {
+        else if (col[0] === "rk") {
+          if ((document.querySelector(".stats-page").getAttribute("data-kind") || "") === "team") cell.textContent = "N/A";
+        } else {
           cell.classList.add("num");
           cell.textContent = showLeague(league, col[0]);
         }
@@ -362,6 +366,7 @@
         var tr = document.createElement("tr");
         COLS.forEach(function (col) {
           var cell = document.createElement("td");
+        if (TINT[col[0]]) cell.classList.add("col-tint");
           if (col[0] === sort.key) cell.classList.add("is-sorted");
           if (col[0] === "rk") cell.textContent = String(rank);
           else if (col[0] === "team") {
@@ -417,6 +422,7 @@
         var empty = document.createElement("tr");
         COLS.forEach(function (col) {
           var cell = document.createElement("td");
+        if (TINT[col[0]]) cell.classList.add("col-tint");
           if (col[0] === sort.key) cell.classList.add("is-sorted");
           empty.appendChild(cell);
         });
@@ -528,9 +534,8 @@
       else if (key === "arrowdown" || key === "s") { window.scrollBy(0, step); event.preventDefault(); }
       else if (key === "arrowup" || key === "w") { window.scrollBy(0, -step); event.preventDefault(); }
     });
-    fetch("/api/signins?t=" + Date.now()).then(function (res) { return res.json(); }).then(function (data) {
-      var players = data.players || [];
-      try { localStorage.setItem("jba-directory", JSON.stringify(players)); } catch (err) {}
+    fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+      var players = window.jbaMergeDirectory ? window.jbaMergeDirectory(data.players || []) : (data.players || []);
       loadDirectory(players);
       rows = collect();
       paint();

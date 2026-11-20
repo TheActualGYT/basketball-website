@@ -133,6 +133,26 @@
         if (strong) td.style.fontWeight = "800";
         return td;
       }
+      function playerCell(line) {
+        var td = document.createElement("td");
+        if (!line || !line.roblox) return td;
+        var person = document.createElement("div");
+        person.className = "stat-player";
+        var pfp = document.createElement("span");
+        pfp.className = "discord-pfp";
+        var face = line.avatar && line.pid ? "https://cdn.discordapp.com/avatars/" + line.pid + "/" + line.avatar + ".png?size=64" : "https://cdn.discordapp.com/embed/avatars/0.png";
+        pfp.style.backgroundImage = "url('" + face + "')";
+        var copy = document.createElement("span");
+        copy.className = "stat-who";
+        var name = document.createElement("b");
+        name.textContent = line.roblox;
+        var tag = document.createElement("small");
+        tag.textContent = line.username ? "@" + line.username : "";
+        copy.append(name, tag);
+        person.append(pfp, copy);
+        td.appendChild(person);
+        return td;
+      }
       function statTable(lines) {
         var wrap = document.createElement("div");
         wrap.className = "view-scroll";
@@ -150,28 +170,15 @@
         var thead = document.createElement("thead");
         thead.appendChild(head);
         var body = document.createElement("tbody");
-        (lines.length ? lines : [{}]).forEach(function (line) {
+        var shown = lines.slice();
+        while (shown.length < 5) shown.push(null);
+        shown.forEach(function (line) {
           var row = document.createElement("tr");
-          row.appendChild(cell(line.name || "—"));
-          COLS.forEach(function (col) { row.appendChild(cell(line.name ? show(line, col[0]) : "—")); });
+          row.appendChild(playerCell(line));
+          COLS.forEach(function (col) { row.appendChild(cell(line ? show(line, col[0]) : "")); });
           body.appendChild(row);
         });
-        var foot = document.createElement("tfoot");
-        var recorded = lines.filter(function (line) {
-          return SUMS.some(function (key) { return line[key] != null && line[key] !== ""; });
-        });
-        var total = totals(recorded);
-        var sum = document.createElement("tr");
-        sum.className = "team-total";
-        sum.appendChild(cell("TEAM"));
-        COLS.forEach(function (col) {
-          var value = total[col[0]];
-          if (col[0] === "fgp" || col[0] === "tpp" || col[0] === "ftp" || col[0] === "fg2p" || col[0] === "gmsc") value = recorded.length ? total[col[0]] : "—";
-          else value = recorded.length ? String(total[col[0]]) : "—";
-          sum.appendChild(cell(value, true));
-        });
-        foot.appendChild(sum);
-        table.append(thead, body, foot);
+        table.append(thead, body);
         wrap.appendChild(table);
         return wrap;
       }
@@ -250,10 +257,16 @@
           return player && sameTeam(player.team || player.teamName, teamName);
         }).map(function (line) {
           var player = byId[String(line.id)];
-          return Object.assign({}, line, { name: (player && (player.roblox || player.name || player.username)) || line.name || "Unknown" });
+          return Object.assign({}, line, {
+            roblox: (player && (player.roblox || player.name || player.username)) || line.name || "Unknown",
+            username: player && player.username ? player.username : "",
+            avatar: player && player.avatar ? player.avatar : "",
+            pid: String(line.id || "")
+          });
         });
       }
       function paintTeams(players) {
+        root.querySelectorAll(".view-block").forEach(function (node) { node.remove(); });
         [["away", away], ["home", home]].forEach(function (side) {
           var lines = sideLines(players, side[0], side[1]);
           var block = document.createElement("section");
@@ -265,11 +278,13 @@
           root.appendChild(block);
         });
       }
-      fetch("/api/signins?t=" + Date.now()).then(function (res) { return res.json(); }).then(function (data) {
-        paintTeams(data.players || []);
-      }).catch(function () {
-        paintTeams([]);
-      });
+      var cachedPlayers = [];
+      try { cachedPlayers = JSON.parse(localStorage.getItem("jba-directory") || "[]"); } catch (err) { cachedPlayers = []; }
+      paintTeams(Array.isArray(cachedPlayers) ? cachedPlayers : []);
+      fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+        var merged = window.jbaMergeDirectory ? window.jbaMergeDirectory(data.players || []) : (data.players || []);
+        paintTeams(merged);
+      }).catch(function () {});
     })();
   </script>
 </body>

@@ -60,18 +60,31 @@ async function callJson(url, options) {
   }
 }
 
+const directoryCache = { players: null, at: 0, fullAt: 0 };
+const FRESH_MS = 20000;
+const FULL_MS = 10 * 60 * 1000;
+
 async function readInbox() {
-  const result = await callJson(REQUESTS, { headers: { "Accept": "application/json" } });
-  const rows = result.data && Array.isArray(result.data.data) ? result.data.data : [];
   const players = [];
   const seen = {};
-  rows.forEach(function (row) {
-    let body = null;
-    try { body = JSON.parse(row.content || ""); } catch (err) { body = null; }
-    if (!body || !isDiscordId(body.id) || seen[String(body.id)]) return;
-    seen[String(body.id)] = true;
-    players.push(clean(body));
-  });
+  let page = 1;
+  let last = 1;
+  while (page <= last && page <= 15) {
+    const result = await callJson(REQUESTS + "&page=" + page, { headers: { "Accept": "application/json" } });
+    const payload = result.data || {};
+    const rows = Array.isArray(payload.data) ? payload.data : [];
+    if (payload.last_page) last = Number(payload.last_page) || last;
+    if (!rows.length) break;
+    rows.forEach(function (row) {
+      let body = null;
+      try { body = JSON.parse(row.content || ""); } catch (err) { body = null; }
+      if (!body || !isDiscordId(body.id) || seen[String(body.id)]) return;
+      seen[String(body.id)] = true;
+      players.push(clean(body));
+    });
+    if (!payload.last_page && rows.length < 100) break;
+    page += 1;
+  }
   return players;
 }
 
@@ -194,13 +207,28 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "GET") {
+    const now = Date.now();
+    res.setHeader("Cache-Control", "public, max-age=15, stale-while-revalidate=45");
+    if (directoryCache.players && directoryCache.players.length && now - directoryCache.at < FRESH_MS) {
+      res.status(200).json({ players: directoryCache.players });
+      return;
+    }
     try {
       let players = await readInbox();
-      try { players = await refreshRoblox(players); } catch (err) {}
-      try { players = await refreshDiscord(players); } catch (err) {}
-      res.status(200).json({ players: players });
+      if (!players.length && directoryCache.players && directoryCache.players.length) players = directoryCache.players;
+      const stale = !directoryCache.fullAt || now - directoryCache.fullAt > FULL_MS;
+      if (stale && players.length) {
+        try { players = await refreshRoblox(players); } catch (err) {}
+        try { players = await refreshDiscord(players); } catch (err) {}
+        directoryCache.fullAt = Date.now();
+      }
+      if (players.length) {
+        directoryCache.players = players;
+        directoryCache.at = Date.now();
+      }
+      res.status(200).json({ players: players.length ? players : (directoryCache.players || []) });
     } catch (err) {
-      res.status(200).json({ players: [] });
+      res.status(200).json({ players: directoryCache.players || [] });
     }
     return;
   }
@@ -267,5 +295,6 @@ export default async function handler(req, res) {
     res.status(500).json({ error: "Could not save that sign-in", detail: saved.text.slice(0, 140) });
     return;
   }
+  directoryCache.at = 0;
   res.status(200).json({ ok: true, player: next });
 }

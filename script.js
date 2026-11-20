@@ -25,6 +25,26 @@ document.querySelectorAll('.team-card').forEach(card => {
 
 console.log('Hoops Central loaded! Let\'s ball.');
 
+function mergeDirectory(incoming) {
+  var prev = [];
+  try { prev = JSON.parse(localStorage.getItem("jba-directory") || "[]"); } catch (err) { prev = []; }
+  if (!Array.isArray(prev)) prev = [];
+  var byId = {};
+  prev.forEach(function (player) {
+    if (player && player.id) byId[String(player.id)] = player;
+  });
+  var list = Array.isArray(incoming) ? incoming : [];
+  if (!list.length) return prev;
+  list.forEach(function (player) {
+    if (!player || !player.id) return;
+    byId[String(player.id)] = Object.assign({}, byId[String(player.id)] || {}, player);
+  });
+  var next = Object.keys(byId).map(function (id) { return byId[id]; });
+  try { localStorage.setItem("jba-directory", JSON.stringify(next)); } catch (err) {}
+  return next;
+}
+window.jbaMergeDirectory = mergeDirectory;
+
 function userFromCookie() {
   const match = document.cookie.match(/(?:^|; )jba_user=([^;]+)/);
   if (!match || !match[1]) return null;
@@ -1428,6 +1448,77 @@ function setupProfile() {
   Array.prototype.forEach.call(homeTables, writeHome);
 })();
 
+function computeTeamRecords() {
+  var names = [
+    "Arizona Wildcats", "Baylor Bears", "Duke Blue Devils", "Florida Gators", "Georgia Bulldogs",
+    "Houston Cougars", "Kansas Jayhawks", "Kentucky Wildcats", "LSU Tigers", "Miami Hurricanes",
+    "Michigan Wolverines", "North Carolina Tar Heels", "Ohio State Buckeyes", "Oregon Ducks",
+    "UCLA Bruins", "Virginia Cavaliers"
+  ];
+  var teams = {};
+  names.forEach(function (name) { teams[name] = { w: 0, l: 0 }; });
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem("jba-boxscores") || "{}"); } catch (err) { saved = {}; }
+  function isForfeit(game) {
+    if (!game) return false;
+    if (game.forfeit) return true;
+    return [game.awayScore, game.homeScore].some(function (score) {
+      return score === "W" || score === "L" || score === "FFW" || score === "FFL";
+    });
+  }
+  function sideResult(score, other) {
+    if (score === "W" || score === "FFW") return "W";
+    if (score === "L" || score === "FFL") return "L";
+    var n = Number(score);
+    var m = Number(other);
+    if (!isFinite(n) || !isFinite(m)) return "";
+    if (n > m) return "W";
+    if (n < m) return "L";
+    return "";
+  }
+  Object.keys(saved).forEach(function (id) {
+    var game = saved[id];
+    if (!game) return;
+    var legacy = game.submitted == null && game.awayScore !== "" && game.homeScore !== "" && game.awayScore != null && game.homeScore != null;
+    if (!(game.submitted === true || legacy)) return;
+    var parts = String(id).split("|");
+    if (parts.length < 3 || !teams[parts[1]] || !teams[parts[2]]) return;
+    var forfeit = isForfeit(game);
+    var awayRes = sideResult(game.awayScore, game.homeScore);
+    var homeRes = sideResult(game.homeScore, game.awayScore);
+    if (forfeit && game.forfeitTeam === "away") { awayRes = "L"; homeRes = "W"; }
+    if (forfeit && game.forfeitTeam === "home") { awayRes = "W"; homeRes = "L"; }
+    if (awayRes === "W") teams[parts[1]].w += 1;
+    else if (awayRes === "L") teams[parts[1]].l += 1;
+    if (homeRes === "W") teams[parts[2]].w += 1;
+    else if (homeRes === "L") teams[parts[2]].l += 1;
+  });
+  var map = {};
+  names.forEach(function (name) { map[name] = teams[name].w + "-" + teams[name].l; });
+  return map;
+}
+function stampTeamRecords() {
+  var map = computeTeamRecords();
+  window.jbaRecords = map;
+  document.querySelectorAll(".final-club > span, .home-club > span").forEach(function (span) {
+    var name = "";
+    Array.prototype.forEach.call(span.childNodes, function (node) {
+      if (node.nodeType === 3) name += node.textContent;
+      else if (node.classList && node.classList.contains("team-name")) name += node.textContent;
+    });
+    name = name.replace(/\s+/g, " ").trim();
+    if (!map[name]) return;
+    span.textContent = "";
+    var label = document.createElement("span");
+    label.className = "team-name";
+    label.textContent = name;
+    var rec = document.createElement("em");
+    rec.className = "team-rec";
+    rec.textContent = "(" + map[name] + ")";
+    span.append(label, rec);
+  });
+}
+
 (function paintHomeFinals() {
   var list = document.querySelector(".home-board .score-list");
   if (!list) return;
@@ -1608,6 +1699,7 @@ function setupProfile() {
     });
   });
 })();
+stampTeamRecords();
 
 (function markRivalries() {
   var games = document.querySelectorAll(".sched-game");
@@ -1787,10 +1879,10 @@ function setupProfile() {
       cards.forEach(function (card, index) { fill(card, rows, KEYS[index] || "pts"); });
     }
   } catch (err) {}
-  fetch("/api/signins?t=" + Date.now()).then(function (res) { return res.json(); }).then(function (data) {
+  fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+    var merged = mergeDirectory(data.players || []);
     var byId = {};
-    (data.players || []).forEach(function (player) { if (player && player.id) byId[String(player.id)] = player; });
-    try { localStorage.setItem("jba-directory", JSON.stringify(data.players || [])); } catch (err) {}
+    merged.forEach(function (player) { if (player && player.id) byId[String(player.id)] = player; });
     rows.forEach(function (row) { row.account = byId[row.id] || null; });
     cards.forEach(function (card, index) { fill(card, rows, KEYS[index] || "pts"); });
   }).catch(function () {

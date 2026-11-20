@@ -453,9 +453,9 @@
         });
       }
       fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+        var merged = window.jbaMergeDirectory ? window.jbaMergeDirectory(data.players || []) : (data.players || []);
         directory = {};
-        (data.players || []).forEach(function (player) { if (player && player.id) directory[String(player.id)] = player; });
-        try { localStorage.setItem("jba-directory", JSON.stringify(data.players || [])); } catch (err) {}
+        merged.forEach(function (player) { if (player && player.id) directory[String(player.id)] = player; });
         paintLeaders();
       }).catch(function () {});
     })();

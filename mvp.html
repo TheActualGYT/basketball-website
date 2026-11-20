@@ -77,11 +77,7 @@
         <p>A five-player race, ranked by game score.</p>
       </div>
     </div>
-    <div class="mvp-podium" id="mvp-podium"></div>
-    <section class="mvp-mentions">
-      <h3>Honorable Mentions</h3>
-      <ol id="mvp-mentions"></ol>
-    </section>
+    <div class="mvp-ladder" id="mvp-ladder"></div>
   </section>
 
   <script src="script.js"></script>
@@ -105,8 +101,7 @@
         "UCLA Bruins": ["UCLA", "ucla.png"],
         "Virginia Cavaliers": ["VIR", "virginia.png"]
       };
-      var podium = document.getElementById("mvp-podium");
-      var mentions = document.getElementById("mvp-mentions");
+      var ladder = document.getElementById("mvp-ladder");
       function avatar(player) {
         if (player && player.avatar && player.id) return "https://cdn.discordapp.com/avatars/" + player.id + "/" + player.avatar + ".png?size=128";
         return "";
@@ -143,28 +138,21 @@
         var teamName = account ? String(account.team || account.teamName || "") : "";
         var team = TEAMS[teamName];
         var face = avatar(account);
-        var who = row ? ((account && (account.name || account.username)) || row.name) : "Open";
-        var sub = row ? ((team ? team[0] : "Free Agent") + " · " + row.games + "G") : "Awaiting results";
-        var node = document.createElement(place > 3 ? "li" : "article");
-        node.className = place > 3 ? "mention" : "podium-card place-" + place;
-        node.innerHTML = '<span class="podium-rank">' + place + '</span>' +
-          '<div class="mvp-face' + (face ? "" : " is-empty") + '"' + (face ? ' style="background-image:url(\'' + face + '\')"' : "") + '></div>' +
-          '<div class="mvp-who"><b>' + who + '</b><small>' + (team ? '<img src="' + team[1] + '" alt="">' : '') + sub + '</small></div>' +
-          '<div class="mvp-score"><b>' + (row ? row.avg.toFixed(1) : "—") + '</b><span>GMSC</span></div>';
+        var who = row ? ((account && account.roblox) || (account && (account.name || account.username)) || row.name) : "Open";
+        var node = document.createElement("article");
+        node.className = "mvp-bar" + (place === 1 ? " is-1" : "");
+        node.innerHTML = '<span class="mvp-face' + (face ? "" : " is-empty") + '"' + (face ? ' style="background-image:url(\'' + face + '\')"' : "") + '></span>' +
+          '<div class="mvp-copy"><span class="mvp-rank">#' + place + '</span><b>' + who + '</b><small>' + (row ? row.avg.toFixed(1) + " GMSC" : "AWAITING RESULTS") + '</small></div>' +
+          (team ? '<img class="mvp-logo" src="' + team[1] + '" alt="">' : '<span></span>');
         return node;
       }
       function paint(accounts) {
         var leaders = collect();
-        podium.textContent = "";
-        mentions.textContent = "";
-        [2, 1, 3].forEach(function (place) {
+        ladder.textContent = "";
+        for (var place = 1; place <= 5; place += 1) {
           var row = leaders[place - 1];
-          podium.appendChild(card(row, row && accounts[row.id], place));
-        });
-        [4, 5].forEach(function (place) {
-          var row = leaders[place - 1];
-          mentions.appendChild(card(row, row && accounts[row.id], place));
-        });
+          ladder.appendChild(card(row, row && accounts[row.id], place));
+        }
       }
       try {
         var cached = JSON.parse(localStorage.getItem("jba-directory") || "[]");
@@ -173,9 +161,9 @@
         if (Object.keys(byCache).length) paint(byCache);
       } catch (e) {}
       fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+        var merged = window.jbaMergeDirectory ? window.jbaMergeDirectory(data.players || []) : (data.players || []);
         var accounts = {};
-        (data.players || []).forEach(function (player) { if (player && player.id) accounts[String(player.id)] = player; });
-        try { localStorage.setItem("jba-directory", JSON.stringify(data.players || [])); } catch (err) {}
+        merged.forEach(function (player) { if (player && player.id) accounts[String(player.id)] = player; });
         paint(accounts);
       }).catch(function () {});
     })();

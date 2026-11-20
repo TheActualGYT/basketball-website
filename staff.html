@@ -421,12 +421,10 @@
       paint(players);
     }
     fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
-      var next = [];
-      (data.players || []).forEach(function (player) { next.push(player); });
+      var next = window.jbaMergeDirectory ? window.jbaMergeDirectory(data.players || []) : (data.players || []);
       if (!next.length) next = players.slice();
       remember(next);
       players = next;
-      try { localStorage.setItem("jba-directory", JSON.stringify(players)); } catch (err) {}
       paint(players);
     }).catch(function () {
       if (!players.length) paint(players);
@@ -444,11 +442,15 @@
       if (existing) existing.remove();
       var overlay = document.createElement("div");
       overlay.id = "role-modal";
-      overlay.className = "role-modal-overlay";
+      overlay.className = "role-editor-overlay";
       var box = document.createElement("div");
-      box.className = "role-modal";
-      box.innerHTML = '<h3>Edit Role — ' + (player.name || player.username || "Player") + '</h3>';
+      box.className = "role-editor-card";
       var roles = accountRoles(player);
+      var heading = document.createElement("h3");
+      heading.textContent = "Edit role";
+      var who = document.createElement("p");
+      who.className = "role-who";
+      who.textContent = player.name || player.username || "Player";
       var adminCheck = document.createElement("label");
       adminCheck.innerHTML = '<input type="checkbox"' + (roles.admin ? " checked" : "") + (roles.owner ? " disabled" : "") + '> Admin';
       var officialCheck = document.createElement("label");
@@ -465,14 +467,16 @@
         if (String(player.team || player.teamName || "") === team[0]) opt.selected = true;
         teamSelect.appendChild(opt);
       });
+      var actions = document.createElement("div");
+      actions.className = "role-editor-actions";
       var save = document.createElement("button");
       save.type = "button";
       save.textContent = "Save";
-      save.className = "cta-btn";
+      save.className = "is-save";
       var cancel = document.createElement("button");
       cancel.type = "button";
       cancel.textContent = "Cancel";
-      cancel.className = "cta-btn secondary";
+      cancel.className = "is-cancel";
       save.addEventListener("click", function () {
         var next = accountRoles(player);
         next.admin = adminCheck.querySelector("input").checked || !!roles.owner;
@@ -481,7 +485,9 @@
         overlay.remove();
       });
       cancel.addEventListener("click", function () { overlay.remove(); });
-      box.append(adminCheck, officialCheck, document.createElement("div"), teamSelect, document.createElement("div"), save, cancel);
+      overlay.addEventListener("click", function (event) { if (event.target === overlay) overlay.remove(); });
+      actions.append(cancel, save);
+      box.append(heading, who, adminCheck, officialCheck, teamSelect, actions);
       overlay.appendChild(box);
       document.body.appendChild(overlay);
     }
