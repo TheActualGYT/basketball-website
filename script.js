@@ -45,6 +45,36 @@ function mergeDirectory(incoming) {
 }
 window.jbaMergeDirectory = mergeDirectory;
 
+function restoreDirectory() {
+  try {
+    if (sessionStorage.getItem("jba-restored") === "1") return;
+  } catch (err) {}
+  let local = [];
+  try { local = JSON.parse(localStorage.getItem("jba-directory") || "[]"); } catch (err) { local = []; }
+  if (!Array.isArray(local) || !local.length) return;
+  fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
+    const remote = data.players || [];
+    const ids = {};
+    remote.forEach(function (player) { if (player && player.id) ids[String(player.id)] = true; });
+    const missing = local.some(function (player) {
+      return player && player.id && !ids[String(player.id)] && ((player.roblox && player.build) || player.notPlayer);
+    });
+    if (!missing) {
+      try { sessionStorage.setItem("jba-restored", "1"); } catch (err) {}
+      return;
+    }
+    fetch("/api/signins", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ players: local })
+    }).then(function (res) {
+      if (!res.ok) return;
+      try { sessionStorage.setItem("jba-restored", "1"); } catch (err) {}
+    }).catch(function () {});
+  }).catch(function () {});
+}
+restoreDirectory();
+
 function userFromCookie() {
   const match = document.cookie.match(/(?:^|; )jba_user=([^;]+)/);
   if (!match || !match[1]) return null;
@@ -114,6 +144,8 @@ function saveWeekSession(user) {
     build: user.build || "",
     robloxId: user.robloxId ? String(user.robloxId) : "",
     notPlayer: !!user.notPlayer,
+    team: user.team || "",
+    roles: user.roles || null,
     serverChecked: true,
     createdAt: Number(user.createdAt) || Number(user.connectedAt) || Date.now(),
     connectedAt: Number(user.connectedAt) || Date.now()
@@ -140,6 +172,8 @@ function writeUserCookie(user) {
     build: user.build || "",
     robloxId: user.robloxId ? String(user.robloxId) : "",
     notPlayer: !!user.notPlayer,
+    team: user.team || "",
+    roles: user.roles || null,
     serverChecked: true,
     createdAt: Number(user.createdAt) || Number(user.connectedAt) || Date.now(),
     connectedAt: Number(user.connectedAt) || Date.now()
@@ -165,6 +199,8 @@ function publishSignin(user) {
       build: user.build || "",
       robloxId: user.robloxId ? String(user.robloxId) : "",
       notPlayer: !!user.notPlayer,
+      team: user.team || "",
+      roles: user.roles || null,
       createdAt: Number(user.createdAt) || Number(user.connectedAt) || Date.now(),
       connectedAt: Number(user.connectedAt) || Date.now()
     })
@@ -188,6 +224,8 @@ function rememberLocalSignin(user) {
     build: user.build || "",
     robloxId: user.robloxId ? String(user.robloxId) : "",
     notPlayer: !!user.notPlayer,
+    team: user.team || "",
+    roles: user.roles || null,
     status: user.status || "Free Agent",
     createdAt: Number(user.createdAt) || Number(user.connectedAt) || Date.now(),
     connectedAt: Number(user.connectedAt) || Date.now()
@@ -281,11 +319,28 @@ if (loginBtn) {
     return list.find(function (player) { return String(player.id) === String(user.id); }) || null;
   }
 
+  function localAccount(id) {
+    const lists = [];
+    try { lists.push(JSON.parse(localStorage.getItem("jba-directory") || "[]")); } catch (err) {}
+    try { lists.push(JSON.parse(localStorage.getItem("jba-signins") || "[]")); } catch (err) {}
+    let found = null;
+    lists.forEach(function (list) {
+      if (!Array.isArray(list)) return;
+      list.forEach(function (player) {
+        if (player && String(player.id) === String(id)) found = player;
+      });
+    });
+    return found;
+  }
+
   function enterLeague(user, found, republish) {
     const next = Object.assign({}, user, {
       roblox: found.roblox || "",
       build: found.build || "",
       notPlayer: !!found.notPlayer,
+      team: found.team || user.team || "",
+      roles: found.roles || user.roles || null,
+      robloxId: found.robloxId || user.robloxId || "",
       connectedAt: Date.now(),
       serverChecked: true,
       name: user.name || found.name,
@@ -309,11 +364,7 @@ if (loginBtn) {
     publishSignin(next).then(function () {
       location.replace("home.html");
     }).catch(function () {
-      const status = document.getElementById("discord-login-status");
-      if (status) {
-        status.textContent = "Could not save this login. Try again.";
-        status.className = "apply-status bad";
-      }
+      location.replace("home.html");
     });
   }
 
@@ -360,17 +411,22 @@ if (loginBtn) {
     }
     resumeStarted = true;
     let found = null;
-    let reachable = true;
+    let fromServer = false;
     try {
       const res = await fetch("/api/signins");
       if (!res.ok) throw new Error("list");
       const data = await res.json();
       found = (data.players || []).find(function (player) { return String(player.id) === String(user.id); }) || null;
+      fromServer = !!(found && profileComplete(found));
     } catch (err) {
-      reachable = false;
+      found = null;
+    }
+    if (!fromServer) {
+      const local = localAccount(user.id);
+      if (local && profileComplete(local)) found = local;
     }
     if (found && profileComplete(found)) {
-      enterLeague(user, found, false);
+      enterLeague(user, found, fromServer ? false : true);
       return;
     }
     if (profileComplete(user) && sessionFresh(user)) {
@@ -378,26 +434,6 @@ if (loginBtn) {
       return;
     }
     resumeStarted = false;
-    if (!reachable || (profileComplete(user) && sessionFresh(user))) {
-      if (profileComplete(user) && sessionFresh(user)) {
-        saveWeekSession(user);
-        location.replace("home.html");
-      } else if (loginForm && !profileComplete(user)) showSignupForm();
-      return;
-    }
-    localStorage.removeItem("jba-login-profile");
-    localStorage.removeItem("jba-signins");
-    document.cookie = "jba_user=; Path=/; Max-Age=0; SameSite=Lax";
-    const bare = {
-      id: user.id,
-      username: user.username || "",
-      name: user.name || user.username || "",
-      avatar: user.avatar || "",
-      serverChecked: true,
-      connectedAt: Date.now()
-    };
-    localStorage.setItem("jba-discord", JSON.stringify(bare));
-    connectedDiscord = bare;
     showSignupForm();
   }
 

@@ -57,6 +57,24 @@
         serverChecked: true,
         checkedAt: Date.now()
       };
+      function readList(key) {
+        try {
+          var value = JSON.parse(localStorage.getItem(key) || "[]");
+          return Array.isArray(value) ? value : [];
+        } catch (err) {
+          return [];
+        }
+      }
+      function localAccount(id) {
+        var found = null;
+        readList("jba-directory").concat(readList("jba-signins")).forEach(function (player) {
+          if (player && String(player.id) === String(id)) found = player;
+        });
+        return found;
+      }
+      function complete(player) {
+        return !!(player && ((player.roblox && player.build) || player.notPlayer));
+      }
       function saveSession(session) {
         try {
           localStorage.setItem("jba-session", JSON.stringify(session));
@@ -71,29 +89,55 @@
           document.cookie = "jba_user=" + encodeURIComponent(payload) + "; Path=/; Max-Age=604800; SameSite=Lax";
         } catch (err) {}
       }
+      function sessionFrom(found) {
+        return {
+          id: String(account.id),
+          username: found.username || account.username || "",
+          name: found.name || account.name || account.username || "",
+          avatar: account.avatar || found.avatar || "",
+          roblox: found.roblox || "",
+          build: found.build || "",
+          robloxId: found.robloxId ? String(found.robloxId) : "",
+          notPlayer: !!found.notPlayer,
+          team: found.team || "",
+          roles: found.roles || null,
+          serverChecked: true,
+          connectedAt: Date.now()
+        };
+      }
+      function enter(found, republish) {
+        var session = sessionFrom(found);
+        saveSession(session);
+        tellOpener({ type: "jba-discord", user: session });
+        if (republish) {
+          fetch("/api/signins", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(session)
+          }).catch(function () {});
+        }
+        location.replace("/home.html");
+      }
       fetch("/api/signins").then(function (res) { return res.json(); }).then(function (data) {
         var found = (data.players || []).find(function (player) { return String(player.id) === String(account.id); });
-        if (found && ((found.roblox && found.build) || found.notPlayer)) {
-          var session = {
-            id: String(account.id),
-            username: found.username || account.username || "",
-            name: found.name || account.name || account.username || "",
-            avatar: account.avatar || found.avatar || "",
-            roblox: found.roblox || "",
-            build: found.build || "",
-            notPlayer: !!found.notPlayer,
-            serverChecked: true,
-            connectedAt: Date.now()
-          };
-          saveSession(session);
-          tellOpener({ type: "jba-discord", user: session });
-          location.replace("/home.html");
+        if (complete(found)) {
+          enter(found, false);
+          return;
+        }
+        found = localAccount(account.id);
+        if (complete(found)) {
+          enter(found, true);
           return;
         }
         try { localStorage.setItem("jba-discord", JSON.stringify(account)); } catch (err) {}
         tellOpener({ type: "jba-discord", user: account });
         location.replace(location.origin + "/?connected=1#" + encodeURIComponent(JSON.stringify(account)));
       }).catch(function () {
+        var found = localAccount(account.id);
+        if (complete(found)) {
+          enter(found, true);
+          return;
+        }
         try { localStorage.setItem("jba-discord", JSON.stringify(account)); } catch (err) {}
         tellOpener({ type: "jba-discord", user: account });
         location.replace(location.origin + "/?connected=1#" + encodeURIComponent(JSON.stringify(account)));

@@ -1,6 +1,6 @@
-const INBOX = "b20203a3-0634-42b2-86e9-ef5b8ac84a40";
+const INBOX = "e421136f-0796-420c-9db5-55b7e89fae2a";
 const WEBHOOK = "https://webhook.site/" + INBOX;
-const REQUESTS = "https://webhook.site/token/" + INBOX + "/requests?sorting=newest&per_page=100";
+const REQUESTS = "https://webhook.site/token/" + INBOX + "/requests?sorting=newest&per_page=20";
 
 function isOwnerAccount(player) {
   const username = String(player && player.username || "").toLowerCase();
@@ -65,27 +65,35 @@ const FRESH_MS = 20000;
 const FULL_MS = 10 * 60 * 1000;
 
 async function readInbox() {
-  const players = [];
+  const result = await callJson(REQUESTS, { headers: { "Accept": "application/json" } });
+  const rows = result.data && Array.isArray(result.data.data) ? result.data.data : [];
+  const individuals = [];
   const seen = {};
-  let page = 1;
-  let last = 1;
-  while (page <= last && page <= 15) {
-    const result = await callJson(REQUESTS + "&page=" + page, { headers: { "Accept": "application/json" } });
-    const payload = result.data || {};
-    const rows = Array.isArray(payload.data) ? payload.data : [];
-    if (payload.last_page) last = Number(payload.last_page) || last;
-    if (!rows.length) break;
-    rows.forEach(function (row) {
-      let body = null;
-      try { body = JSON.parse(row.content || ""); } catch (err) { body = null; }
-      if (!body || !isDiscordId(body.id) || seen[String(body.id)]) return;
-      seen[String(body.id)] = true;
-      players.push(clean(body));
-    });
-    if (!payload.last_page && rows.length < 100) break;
-    page += 1;
+  for (let i = 0; i < rows.length; i += 1) {
+    let body = null;
+    try { body = JSON.parse(rows[i].content || ""); } catch (err) { body = null; }
+    if (!body) continue;
+    if (Array.isArray(body.players)) {
+      return body.players.map(clean).filter(function (player) { return isDiscordId(player.id); });
+    }
+    if (!isDiscordId(body.id) || seen[String(body.id)]) continue;
+    seen[String(body.id)] = true;
+    individuals.push(clean(body));
   }
-  return players;
+  return individuals;
+}
+
+async function writeSnapshot(players) {
+  const saved = await callJson(WEBHOOK, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+    body: JSON.stringify({ players: players, savedAt: Date.now() })
+  });
+  if (saved.ok) {
+    directoryCache.players = players;
+    directoryCache.at = Date.now();
+  }
+  return saved;
 }
 
 async function refreshRoblox(players) {
@@ -208,25 +216,22 @@ export default async function handler(req, res) {
 
   if (req.method === "GET") {
     const now = Date.now();
-    res.setHeader("Cache-Control", "public, max-age=15, stale-while-revalidate=45");
-    if (directoryCache.players && directoryCache.players.length && now - directoryCache.at < FRESH_MS) {
+    res.setHeader("Cache-Control", "public, max-age=10, stale-while-revalidate=30");
+    if (directoryCache.players && now - directoryCache.at < FRESH_MS) {
       res.status(200).json({ players: directoryCache.players });
       return;
     }
     try {
       let players = await readInbox();
       if (!players.length && directoryCache.players && directoryCache.players.length) players = directoryCache.players;
-      const stale = !directoryCache.fullAt || now - directoryCache.fullAt > FULL_MS;
-      if (stale && players.length) {
-        try { players = await refreshRoblox(players); } catch (err) {}
-        try { players = await refreshDiscord(players); } catch (err) {}
-        directoryCache.fullAt = Date.now();
-      }
       if (players.length) {
         directoryCache.players = players;
         directoryCache.at = Date.now();
+      } else if (!(directoryCache.players && directoryCache.players.length)) {
+        directoryCache.players = [];
+        directoryCache.at = Date.now();
       }
-      res.status(200).json({ players: players.length ? players : (directoryCache.players || []) });
+      res.status(200).json({ players: players });
     } catch (err) {
       res.status(200).json({ players: directoryCache.players || [] });
     }
@@ -242,19 +247,46 @@ export default async function handler(req, res) {
   if (!body || typeof body === "string") {
     try { body = JSON.parse(body || "{}"); } catch (err) { body = {}; }
   }
+  if (Array.isArray(body.players)) {
+    try {
+      const existing = await readInbox();
+      const byId = {};
+      existing.forEach(function (player) {
+        if (player && player.id) byId[player.id] = player;
+      });
+      body.players.forEach(function (raw) {
+        if (!raw || !isDiscordId(raw.id)) return;
+        const next = clean(raw);
+        if (!((next.roblox && next.build) || next.notPlayer)) return;
+        if (!byId[next.id]) byId[next.id] = next;
+      });
+      const players = Object.keys(byId).map(function (id) { return byId[id]; });
+      const saved = await writeSnapshot(players);
+      if (!saved.ok) {
+        res.status(500).json({ error: "Could not save that sign-in" });
+        return;
+      }
+      res.status(200).json({ ok: true, players: players });
+    } catch (err) {
+      res.status(500).json({ error: "Could not save that sign-in" });
+    }
+    return;
+  }
+
   const next = clean(body);
   if (!isDiscordId(next.id) || !(next.username || next.name) || !((next.roblox && next.build) || next.notPlayer)) {
     res.status(400).json({ error: "A finished login needs Discord plus Roblox and build, or Not a Player." });
     return;
   }
   let previous = null;
+  let existing = [];
   try {
-    const existing = await readInbox();
+    existing = await readInbox();
     previous = existing.find(function (player) { return player.id === next.id; }) || null;
     const actor = existing.find(function (player) { return player.id === String(body.actorId || ""); });
     const actorRoles = actor ? rolesOf(actor) : {};
-    const changingRoles = !!body.roles;
-    const changingTeam = Object.prototype.hasOwnProperty.call(body, "team");
+    const changingRoles = !!body.actorId && !!body.roles;
+    const changingTeam = !!body.actorId && Object.prototype.hasOwnProperty.call(body, "team");
     if (changingRoles || changingTeam) {
       if (!actorRoles.admin && !actorRoles.owner) {
         res.status(403).json({ error: "Only an admin can change roles." });
@@ -286,15 +318,17 @@ export default async function handler(req, res) {
     }
   } catch (err) {}
 
-  const saved = await callJson(WEBHOOK, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Accept": "application/json" },
-    body: JSON.stringify(next)
+  const list = [];
+  const seen = {};
+  [next].concat(existing).forEach(function (player) {
+    if (!player || !player.id || seen[player.id]) return;
+    seen[player.id] = true;
+    list.push(player);
   });
+  const saved = await writeSnapshot(list);
   if (!saved.ok) {
     res.status(500).json({ error: "Could not save that sign-in", detail: saved.text.slice(0, 140) });
     return;
   }
-  directoryCache.at = 0;
   res.status(200).json({ ok: true, player: next });
 }

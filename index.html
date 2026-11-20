@@ -145,12 +145,6 @@
         return;
       }
       if (!(params || resume || unfinished)) return;
-      var form = document.getElementById("login-form");
-      var title = document.getElementById("login-title");
-      if (unfinished && form) {
-        form.classList.add("is-new");
-        if (title) title.textContent = "Sign Up";
-      }
       var modal = document.getElementById("login-modal");
       if (modal) {
         modal.hidden = false;
